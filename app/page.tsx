@@ -22,28 +22,28 @@ function AnimatedCounter({ target, duration = 2000, delay = 0 }: { target: numbe
       (entries) => {
         if (entries[0].isIntersecting && !hasStarted) {
           setHasStarted(true)
-          
+
           const startTime = Date.now() + delay
           const animate = () => {
             const now = Date.now()
             const elapsed = now - startTime
-            
+
             if (elapsed < 0) {
               requestAnimationFrame(animate)
               return
             }
-            
+
             const progress = Math.min(elapsed / duration, 1)
             const easeOutQuad = 1 - (1 - progress) * (1 - progress)
             const currentCount = Math.floor(easeOutQuad * target)
-            
+
             setCount(currentCount)
-            
+
             if (progress < 1) {
               requestAnimationFrame(animate)
             }
           }
-          
+
           requestAnimationFrame(animate)
         }
       },
@@ -61,7 +61,7 @@ function AnimatedCounter({ target, duration = 2000, delay = 0 }: { target: numbe
   }, [target, duration, delay, hasStarted])
 
   return (
-    <span 
+    <span
       ref={counterRef}
       className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-[#28cee3] to-[#00ffff] bg-clip-text text-transparent"
     >
@@ -86,13 +86,13 @@ export default function Home() {
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <HeroSection />
-        
+
         {/* Add feedback carousel section */}
         <section className="my-16">
           {/* <FeedbackCarousel /> */}
         </section>
 
-      
+
 
         {/* About Section */}
         <section className="my-6 sm:my-12 mb-8 sm:mb-16" style={{ marginTop: "-20px" }}>
@@ -107,7 +107,7 @@ export default function Home() {
               <p className="text-sm sm:text-base leading-relaxed mt-3">
                 Our website contains a wide range of resources to support your academic journey, including notes, syllabus materials, entrance preparation guides, project ideas, and much more.
               </p>
-              
+
               <Link href="https://discord.gg/ujTeUsM4Nf">
                 <Button size="lg" className="bg-gradient-to-r from-[#28cee3] to-[#20a8cc] hover:from-[#20a8cc] hover:to-[#28cee3] mt-6 shadow-lg hover:shadow-xl transition-all duration-300 text-white font-medium px-6 py-2.5 rounded-xl">
                   🎮 Join Discord Community
@@ -116,11 +116,11 @@ export default function Home() {
             </div>
           </div>
         </section>
-        
+
         <MovingFeatures />
 
 
-          {/* User Count Section */}
+        {/* User Count Section */}
         <section className="my-12 sm:my-20">
           <div className="text-center">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#28cee3]/10 via-transparent to-[#00ffff]/5 p-8 sm:p-12 backdrop-blur-sm border border-[#28cee3]/20">
@@ -130,30 +130,30 @@ export default function Home() {
                 <div className="absolute bottom-4 right-4 w-16 h-16 bg-[#00ffff]/20 rounded-full blur-xl"></div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-r from-[#28cee3]/10 to-[#00ffff]/10 rounded-full blur-2xl"></div>
               </div>
-              
+
               <div className="relative z-10">
                 <div className="flex justify-center mb-6">
                   <div className="p-4 bg-gradient-to-br from-[#28cee3]/20 to-[#00ffff]/20 rounded-2xl backdrop-blur-sm">
                     <Users className="h-12 w-12 sm:h-16 sm:w-16 text-[#28cee3]" />
                   </div>
                 </div>
-                
+
                 <h2 className="text-2xl sm:text-4xl font-bold mb-4 text-gray-800 dark:text-gray-100">
                   Join Our Growing Community
                 </h2>
-                
+
                 <div className="mb-6">
                   <AnimatedCounter target={420} duration={3000} />
                   <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mt-2">
                     Active Community Members
                   </p>
                 </div>
-                
+
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
                   Be part of a thriving community of developers, learners, and innovators. Together, we&apos;re building the future of technology education.
                 </p>
-                <div class="powr-hit-counter mt-4 mb-4" id="ad37fde6_1754479257"></div><script src="https://www.powr.io/powr.js?platform=react"></script>
-                
+                <div className="powr-hit-counter mt-4 mb-4" id="ad37fde6_1754479257"></div><script src="https://www.powr.io/powr.js?platform=react"></script>
+
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                   <Link href="/contact">
                     <Button size="lg" className="bg-gradient-to-r from-[#28cee3] to-[#00ffff] hover:from-[#20a8cc] hover:to-[#28cee3] shadow-lg hover:shadow-xl hover:shadow-[#28cee3]/25 transition-all duration-300 text-white font-medium px-8 py-3 rounded-xl">
@@ -161,7 +161,7 @@ export default function Home() {
                       <Users className="ml-2 h-5 w-5" />
                     </Button>
                   </Link>
-                  
+
                   <Link href="https://discord.gg/ujTeUsM4Nf">
                     <Button size="lg" variant="outline" className="border-[#28cee3]/30 hover:bg-[#28cee3]/10 shadow-lg transition-all duration-300 px-8 py-3 rounded-xl">
                       🎮 Discord Chat
@@ -172,7 +172,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-        
+
         {/* Explore Section */}
         <section className="my-8 sm:my-16">
           <div className="text-center mb-8 sm:mb-12">
@@ -322,8 +322,8 @@ export default function Home() {
             </Card>
           </div>
         </section>
-       <NewFeaturesDialog />
-        
+        <NewFeaturesDialog />
+
       </div>
     </div>
   )

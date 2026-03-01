@@ -1,7 +1,7 @@
-// middleware.ts
+// proxy.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const now = new Date();
   const hours = now.getHours();
   const minutes = now.getMinutes();

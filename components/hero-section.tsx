@@ -8,12 +8,17 @@ import { useState, useEffect } from "react"
 // import { HallOfFame } from "@/components/hall-of-fame"
 import { Card, CardContent } from "@/components/ui/card"
 import { Play, FileText, Brain, BookOpen, Users, Trophy } from "lucide-react"
-import  TextType  from "@/components/TextType"
+import TextType from "@/components/TextType"
+
+interface DecorativeElement {
+  left: string;
+  top: string;
+}
 
 export function HeroSection() {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const [decorativeElements, setDecorativeElements] = useState([])
+  const [decorativeElements, setDecorativeElements] = useState<DecorativeElement[]>([])
 
   useEffect(() => {
     setMounted(true)
@@ -47,7 +52,6 @@ export function HeroSection() {
                 style={{
                   color: "transparent",
                   WebkitTextStroke: "2px rgba(156, 163, 175, 0.3)",
-                  textStroke: "2px rgba(156, 163, 175, 0.3)",
                 }}
               >
                 &nbsp;&nbsp;CETMCA
@@ -57,8 +61,7 @@ export function HeroSection() {
                 style={{
                   color: "transparent",
                   WebkitTextStroke: "1px #00ffff",
-                  textStroke: "1px #00ffff",
-                
+
                 }}
               >
                 26
@@ -73,7 +76,7 @@ export function HeroSection() {
                 <motion.div
                   key={i}
                   className="absolute w-2 h-2 rounded-full opacity-30"
-                  style={{ ...position, backgroundColor: "#ff324f" }}
+                  style={{ left: position.left, top: position.top, backgroundColor: "#ff324f" }}
                   animate={{
                     y: [0, -100],
                     opacity: [0, 1, 0],
@@ -95,71 +98,71 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            
-           <motion.h1
-                className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tighter mb-2 md:mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                Welcome to{" "}
-                <span className="inline-block">
-                  {/* CETMCA with duck walking animation */}
-                  <motion.span
-                    className="inline-block"
-                    animate={{
-                      x: [0, 3, -3, 3, -3, 0],
-                      y: [0, -2, 0, -2, 0, 0],
-                      rotate: [0, 1, -1, 1, -1, 0],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "easeInOut",
-                      repeatDelay: 1,
-                    }}
-                  >
-                    CETMCA
-                  </motion.span>
-                  {/* 26 with special duck-themed animation */}
-                  <motion.span
-                    style={{ color: "#00ffff" }}
-                    className="inline-block ml-1"
-                    animate={{
-                      y: [0, -4, 0, -4, 0],
-                      rotate: [0, -2, 2, -2, 0],
-                      scale: [1, 1.05, 1, 1.05, 1],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "easeInOut",
-                      repeatDelay: 1,
-                      delay: 0.3,
-                    }}
-                  >
-                    26
-                  </motion.span>
-                </span>
-               
-              </motion.h1>
+
+            <motion.h1
+              className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tighter mb-2 md:mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Welcome to{" "}
+              <span className="inline-block">
+                {/* CETMCA with duck walking animation */}
+                <motion.span
+                  className="inline-block"
+                  animate={{
+                    x: [0, 3, -3, 3, -3, 0],
+                    y: [0, -2, 0, -2, 0, 0],
+                    rotate: [0, 1, -1, 1, -1, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                    repeatDelay: 1,
+                  }}
+                >
+                  CETMCA
+                </motion.span>
+                {/* 26 with special duck-themed animation */}
+                <motion.span
+                  style={{ color: "#00ffff" }}
+                  className="inline-block ml-1"
+                  animate={{
+                    y: [0, -4, 0, -4, 0],
+                    rotate: [0, -2, 2, -2, 0],
+                    scale: [1, 1.05, 1, 1.05, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                    repeatDelay: 1,
+                    delay: 0.3,
+                  }}
+                >
+                  26
+                </motion.span>
+              </span>
+
+            </motion.h1>
             {/* Official Website Text */}
-            <motion.p
+            <motion.div
               className="text-sm md:text-lg lg:text-xl text-muted-foreground mb-4 md:mb-6 max-w-2xl mx-auto dark:text-white text-black"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-                <TextType 
-  text={["The official website of CETMCA26 Community", "Place Where Learning , growing happens", "A hub for learning, collaboration, finding jobs and growth",
-  "Empowering minds, inspiring innovation","Happy coding!"]}
-  typingSpeed={75}
-  pauseDuration={1500}
-  showCursor={true}
-  cursorCharacter="|"
-/>
-            </motion.p>
-         
+              <TextType
+                text={["The official website of CETMCA26 Community", "Place Where Learning , growing happens", "A hub for learning, collaboration, finding jobs and growth",
+                  "Empowering minds, inspiring innovation", "Happy coding!"]}
+                typingSpeed={75}
+                pauseDuration={1500}
+                showCursor={true}
+                cursorCharacter="|"
+              />
+            </motion.div>
+
 
             {/* Batch Info & Location (Visible only on large screens) */}
             <motion.div
@@ -193,7 +196,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.8 }}
             >
-              
+
               <Link href="/projects">
                 <Button size="lg" className="bg-gradient-to-br from-pink-300 to-[#00ffff]-800 dark:from-pink-800">
                   Explore Projects
@@ -201,121 +204,121 @@ export function HeroSection() {
               </Link>
               <Link href="/crash-course">
                 <Button size="lg" variant="outline">
-                 Preparing for Placements ?
+                  Preparing for Placements ?
                 </Button>
               </Link>
             </motion.div>
           </motion.div>
 
-          
+
         </div>
 
 
         {/* Main Action Buttons */}
-      <h3 className="text-lg font-semibold mb-6 mt-8 text-center text-gray-900 dark:text-gray-100">
-  Top Sections
-</h3>
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-  {/* Placement Course Card */}
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: 0.5 }}
-    className="flex items-center justify-center"
-  >
-    <Link href="/crash-course/dashboard" className="block w-full">
-      <Card className="w-full shadow-md hover:shadow-xl transition-all duration-150 flex items-center justify-center py-6 bg-white dark:bg-gray-900">
-        <CardContent className="flex items-center justify-between w-full px-2 py-1">
-          <div className="flex items-center gap-4">
-            <BookOpen className="h-7 w-7 text-[#28cee3] dark:text-[#00cccc]" />
-            <div className="text-left">
-              <div className="font-semibold text-base md:text-lg">Placement Course</div>
-              <div className="text-xs md:text-sm opacity-90 text-gray-600 dark:text-gray-400">Start Learning</div>
-            </div>
-          </div>
-          <div className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full ml-3">
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">New</span>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  </motion.div>
+        <h3 className="text-lg font-semibold mb-6 mt-8 text-center text-gray-900 dark:text-gray-100">
+          Top Sections
+        </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          {/* Placement Course Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="flex items-center justify-center"
+          >
+            <Link href="/crash-course/dashboard" className="block w-full">
+              <Card className="w-full shadow-md hover:shadow-xl transition-all duration-150 flex items-center justify-center py-6 bg-white dark:bg-gray-900">
+                <CardContent className="flex items-center justify-between w-full px-2 py-1">
+                  <div className="flex items-center gap-4">
+                    <BookOpen className="h-7 w-7 text-[#28cee3] dark:text-[#00cccc]" />
+                    <div className="text-left">
+                      <div className="font-semibold text-base md:text-lg">Placement Course</div>
+                      <div className="text-xs md:text-sm opacity-90 text-gray-600 dark:text-gray-400">Start Learning</div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full ml-3">
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">New</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </motion.div>
 
-  {/* Job Portal Card */}
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: 0.7 }}
-    className="flex items-center justify-center"
-  >
-    <Link href="/crash-course/dashboard/jobs" className="block w-full">
-      <Card className="w-full shadow-md hover:shadow-xl transition-all duration-150 flex items-center justify-center py-6 bg-white dark:bg-gray-900">
-        <CardContent className="flex items-center gap-4 w-full px-2 py-1">
-          <div className="flex items-center gap-4">
-            <Brain className="h-7 w-7 text-[#a933e9] dark:text-pink-400" />
-            <div className="text-left">
-              <div className="font-semibold text-base md:text-lg truncate">
-                Job Portal
-              </div>
-              <div className="text-xs md:text-sm text-gray-600 dark:text-gray-400 truncate">
-                Find your job
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  </motion.div>
-</div>
+          {/* Job Portal Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            className="flex items-center justify-center"
+          >
+            <Link href="/crash-course/dashboard/jobs" className="block w-full">
+              <Card className="w-full shadow-md hover:shadow-xl transition-all duration-150 flex items-center justify-center py-6 bg-white dark:bg-gray-900">
+                <CardContent className="flex items-center gap-4 w-full px-2 py-1">
+                  <div className="flex items-center gap-4">
+                    <Brain className="h-7 w-7 text-[#a933e9] dark:text-pink-400" />
+                    <div className="text-left">
+                      <div className="font-semibold text-base md:text-lg truncate">
+                        Job Portal
+                      </div>
+                      <div className="text-xs md:text-sm text-gray-600 dark:text-gray-400 truncate">
+                        Find your job
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </motion.div>
+        </div>
 
-      <section className="w-full mt-16 mb-10 px-2">
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    {/* Portfolio */}
-    <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
-      <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
-        <Trophy className="h-10 w-10 text-violet-500 mb-2" />
-        <div className="text-lg font-bold">Create Portfolio</div>
-        <div className="text-xs text-gray-500">Get a unique shareable link</div>
-        <Link href="/crash-course/dashboard/portfolio">
-          <Button size="sm" className="mt-3">Create/Update</Button>
-        </Link>
-      </CardContent>
-    </Card>
-    {/* DSA Sheet */}
-    <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
-      <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
-        <Brain className="h-10 w-10 text-pink-500 mb-2" />
-        <div className="text-lg font-bold">Free DSA Sheet</div>
-        <div className="text-xs text-gray-500">Sheets + Video Solutions</div>
-        <Link href="/crash-course/dashboard/dsa">
-          <Button size="sm" className="mt-3">Start Solving</Button>
-        </Link>
-      </CardContent>
-    </Card>
-    {/* Jobs */}
-    <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
-      <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
-        <FileText className="h-10 w-10 text-blue-500 mb-2" />
-        <div className="text-lg font-bold">Find Jobs</div>
-        <div className="text-xs text-gray-500">Placement ready opportunities</div>
-        <Link href="/crash-course/dashboard/jobs">
-          <Button size="sm" className="mt-3">Explore</Button>
-        </Link>
-      </CardContent>
-    </Card>
-    {/* Quizzes */}
-    <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
-      <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
-        <Users className="h-10 w-10 text-green-500 mb-2" />
-        <div className="text-lg font-bold">Conduct Quiz</div>
-        <div className="text-xs text-gray-500">Practice, Create, Compete</div>
-        <Link href="/crash-course/dashboard/quiz">
-          <Button size="sm" className="mt-3">Get Started</Button>
-        </Link>
-      </CardContent>
-    </Card>
-  </div>
-</section>
+        <section className="w-full mt-16 mb-10 px-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Portfolio */}
+            <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
+              <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
+                <Trophy className="h-10 w-10 text-violet-500 mb-2" />
+                <div className="text-lg font-bold">Create Portfolio</div>
+                <div className="text-xs text-gray-500">Get a unique shareable link</div>
+                <Link href="/crash-course/dashboard/portfolio">
+                  <Button size="sm" className="mt-3">Create/Update</Button>
+                </Link>
+              </CardContent>
+            </Card>
+            {/* DSA Sheet */}
+            <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
+              <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
+                <Brain className="h-10 w-10 text-pink-500 mb-2" />
+                <div className="text-lg font-bold">Free DSA Sheet</div>
+                <div className="text-xs text-gray-500">Sheets + Video Solutions</div>
+                <Link href="/crash-course/dashboard/dsa">
+                  <Button size="sm" className="mt-3">Start Solving</Button>
+                </Link>
+              </CardContent>
+            </Card>
+            {/* Jobs */}
+            <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
+              <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
+                <FileText className="h-10 w-10 text-blue-500 mb-2" />
+                <div className="text-lg font-bold">Find Jobs</div>
+                <div className="text-xs text-gray-500">Placement ready opportunities</div>
+                <Link href="/crash-course/dashboard/jobs">
+                  <Button size="sm" className="mt-3">Explore</Button>
+                </Link>
+              </CardContent>
+            </Card>
+            {/* Quizzes */}
+            <Card className="flex flex-col items-center justify-center p-6 rounded-xl shadow bg-white dark:bg-gray-900">
+              <CardContent className="flex flex-col items-center justify-center text-center gap-2 p-0">
+                <Users className="h-10 w-10 text-green-500 mb-2" />
+                <div className="text-lg font-bold">Conduct Quiz</div>
+                <div className="text-xs text-gray-500">Practice, Create, Compete</div>
+                <Link href="/crash-course/dashboard/quiz">
+                  <Button size="sm" className="mt-3">Get Started</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
         {/* Quick Access Grid */}
         <motion.div
