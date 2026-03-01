@@ -9,6 +9,7 @@ import { MovingFeatures } from "@/components/moving-features"
 import { useEffect, useState, useRef } from "react"
 // import { FeedbackCarousel } from "@/components/feedback/feedback-carousel"
 import { NewFeaturesDialog } from "@/components/new-features-dialog" // Import the new dialog
+import Script from "next/script"
 
 
 // Animated Counter Component
@@ -152,7 +153,8 @@ export default function Home() {
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
                   Be part of a thriving community of developers, learners, and innovators. Together, we&apos;re building the future of technology education.
                 </p>
-                <div className="powr-hit-counter mt-4 mb-4" id="ad37fde6_1754479257"></div><script src="https://www.powr.io/powr.js?platform=react"></script>
+                <div className="powr-hit-counter mt-4 mb-4" id="ad37fde6_1754479257"></div>
+                <Script src="https://www.powr.io/powr.js?platform=react" strategy="lazyOnload" />
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                   <Link href="/contact">
