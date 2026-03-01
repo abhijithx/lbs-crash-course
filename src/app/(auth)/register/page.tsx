@@ -27,6 +27,7 @@ import { ref, push, set } from "firebase/database";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
 import { toast } from "sonner";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
@@ -82,8 +83,18 @@ function RegisterForm() {
 
         setSubmitting(true);
         try {
-            // STEP 1: Upload to Apps Script (Google Drive + Sheets)
-            let screenshotDriveUrl = "";
+            // STEP 1: Upload Image to Cloudinary directly from Client
+            let cloudinaryUrl = "";
+            try {
+                cloudinaryUrl = await uploadImageToCloudinary(screenshot);
+            } catch (imageError) {
+                console.error("Cloudinary Error:", imageError);
+                toast.error("Failed to upload screenshot. Please try again.");
+                setSubmitting(false);
+                return;
+            }
+
+            // STEP 2: Send metadata to Apps Script (Google Sheets)
             if (APPS_SCRIPT_URL) {
                 const formPayload = new FormData();
                 formPayload.append("name", formData.name);
@@ -95,17 +106,17 @@ function RegisterForm() {
                 if (formData.transactionId) {
                     formPayload.append("transactionId", formData.transactionId);
                 }
-                formPayload.append("screenshot", screenshot);
+                // Send Cloudinary URL instead of massive base64 file string
+                formPayload.append("screenshotUrl", cloudinaryUrl);
 
-                const scriptResponse = await fetch(APPS_SCRIPT_URL, {
+                // Fire and forget (optional await)
+                fetch(APPS_SCRIPT_URL, {
                     method: "POST",
                     body: formPayload,
-                });
-                const scriptResult = await scriptResponse.json();
-                screenshotDriveUrl = scriptResult.driveUrl || "";
+                }).catch(err => console.error("Apps Script Error:", err));
             }
 
-            // STEP 2: Create pending registration in Firebase
+            // STEP 3: Create pending registration in Firebase
             const pendingRef = push(ref(db, "pendingRegistrations"));
             await set(pendingRef, {
                 name: formData.name,
@@ -115,7 +126,7 @@ function RegisterForm() {
                 graduationYear: formData.graduationYear,
                 selectedPackage: formData.selectedPackage,
                 transactionId: formData.transactionId || null,
-                screenshotDriveUrl,
+                screenshotUrl: cloudinaryUrl, // Save Cloudinary URL
                 submittedAt: Date.now(),
                 status: "pending",
             });

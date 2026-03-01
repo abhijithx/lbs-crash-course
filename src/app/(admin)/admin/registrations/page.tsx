@@ -246,45 +246,54 @@ export default function AdminRegistrations() {
                                 <p className="font-mono text-sm">{selectedReg.transactionId || "Not provided"}</p>
                             </div>
                         </div>
+                        <div className="space-y-4">
+                            {selectedReg.screenshotUrl && (
+                                <div className="rounded-xl border border-[var(--border)] overflow-hidden">
+                                    <a
+                                        href={selectedReg.screenshotUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block relative aspect-video bg-black/5 hover:opacity-90 transition-opacity"
+                                    >
+                                        {/* Using standard img for external blob/cloudinary links if domains aren't configured in next.config */}
+                                        <img
+                                            src={selectedReg.screenshotUrl}
+                                            alt="Payment Screenshot"
+                                            className="w-full h-full object-contain"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/20 transition-opacity">
+                                            <span className="bg-black/70 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                                                <ExternalLink className="w-4 h-4" /> View Full Image
+                                            </span>
+                                        </div>
+                                    </a>
+                                </div>
+                            )}
 
-                        {selectedReg.screenshotDriveUrl && (
-                            <div>
-                                <p className="text-sm text-[var(--muted-foreground)] mb-2">Payment Screenshot</p>
-                                <a
-                                    href={selectedReg.screenshotDriveUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-sm text-[var(--primary)] hover:underline"
+                            <DialogFooter>
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => {
+                                        setShowReject(true);
+                                    }}
+                                    disabled={processing}
                                 >
-                                    <ExternalLink className="h-4 w-4" />
-                                    View Screenshot on Drive
-                                </a>
-                            </div>
-                        )}
-
-                        <DialogFooter>
-                            <Button
-                                variant="destructive"
-                                onClick={() => {
-                                    setShowReject(true);
-                                }}
-                                disabled={processing}
-                            >
-                                <UserX className="h-4 w-4 mr-1" />
-                                Reject
-                            </Button>
-                            <Button
-                                onClick={handleAddUser}
-                                disabled={processing}
-                                className="gradient-primary border-0"
-                            >
-                                {processing ? (
-                                    <><Loader2 className="h-4 w-4 animate-spin mr-1" />Processing...</>
-                                ) : (
-                                    <><UserCheck className="h-4 w-4 mr-1" />Add User</>
-                                )}
-                            </Button>
-                        </DialogFooter>
+                                    <UserX className="h-4 w-4 mr-1" />
+                                    Reject
+                                </Button>
+                                <Button
+                                    onClick={handleAddUser}
+                                    disabled={processing}
+                                    className="gradient-primary border-0"
+                                >
+                                    {processing ? (
+                                        <><Loader2 className="h-4 w-4 animate-spin mr-1" />Processing...</>
+                                    ) : (
+                                        <><UserCheck className="h-4 w-4 mr-1" />Add User</>
+                                    )}
+                                </Button>
+                            </DialogFooter>
+                        </div>
                     </div>
                 )}
             </Dialog>
