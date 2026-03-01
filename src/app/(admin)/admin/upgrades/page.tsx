@@ -1,0 +1,167 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ref, onValue, update } from "firebase/database";
+import { db } from "@/lib/firebase";
+import type { UpgradeRequest } from "@/lib/types";
+import { ArrowUpCircle, Check, X, ExternalLink } from "lucide-react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+
+export default function AdminUpgradesPage() {
+    const [requests, setRequests] = useState<UpgradeRequest[]>([]);
+    const [showReject, setShowReject] = useState(false);
+    const [selected, setSelected] = useState<UpgradeRequest | null>(null);
+    const [rejectionReason, setRejectionReason] = useState("");
+    const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+        const upgRef = ref(db, "upgradeRequests");
+        const unsub = onValue(upgRef, (snapshot) => {
+            const list: UpgradeRequest[] = [];
+            snapshot.forEach((child) => {
+                list.push({ ...child.val(), id: child.key! });
+            });
+            list.sort((a, b) => b.submittedAt - a.submittedAt);
+            setRequests(list);
+        });
+        return () => unsub();
+    }, []);
+
+    const handleApprove = async (req: UpgradeRequest) => {
+        setProcessing(true);
+        try {
+            // Update user's feature flags to both
+            await update(ref(db, `users/${req.userId}`), {
+                is_live: true,
+                is_record_class: true,
+            });
+            // Update request status
+            await update(ref(db, `upgradeRequests/${req.id}`), {
+                status: "approved",
+            });
+            toast.success(`Upgrade approved for ${req.userName}`);
+        } catch {
+            toast.error("Failed to approve upgrade");
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleReject = async () => {
+        if (!selected) return;
+        setProcessing(true);
+        try {
+            await update(ref(db, `upgradeRequests/${selected.id}`), {
+                status: "rejected",
+                rejectionReason,
+            });
+            toast.success("Upgrade request rejected");
+            setShowReject(false);
+            setSelected(null);
+            setRejectionReason("");
+        } catch {
+            toast.error("Failed to reject upgrade");
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const pending = requests.filter((r) => r.status === "pending");
+    const processed = requests.filter((r) => r.status !== "pending");
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <div>
+                <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <ArrowUpCircle className="h-6 w-6 text-violet-500" />
+                    Upgrade Requests
+                </h1>
+                <p className="text-[var(--muted-foreground)] mt-1">{pending.length} pending requests</p>
+            </div>
+
+            {pending.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-[var(--muted-foreground)]">
+                    <ArrowUpCircle className="h-10 w-10 mx-auto mb-2" />
+                    <p>No pending upgrade requests</p>
+                </CardContent></Card>
+            ) : (
+                <div className="space-y-3">
+                    {pending.map((req) => (
+                        <Card key={req.id}>
+                            <CardContent className="p-5">
+                                <div className="flex items-center justify-between gap-3 flex-wrap">
+                                    <div>
+                                        <p className="font-semibold">{req.userName}</p>
+                                        <p className="text-sm text-[var(--muted-foreground)]">{req.userEmail}</p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <Badge variant="outline" className="text-xs">{req.currentPackage}</Badge>
+                                            <span className="text-xs text-[var(--muted-foreground)]">→</span>
+                                            <Badge className="text-xs">{req.requestedPackage}</Badge>
+                                        </div>
+                                        {req.screenshotDriveUrl && (
+                                            <a href={req.screenshotDriveUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[var(--primary)] hover:underline mt-2">
+                                                <ExternalLink className="h-3 w-3" /> View Screenshot
+                                            </a>
+                                        )}
+                                        <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
+                                            {format(new Date(req.submittedAt), "MMM d, yyyy h:mm a")}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button variant="destructive" size="sm" onClick={() => { setSelected(req); setShowReject(true); }}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                        <Button size="sm" className="gradient-primary border-0" onClick={() => handleApprove(req)} disabled={processing}>
+                                            <Check className="h-4 w-4 mr-1" /> Approve
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
+
+            {processed.length > 0 && (
+                <div>
+                    <h3 className="text-sm font-medium text-[var(--muted-foreground)] mb-3">Previously Processed</h3>
+                    <div className="space-y-2 opacity-60">
+                        {processed.slice(0, 10).map((req) => (
+                            <Card key={req.id}>
+                                <CardContent className="p-4 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium">{req.userName}</p>
+                                        <p className="text-xs text-[var(--muted-foreground)]">{req.userEmail}</p>
+                                    </div>
+                                    <Badge variant={req.status === "approved" ? "success" : "destructive"}>{req.status}</Badge>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <Dialog open={showReject} onOpenChange={setShowReject}>
+                <DialogHeader>
+                    <DialogTitle>Reject Upgrade Request</DialogTitle>
+                    <DialogDescription>Enter a reason for rejection</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                    <Textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Reason..." rows={3} />
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowReject(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleReject} disabled={processing}>
+                            {processing ? "Rejecting..." : "Reject"}
+                        </Button>
+                    </DialogFooter>
+                </div>
+            </Dialog>
+        </div>
+    );
+}

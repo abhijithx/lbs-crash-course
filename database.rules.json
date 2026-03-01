@@ -1,0 +1,81 @@
+{
+    "rules": {
+        "users": {
+            ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            "$userId": {
+                ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                "role": {
+                    ".validate": "!data.exists() || newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+                },
+                "status": {
+                    ".validate": "!data.exists() || newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+                },
+                "is_live": {
+                    ".validate": "!data.exists() || newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+                },
+                "is_record_class": {
+                    ".validate": "!data.exists() || newData.val() === data.val() || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+                }
+            }
+        },
+        "pendingRegistrations": {
+            ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            "$regId": {
+                ".write": "!data.exists() || (auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin')"
+            }
+        },
+        "upgradeRequests": {
+            ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            "$reqId": {
+                ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".validate": "(newData.hasChild('userId') && newData.child('userId').val() === auth.uid) || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+            }
+        },
+        "liveClasses": {
+            ".read": "auth != null",
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "recordedClasses": {
+            ".read": "auth != null",
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "quizzes": {
+            ".read": "auth != null",
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "quizAttempts": {
+            ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (query.orderByChild == 'userId' && query.equalTo == auth.uid))",
+            ".indexOn": [
+                "userId",
+                "quizId"
+            ],
+            "$attemptId": {
+                ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".validate": "(newData.hasChild('userId') && newData.child('userId').val() === auth.uid) || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+            }
+        },
+        "mockTests": {
+            ".read": "auth != null",
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "mockAttempts": {
+            ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (query.orderByChild == 'userId' && query.equalTo == auth.uid))",
+            ".indexOn": [
+                "userId",
+                "mockTestId"
+            ],
+            "$attemptId": {
+                ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".validate": "(newData.hasChild('userId') && newData.child('userId').val() === auth.uid) || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+            }
+        },
+        "announcements": {
+            ".read": "auth != null",
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        }
+    }
+}
