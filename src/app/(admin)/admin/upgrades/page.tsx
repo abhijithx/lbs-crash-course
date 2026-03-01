@@ -109,6 +109,11 @@ export default function AdminUpgradesPage() {
                                                 <ExternalLink className="h-3 w-3" /> View Screenshot
                                             </a>
                                         )}
+                                        {req.transactionId && (
+                                            <p className="text-xs text-[var(--muted-foreground)] mt-1 font-mono">
+                                                ID: {req.transactionId}
+                                            </p>
+                                        )}
                                         <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
                                             {format(new Date(req.submittedAt), "MMM d, yyyy h:mm a")}
                                         </p>

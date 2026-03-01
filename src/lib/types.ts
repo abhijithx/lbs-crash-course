@@ -40,6 +40,7 @@ export interface PendingRegistration {
     submittedAt: number;
     status: "pending" | "rejected";
     rejectionReason?: string;
+    transactionId?: string;
 }
 
 export interface UpgradeRequest {
@@ -53,6 +54,7 @@ export interface UpgradeRequest {
     submittedAt: number;
     status: "pending" | "approved" | "rejected";
     rejectionReason?: string;
+    transactionId?: string;
 }
 
 export interface LiveClass {

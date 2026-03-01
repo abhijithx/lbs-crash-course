@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     GraduationCap,
     Upload,
@@ -29,14 +36,17 @@ const packageOptions = [
     { value: "both", label: "Live + Recorded (Both)" },
 ];
 
-export default function RegisterPage() {
+function RegisterForm() {
+    const searchParams = useSearchParams();
+    const initialPackage = searchParams.get("package") || "";
     const [formData, setFormData] = useState({
         name: "",
         email: "",
         phone: "",
         whatsapp: "",
         graduationYear: "",
-        selectedPackage: "",
+        selectedPackage: initialPackage,
+        transactionId: "",
     });
     const [screenshot, setScreenshot] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -82,6 +92,9 @@ export default function RegisterPage() {
                 formPayload.append("whatsapp", formData.whatsapp);
                 formPayload.append("graduationYear", formData.graduationYear);
                 formPayload.append("selectedPackage", formData.selectedPackage);
+                if (formData.transactionId) {
+                    formPayload.append("transactionId", formData.transactionId);
+                }
                 formPayload.append("screenshot", screenshot);
 
                 const scriptResponse = await fetch(APPS_SCRIPT_URL, {
@@ -101,6 +114,7 @@ export default function RegisterPage() {
                 whatsapp: formData.whatsapp,
                 graduationYear: formData.graduationYear,
                 selectedPackage: formData.selectedPackage,
+                transactionId: formData.transactionId || null,
                 screenshotDriveUrl,
                 submittedAt: Date.now(),
                 status: "pending",
@@ -144,7 +158,7 @@ export default function RegisterPage() {
     return (
         <div className="min-h-screen bg-[var(--background)]">
             {/* Header */}
-            <nav className="border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
+            <nav className="border-b border-[var(--border)] bg-[#254852] text-white">
                 <div className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
                     <Link href="/" className="flex items-center gap-2">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary">
@@ -285,6 +299,17 @@ export default function RegisterPage() {
                                         </div>
                                     </div>
 
+                                    <div className="space-y-2">
+                                        <Label htmlFor="transactionId">Transaction ID (Optional)</Label>
+                                        <Input
+                                            id="transactionId"
+                                            name="transactionId"
+                                            placeholder="Enter payment transaction ID"
+                                            value={formData.transactionId}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+
                                     {/* Screenshot Upload */}
                                     <div className="space-y-2">
                                         <Label>Payment Screenshot *</Label>
@@ -360,5 +385,17 @@ export default function RegisterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
+            </div>
+        }>
+            <RegisterForm />
+        </Suspense>
     );
 }

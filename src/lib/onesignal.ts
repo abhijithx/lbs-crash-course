@@ -21,6 +21,7 @@ export const useOneSignal = () => {
 
                 // Check if already initialized to prevent errors
                 const isBrowser = typeof window !== "undefined";
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const oneSignalObj = isBrowser ? (window as any).OneSignal : undefined;
 
                 if (!oneSignalObj?.initialized) {

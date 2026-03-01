@@ -25,6 +25,7 @@ export default function ProfilePage() {
     // Upgrade state
     const [upgradeScreenshot, setUpgradeScreenshot] = useState<File | null>(null);
     const [upgradePreview, setUpgradePreview] = useState<string | null>(null);
+    const [upgradeTransactionId, setUpgradeTransactionId] = useState("");
     const [submittingUpgrade, setSubmittingUpgrade] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,6 +56,9 @@ export default function ProfilePage() {
                 const formPayload = new FormData();
                 formPayload.append("type", "upgrade");
                 formPayload.append("userId", userData.uid);
+                if (upgradeTransactionId) {
+                    formPayload.append("transactionId", upgradeTransactionId);
+                }
                 formPayload.append("screenshot", upgradeScreenshot);
                 const resp = await fetch(APPS_SCRIPT_URL, { method: "POST", body: formPayload });
                 const result = await resp.json();
@@ -69,6 +73,7 @@ export default function ProfilePage() {
                 currentPackage: userData.is_live && userData.is_record_class ? "both" : userData.is_live ? "live_only" : "recorded_only",
                 requestedPackage: "both",
                 screenshotDriveUrl: screenshotUrl,
+                transactionId: upgradeTransactionId || null,
                 submittedAt: Date.now(),
                 status: "pending",
             });
@@ -76,6 +81,7 @@ export default function ProfilePage() {
             toast.success("Upgrade request submitted! Awaiting admin approval.");
             setUpgradeScreenshot(null);
             setUpgradePreview(null);
+            setUpgradeTransactionId("");
         } catch {
             toast.error("Failed to submit upgrade request");
         } finally {
@@ -183,6 +189,15 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleUpgradeRequest} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="upgradeTransactionId">Transaction ID (Optional)</Label>
+                                <Input
+                                    id="upgradeTransactionId"
+                                    placeholder="Enter payment transaction ID"
+                                    value={upgradeTransactionId}
+                                    onChange={(e) => setUpgradeTransactionId(e.target.value)}
+                                />
+                            </div>
                             <div
                                 onClick={() => fileInputRef.current?.click()}
                                 className="cursor-pointer rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--muted)]/50 p-6 text-center transition-colors hover:border-[var(--primary)]/50"

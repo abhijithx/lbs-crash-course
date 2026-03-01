@@ -8,7 +8,6 @@ import {
   Video,
   BookOpen,
   Trophy,
-  Users,
   Bell,
   Monitor,
   ArrowRight,
@@ -97,74 +96,125 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary">
-              <GraduationCap className="h-5 w-5 text-white" />
+      <nav className="sticky top-0 z-50 bg-[#254852]/80 backdrop-blur-xl border-b border-white/10 text-white transition-all duration-300">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#5E9EA2] to-[#254852] shadow-lg shadow-[#5E9EA2]/20 group-hover:scale-105 transition-transform duration-300">
+              <GraduationCap className="h-6 w-6 text-white" />
             </div>
-            <span className="text-lg font-bold">LBS MCA</span>
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-[#A5C1C4]">LBS MCA</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Login
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="gradient-primary border-0">
-                <Sparkles className="h-4 w-4 mr-1" />
-                Register
-              </Button>
-            </Link>
+          <div className="flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+              <Link href="#" className="text-white hover:text-[#A5C1C4] transition-colors">Home</Link>
+              <Link href="#features" className="text-white/80 hover:text-white transition-colors">About</Link>
+              <Link href="#contact" className="text-white/80 hover:text-white transition-colors">Contact</Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link href="/login" className="hidden sm:block">
+                <Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white rounded-full px-6">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button className="bg-gradient-to-r from-[#5E9EA2] to-[#4B6F76] hover:from-[#A5C1C4] hover:to-[#5E9EA2] text-white rounded-full px-8 py-5 h-auto font-semibold border border-white/10 shadow-lg shadow-[#5E9EA2]/20 hover:shadow-xl hover:shadow-[#5E9EA2]/40 hover:-translate-y-0.5 transition-all duration-300">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Start now
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 sm:py-32">
-        {/* Background gradients */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 h-72 w-72 rounded-full bg-[var(--primary)]/20 blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-[var(--accent)]/15 blur-[120px]" />
+      <section className="relative overflow-hidden py-32 sm:py-48 bg-[#0F1C20]">
+
+        {/* Deep Animated Gradients */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-[#5E9EA2]/20 rounded-full blur-[120px]"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0.4, 0.2] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute top-1/4 -right-32 w-[500px] h-[500px] bg-[#254852]/40 rounded-full blur-[100px]"
+          />
+          <motion.div
+            animate={{ y: [0, -50, 0], opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -bottom-40 left-1/3 w-[800px] h-[400px] bg-[#A5C1C4]/10 rounded-full blur-[150px]"
+          />
+
+          {/* Subtle Grid overlay for texture */}
+          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-[0.03]"></div>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            initial="hidden"
+            animate="visible"
+            variants={{ 
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.15, delayChildren: 0.2 }
+              }
+            }}
+            className="flex flex-col items-center"
           >
-            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--muted)] px-4 py-1.5 text-sm text-[var(--muted-foreground)]">
-              <Zap className="h-4 w-4 text-[var(--warning)]" />
-              Admissions Open — Limited Seats
-            </div>
+            <motion.div
+              variants={{ hidden: { opacity: 0, scale: 0.8, y: -20 }, visible: { opacity: 1, scale: 1, y: 0 } }}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-5 py-2 text-xs sm:text-sm font-medium text-[#A5C1C4] uppercase tracking-[0.2em] mb-10 shadow-lg shadow-black/20"
+            >
+              <Zap className="h-4 w-4 text-[#5E9EA2]" />
+              MCA Entrance Preparation Program
+            </motion.div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-              Crack Your{" "}
-              <span className="gradient-text">LBS MCA</span>
-              <br />
-              Entrance Exam
-            </h1>
+            <motion.h1
+              variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
+              className="text-5xl sm:text-7xl md:text-[5.5rem] font-extrabold tracking-tight text-white mb-8 leading-[1.05]"
+            >
+              Master Your Exams.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A5C1C4] via-[#5E9EA2] to-[#254852] drop-shadow-sm">
+                Anywhere, Anytime.
+              </span>
+            </motion.h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-lg sm:text-xl text-[var(--muted-foreground)]">
-              The most comprehensive learning platform for MCA entrance preparation.
-              Live classes, recorded courses, quizzes, mock tests, and rank tracking — all in one place.
-            </p>
+            <motion.p
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="max-w-2xl text-xl sm:text-2xl font-light text-[#D7E6E6]/90 mb-12 leading-relaxed"
+            >
+              The most advanced digital learning platform designed exclusively for MCA entrance aspirants. <strong className="font-semibold text-white">Live. Flexible. Efficient.</strong>
+            </motion.p>
 
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/register">
-                <Button size="lg" className="gradient-primary border-0 text-base px-8">
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5" />
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full sm:w-auto"
+            >
+              <Link href="/register" className="w-full sm:w-auto group">
+                <Button size="lg" className="w-full bg-gradient-to-r from-[#5E9EA2] to-[#254852] hover:from-[#4B6F76] hover:to-[#1a333a] text-white border border-white/10 rounded-full px-10 h-14 text-lg font-semibold shadow-2xl shadow-[#5E9EA2]/30 group-hover:shadow-[#5E9EA2]/50 group-hover:-translate-y-1 transition-all duration-300">
+                  Start Your Journey
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link href="#features">
-                <Button variant="outline" size="lg" className="text-base px-8">
-                  Explore Features
+
+              <Link href="#features" className="w-full sm:w-auto hover:-translate-y-1 transition-transform duration-300">
+                <Button variant="outline" size="lg" className="w-full rounded-full border-white/20 text-white hover:bg-white/10 hover:text-white px-10 h-14 text-lg bg-transparent backdrop-blur-sm">
+                  Explore Platform
                 </Button>
               </Link>
-            </div>
+            </motion.div>
+
+            {/* Trusted by text */}
+            <motion.p
+              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+              className="mt-16 text-sm font-medium text-[#A5C1C4]/70 tracking-widest uppercase"
+            >
+              Trusted by 1000+ top rankers
+            </motion.p>
           </motion.div>
 
           {/* Stats */}
@@ -172,15 +222,15 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 mx-auto max-w-3xl"
+            className="mt-20 grid grid-cols-2 sm:grid-cols-4 gap-6 mx-auto max-w-4xl relative z-10"
           >
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-center"
+                className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 text-center hover:bg-white/10 transition-colors duration-300 shadow-xl shadow-black/20"
               >
-                <div className="text-2xl sm:text-3xl font-bold gradient-text">{stat.value}</div>
-                <div className="mt-1 text-sm text-[var(--muted-foreground)]">{stat.label}</div>
+                <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-[#A5C1C4] mb-2">{stat.value}</div>
+                <div className="text-sm font-medium text-[#A5C1C4]/80 tracking-wide uppercase">{stat.label}</div>
               </div>
             ))}
           </motion.div>
@@ -188,14 +238,17 @@ export default function LandingPage() {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              Everything You Need to <span className="gradient-text">Succeed</span>
+      <section id="features" className="relative py-24 sm:py-32 bg-[#0A1316]">
+        {/* Decorative Grid */}
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,rgba(255,255,255,0),white,rgba(255,255,255,0))] opacity-[0.02] pointer-events-none"></div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white">
+              Everything You Need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5E9EA2] to-[#A5C1C4]">Succeed</span>
             </h2>
-            <p className="mt-4 text-lg text-[var(--muted-foreground)] max-w-2xl mx-auto">
-              Our platform provides a complete learning experience with tools designed to maximize your preparation.
+            <p className="mt-5 text-lg text-[#A5C1C4]/70 max-w-2xl mx-auto font-light leading-relaxed">
+              Our platform provides a complete digital learning experience packed with cutting-edge tools designed to maximize your MCA entrance preparation.
             </p>
           </div>
 
@@ -203,19 +256,23 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                viewport={{ once: true, margin: "-10%" }}
+                transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 100 }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
               >
-                <div className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 transition-all duration-300 hover:border-[var(--primary)]/40 hover:shadow-lg hover:shadow-[var(--primary)]/5 h-full">
+                <div className="group relative rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 h-full shadow-2xl shadow-black/40 overflow-hidden transition-all duration-500 hover:bg-white/[0.04] hover:border-[#5E9EA2]/30">
+                  {/* Subtle top glow on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#5E9EA2]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
                   <div
-                    className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} mb-4`}
+                    className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} mb-6 shadow-lg shadow-black/20 ring-1 ring-white/10`}
                   >
-                    <feature.icon className="h-6 w-6 text-white" />
+                    <feature.icon className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                  <h3 className="text-xl font-bold text-white mb-3 tracking-wide">{feature.title}</h3>
+                  <p className="text-base text-[#A5C1C4]/70 leading-relaxed font-light">
                     {feature.description}
                   </p>
                 </div>
@@ -226,13 +283,14 @@ export default function LandingPage() {
       </section>
 
       {/* Packages */}
-      <section className="py-20 sm:py-28 border-t border-[var(--border)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              Choose Your <span className="gradient-text">Package</span>
+      <section className="relative py-24 sm:py-32 bg-[#0F1C20] border-t border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A1316] to-transparent h-40 pointer-events-none"></div>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white">
+              Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5E9EA2] to-[#A5C1C4]">Package</span>
             </h2>
-            <p className="mt-4 text-lg text-[var(--muted-foreground)]">
+            <p className="mt-5 text-lg text-[#A5C1C4]/70 max-w-2xl mx-auto font-light leading-relaxed">
               Select the plan that fits your learning style
             </p>
           </div>
@@ -241,36 +299,46 @@ export default function LandingPage() {
             {packages.map((pkg, index) => (
               <motion.div
                 key={pkg.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                viewport={{ once: true, margin: "-10%" }}
+                transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 100 }}
+                whileHover={{ scale: 1.02, y: -5, transition: { duration: 0.2 } }}
               >
                 <div
-                  className={`relative rounded-2xl border p-6 h-full flex flex-col ${pkg.highlighted
-                    ? "border-[var(--primary)] bg-[var(--primary)]/5 shadow-lg shadow-[var(--primary)]/10"
-                    : "border-[var(--border)] bg-[var(--card)]"
+                  className={`relative rounded-3xl border p-8 h-full flex flex-col transition-all duration-500 overflow-hidden ${pkg.highlighted
+                    ? "border-[#5E9EA2]/30 bg-white/[0.04] shadow-2xl shadow-[#5E9EA2]/20 hover:shadow-[#5E9EA2]/40"
+                    : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04] shadow-xl shadow-black/20"
                     }`}
                 >
                   {pkg.highlighted && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary rounded-full px-4 py-1 text-xs font-semibold text-white">
-                      Most Popular
-                    </div>
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-b from-[#5E9EA2]/10 to-transparent pointer-events-none" />
+                      <div className="absolute top-0 right-8 bg-gradient-to-b from-[#5E9EA2] to-[#254852] rounded-b-xl px-3 py-1.5 text-xs font-bold text-white tracking-widest uppercase shadow-lg shadow-black/50">
+                        Most Popular
+                      </div>
+                    </>
                   )}
-                  <h3 className="text-xl font-bold">{pkg.name}</h3>
-                  <div className="text-sm text-[var(--muted-foreground)] mt-1">{pkg.price}</div>
-                  <p className="text-sm text-[var(--muted-foreground)] mt-3">{pkg.description}</p>
-                  <ul className="mt-6 space-y-3 flex-1">
+                  <h3 className={`text-2xl font-bold ${pkg.highlighted ? "text-white" : "text-white/90"}`}>{pkg.name}</h3>
+                  <div className="text-xl font-medium text-[#A5C1C4] mt-2 mb-4">{pkg.price}</div>
+                  <p className="text-base text-[#A5C1C4]/60 font-light leading-relaxed flex-1">{pkg.description}</p>
+
+                  <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-6"></div>
+
+                  <ul className="space-y-4 mb-8">
                     {pkg.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm">
-                        <Sparkles className="h-4 w-4 text-[var(--primary)] shrink-0" />
-                        {f}
+                      <li key={f} className="flex items-center gap-3 text-sm text-[#D7E6E6]/90">
+                        <Sparkles className={`h-4 w-4 shrink-0 ${pkg.highlighted ? "text-[#5E9EA2]" : "text-[#5E9EA2]/60"}`} />
+                        <span>{f}</span>
                       </li>
                     ))}
                   </ul>
-                  <Link href="/register" className="mt-6 block">
+                  <Link
+                    href={`/register?package=${pkg.name === "Live + Recorded" ? "both" : pkg.name === "Live Only" ? "live_only" : "recorded_only"}`}
+                    className="mt-auto block"
+                  >
                     <Button
-                      className={`w-full ${pkg.highlighted ? "gradient-primary border-0" : ""}`}
+                      className={`w-full rounded-full h-12 text-base font-semibold shadow-none transition-all duration-300 ${pkg.highlighted ? "bg-gradient-to-r from-[#5E9EA2] to-[#254852] hover:from-[#4B6F76] hover:to-[#1a333a] text-white border-0 shadow-lg shadow-[#5E9EA2]/30 hover:-translate-y-1" : "bg-transparent border border-white/20 text-white hover:bg-white/10 hover:border-white/40"}`}
                       variant={pkg.highlighted ? "default" : "outline"}
                     >
                       Register Now

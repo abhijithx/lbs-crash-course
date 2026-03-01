@@ -241,6 +241,10 @@ export default function AdminRegistrations() {
                                     {format(new Date(selectedReg.submittedAt), "MMM d, yyyy h:mm a")}
                                 </p>
                             </div>
+                            <div className="col-span-2 bg-[var(--muted)]/50 p-3 rounded-lg border border-[var(--border)]">
+                                <p className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider font-semibold mb-1">Transaction ID</p>
+                                <p className="font-mono text-sm">{selectedReg.transactionId || "Not provided"}</p>
+                            </div>
                         </div>
 
                         {selectedReg.screenshotDriveUrl && (
