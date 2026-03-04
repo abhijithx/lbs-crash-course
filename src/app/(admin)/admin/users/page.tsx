@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ref, onValue, update, remove } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { UserData } from "@/lib/types";
-import { Users, Search, Mail, Phone, Ban, ShieldCheck, UserMinus, MoreVertical } from "lucide-react";
+import { Users, Search, Mail, Phone, Ban, ShieldCheck, UserMinus, MoreVertical, Eye, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -81,7 +82,8 @@ export default function AdminUsersPage() {
             (u) =>
                 u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                u.phone?.includes(searchTerm)
+                u.phone?.includes(searchTerm) ||
+                u.loginId?.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
     const renderUserList = (list: UserData[]) => {
@@ -113,6 +115,9 @@ export default function AdminUsersPage() {
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
                                             <p className="font-bold truncate text-lg">{user.name}</p>
+                                            {user.loginId && (
+                                                <Badge variant="outline" className="text-[10px] h-4 font-mono">{user.loginId}</Badge>
+                                            )}
                                             {user.banned && (
                                                 <Badge variant="destructive" className="text-[10px] h-4 uppercase tracking-tighter">Banned</Badge>
                                             )}
@@ -129,6 +134,12 @@ export default function AdminUsersPage() {
                                         <Badge variant={user.is_live ? "default" : "outline"} className="text-[9px] h-4 uppercase">Live</Badge>
                                         <Badge variant={user.is_record_class ? "secondary" : "outline"} className="text-[9px] h-4 uppercase">Recorded</Badge>
                                     </div>
+
+                                    <Link href={`/admin/users/${user.uid}`}>
+                                        <Button variant="outline" size="icon" className="rounded-xl h-10 w-10">
+                                            <Eye className="h-5 w-5" />
+                                        </Button>
+                                    </Link>
 
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>

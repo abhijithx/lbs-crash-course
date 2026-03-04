@@ -133,7 +133,7 @@ function LoginForm() {
                             />
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 relative">
                             <Label htmlFor="password">Password</Label>
                             <Input
                                 id="password"
@@ -141,6 +141,7 @@ function LoginForm() {
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                className="pr-10"
                                 required
                             />
                         </div>
@@ -166,7 +167,7 @@ function LoginForm() {
 
                         <p className="text-center text-sm text-[var(--muted-foreground)]">
                             Don&apos;t have an account?{" "}
-                            <Link href="/register" className="text-[var(--primary)] hover:underline font-medium">
+                            <Link href="/register" className="text-[var(--primary)] hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-[var(--primary)] rounded-md px-1">
                                 Register here
                             </Link>
                         </p>

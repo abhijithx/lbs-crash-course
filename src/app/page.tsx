@@ -102,6 +102,15 @@ export default function LandingPage() {
   const isAdmin = userData?.role === "admin";
   const dashboardLink = isAdmin ? "/admin" : "/dashboard";
 
+  const liveOnlyEnabled = process.env.NEXT_PUBLIC_LIVE_ONLY === "true";
+  const recordOnlyEnabled = process.env.NEXT_PUBLIC_RECORD_ONLY === "true";
+
+  const activePackages = packages.filter((pkg) => {
+    if (pkg.name === "Live Only") return liveOnlyEnabled;
+    if (pkg.name === "Recorded Only") return recordOnlyEnabled;
+    return true; // "Live + Recorded" is always visible
+  });
+
   useEffect(() => {
     if (loading) return;
     if (user && userData) {
@@ -168,15 +177,10 @@ export default function LandingPage() {
                 </Link>
               ) : (
                 <>
-                  <Link href="/login" className="hidden sm:block">
-                    <Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white rounded-full px-6">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link href="/register">
+                  <Link href="/login">
                     <Button className="bg-gradient-to-r from-[#5E9EA2] to-[#4B6F76] hover:from-[#A5C1C4] hover:to-[#5E9EA2] text-white rounded-full px-8 py-5 h-auto font-semibold border border-white/10 shadow-lg shadow-[#5E9EA2]/20 hover:shadow-xl hover:shadow-[#5E9EA2]/40 hover:-translate-y-0.5 transition-all duration-300">
                       <Sparkles className="w-4 h-4 mr-2" />
-                      Start now
+                      Login
                     </Button>
                   </Link>
                 </>
@@ -253,7 +257,7 @@ export default function LandingPage() {
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
               className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full sm:w-auto"
             >
-              <Link href="/register" className="w-full sm:w-auto group">
+              <Link href="/login" className="w-full sm:w-auto group">
                 <Button size="lg" className="w-full bg-gradient-to-r from-[#5E9EA2] to-[#254852] hover:from-[#4B6F76] hover:to-[#1a333a] text-white border border-white/10 rounded-full px-10 h-14 text-lg font-semibold shadow-2xl shadow-[#5E9EA2]/30 group-hover:shadow-[#5E9EA2]/50 group-hover:-translate-y-1 transition-all duration-300">
                   Start Your Journey
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -355,7 +359,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {packages.map((pkg, index) => (
+            {activePackages.map((pkg, index) => (
               <motion.div
                 key={pkg.name}
                 initial={{ opacity: 0, scale: 0.95, y: 30 }}
@@ -432,7 +436,7 @@ export default function LandingPage() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
               <h3 className="text-xl font-semibold text-white mb-2">Eligibility</h3>
               <ul className="text-sm text-[#A5C1C4]/80 space-y-2">
-              <li>• Bachelor&apos;s degree with required mathematics background</li>
+                <li>• Bachelor&apos;s degree with required mathematics background</li>
                 <li>• Further criteria as per official LBS guidelines</li>
               </ul>
             </div>
@@ -472,9 +476,9 @@ export default function LandingPage() {
               ? "Pick up where you left off and continue your preparation."
               : "Join hundreds of aspirants who are already preparing with our platform."}
           </p>
-          <Link href={user && userData ? dashboardLink : "/register"}>
+          <Link href={user && userData ? dashboardLink : "/login"}>
             <Button size="lg" className="gradient-primary border-0 text-base px-10">
-              {user && userData ? (isAdmin ? "Admin Panel" : "Go to Dashboard") : "Register Now"}
+              {user && userData ? (isAdmin ? "Admin Panel" : "Go to Dashboard") : "Login Now"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

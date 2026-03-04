@@ -8,21 +8,26 @@ import { ref, onValue } from "firebase/database";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import type { QuizAttempt } from "@/lib/types";
-import { Trophy, Medal, Crown, Award } from "lucide-react";
+import { Trophy, Medal, Crown, Award, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { Select } from "@/components/ui/select";
 
 interface RankData {
     quizId: string;
     quizTitle: string;
     entries: { userName: string; score: number; totalQuestions: number; rank: number; userId: string }[];
+    generatedAt?: number;
 }
 
 export default function RankingsPage() {
     const { userData } = useAuth();
-    const [tab, setTab] = useState("quizzes");
+    const [tab, setTab] = useState("mockTests");
     const [quizRankings, setQuizRankings] = useState<RankData[]>([]);
     const [mockRankings, setMockRankings] = useState<RankData[]>([]);
     const [loadingQuizzes, setLoadingQuizzes] = useState(true);
     const [loadingMocks, setLoadingMocks] = useState(true);
+    const [selectedId, setSelectedId] = useState<string>("");
 
     useEffect(() => {
         setLoadingQuizzes(true);
@@ -35,7 +40,15 @@ export default function RankingsPage() {
                     list.push({ ...child.val(), quizId: child.key! });
                 });
             }
-            setQuizRankings(list.sort((a: any, b: any) => (b.generatedAt || 0) - (a.generatedAt || 0)));
+            const sorted = list.sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0));
+            setQuizRankings(sorted);
+            if (tab === "quizzes" && sorted.length > 0 && !selectedId) {
+                setSelectedId(sorted[0].quizId);
+            }
+            setLoadingQuizzes(false);
+        }, (error) => {
+            console.error("Error fetching quiz rankings:", error);
+            toast.error("Failed to load quiz leaderboard.");
             setLoadingQuizzes(false);
         });
 
@@ -47,12 +60,31 @@ export default function RankingsPage() {
                     list.push({ ...child.val(), quizId: child.key! });
                 });
             }
-            setMockRankings(list.sort((a: any, b: any) => (b.generatedAt || 0) - (a.generatedAt || 0)));
+            const sorted = list.sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0));
+            setMockRankings(sorted);
+            if (tab === "mockTests" && sorted.length > 0 && !selectedId) {
+                setSelectedId(sorted[0].quizId);
+            }
+            setLoadingMocks(false);
+        }, (error) => {
+            console.error("Error fetching mock rankings:", error);
+            toast.error("Failed to load mock leaderboard.");
             setLoadingMocks(false);
         });
 
         return () => { unsub1(); unsub2(); };
     }, []);
+
+    // Effect to reset selection when tab changes
+    useEffect(() => {
+        if (tab === "quizzes" && quizRankings.length > 0) {
+            setSelectedId(quizRankings[0].quizId);
+        } else if (tab === "mockTests" && mockRankings.length > 0) {
+            setSelectedId(mockRankings[0].quizId);
+        } else {
+            setSelectedId("");
+        }
+    }, [tab]);
 
     const getRankStyles = (rank: number) => {
         if (rank === 1) return { icon: <Crown className="h-5 w-5 text-yellow-500" />, bg: "bg-yellow-500/10 border-yellow-500/20" };
@@ -62,30 +94,22 @@ export default function RankingsPage() {
         return { icon: <span className="text-xs font-bold text-[var(--muted-foreground)]">#{rank}</span>, bg: "" };
     };
 
-    const renderRankings = (rankings: RankData[], isLoading: boolean) => {
-        if (isLoading) return (
-            <div className="flex flex-col items-center justify-center py-20 space-y-4 animate-pulse">
-                <div className="h-12 w-12 rounded-full bg-[var(--muted)]" />
-                <div className="h-4 w-32 bg-[var(--muted)] rounded" />
-            </div>
-        );
-
-        if (rankings.length === 0) {
+    const renderRankingContent = (rankData: RankData) => {
+        if (!rankData.entries || rankData.entries.length === 0) {
             return (
-                <div className="text-center py-12 text-[var(--muted-foreground)]">
-                    <Trophy className="h-10 w-10 mx-auto mb-2" />
-                    <p className="font-medium">No results published yet</p>
-                    <p className="text-sm">Leaderboard is visible once a quiz/test is closed by admin.</p>
+                <div className="p-12 text-center text-[var(--muted-foreground)] bg-[var(--card)] rounded-xl border border-dashed border-[var(--border)]">
+                    <p className="text-sm font-medium">No participants yet</p>
+                    <p className="text-xs mt-1">Check back later once members complete this test.</p>
                 </div>
             );
         }
 
-        return rankings.map((rankData) => (
-            <Card key={rankData.quizId} className="mb-6 overflow-hidden border-t-2 border-t-[var(--primary)]/50">
-                <CardHeader className="bg-[var(--muted)]/20">
+        return (
+            <Card className="overflow-hidden border-t-2 border-t-[var(--primary)] shadow-sm">
+                <CardHeader className="bg-[var(--muted)]/20 py-4">
                     <CardTitle className="text-base flex items-center justify-between">
-                        <span>{rankData.quizTitle}</span>
-                        <span className="text-xs font-normal text-[var(--muted-foreground)]">Official Results</span>
+                        <span className="truncate">{rankData.quizTitle}</span>
+                        <Badge variant="outline" className="text-[10px] font-normal shrink-0">Official Results</Badge>
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -104,13 +128,13 @@ export default function RankingsPage() {
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm truncate">
                                             {entry.userName}
-                                            {isMe && <Badge className="ml-2 bg-[var(--primary)] text-white border-0">YOU</Badge>}
-                                            {entry.rank === 1 && <span className="ml-2 text-[10px] uppercase tracking-wider text-yellow-500 font-bold">Winner</span>}
+                                            {isMe && <Badge className="ml-2 bg-[var(--primary)] text-white border-0 text-[10px] py-0 h-4">YOU</Badge>}
+                                            {entry.rank === 1 && <span className="ml-2 text-[10px] uppercase tracking-wider text-yellow-500 font-bold hidden sm:inline-block">Winner</span>}
                                         </p>
                                     </div>
                                     <div className="text-right">
                                         <div className="text-sm font-bold">{entry.score} / {entry.totalQuestions}</div>
-                                        <div className="text-[10px] text-[var(--muted-foreground)]">Points</div>
+                                        <div className="text-[10px] text-[var(--muted-foreground)] lowercase tracking-wider">Points</div>
                                     </div>
                                 </div>
                             );
@@ -118,12 +142,21 @@ export default function RankingsPage() {
                     </div>
                 </CardContent>
             </Card>
-        ));
+        );
     };
 
+    const currentRankings = tab === "quizzes" ? quizRankings : mockRankings;
+    const isLoading = tab === "quizzes" ? loadingQuizzes : loadingMocks;
+    const activeRanking = currentRankings.find(r => r.quizId === selectedId);
+
+    const rankingOptions = currentRankings.map(r => ({
+        value: r.quizId,
+        label: r.quizTitle
+    }));
+
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6 animate-fade-in pb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Trophy className="h-6 w-6 text-yellow-500" />
@@ -134,15 +167,52 @@ export default function RankingsPage() {
             </div>
 
             <Tabs value={tab} onValueChange={setTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-                    <TabsTrigger value="quizzes">Quiz Leaderboard</TabsTrigger>
-                    <TabsTrigger value="mockTests">Mock Tests</TabsTrigger>
+                <TabsList className="p-1 h-auto bg-[var(--muted)]/50 border gap-1 rounded-xl w-full max-w-sm mb-6">
+                    <TabsTrigger value="mockTests" className="flex-1 rounded-lg py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">Mock Tests</TabsTrigger>
+                    <TabsTrigger value="quizzes" className="flex-1 rounded-lg py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">Quizzes</TabsTrigger>
                 </TabsList>
-                <div className="mt-6">
-                    <TabsContent value="quizzes">{renderRankings(quizRankings, loadingQuizzes)}</TabsContent>
-                    <TabsContent value="mockTests">{renderRankings(mockRankings, loadingMocks)}</TabsContent>
-                </div>
+
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                        <Loader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
+                        <p className="text-sm text-[var(--muted-foreground)]">Fetching rankings...</p>
+                    </div>
+                ) : currentRankings.length === 0 ? (
+                    <div className="text-center py-20 bg-[var(--card)] rounded-2xl border border-dashed border-[var(--border)]">
+                        <Trophy className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                        <h3 className="text-lg font-semibold">No results published</h3>
+                        <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                            Leaderboard is visible once admin publishes the results.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+                            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2 block">
+                                Select Test/Quiz Result
+                            </label>
+                            <Select
+                                value={selectedId}
+                                onChange={(e) => setSelectedId(e.target.value)}
+                                options={rankingOptions}
+                                className="h-11"
+                            />
+                        </div>
+
+                        {activeRanking ? (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                {renderRankingContent(activeRanking)}
+                            </div>
+                        ) : (
+                            <div className="py-20 text-center text-[var(--muted-foreground)]">
+                                <p>Please select a result from the dropdown above.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
             </Tabs>
         </div>
     );
 }
+
+

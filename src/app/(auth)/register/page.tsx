@@ -31,7 +31,7 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
-const packageOptions = [
+const basePackageOptions = [
     { value: "recorded_only", label: "Recorded Only - ₹299" },
     { value: "live_only", label: "Live Only - ₹299" },
     { value: "both", label: "Live + Recorded (Both) - ₹499" },
@@ -39,6 +39,17 @@ const packageOptions = [
 
 function RegisterForm() {
     const searchParams = useSearchParams();
+
+    // Evaluate options dynamically inside the component to ensure process.env reads correctly client-side
+    const liveOnlyEnabled = process.env.NEXT_PUBLIC_LIVE_ONLY === "true";
+    const recordOnlyEnabled = process.env.NEXT_PUBLIC_RECORD_ONLY === "true";
+
+    const packageOptions = basePackageOptions.filter((pkg) => {
+        if (pkg.value === "live_only") return liveOnlyEnabled;
+        if (pkg.value === "recorded_only") return recordOnlyEnabled;
+        return true; // 'both' is always visible unless user wants it otherwise
+    });
+
     const initialPackage = searchParams.get("package") || "";
     const PACKAGE_PRICES: Record<string, number> = { recorded_only: 299, live_only: 299, both: 499 };
     const [formData, setFormData] = useState({
@@ -142,6 +153,32 @@ function RegisterForm() {
         }
     };
 
+    const registrationOpen = process.env.NEXT_PUBLIC_REGISTRATION_OPEN !== "false";
+
+    if (!registrationOpen) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
+                <Card className="w-full max-w-md text-center">
+                    <CardContent className="pt-8 pb-8">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
+                            <Upload className="h-8 w-8 text-red-500" />
+                        </div>
+                        <h2 className="text-2xl font-bold mb-2">Registration Closed</h2>
+                        <p className="text-[var(--muted-foreground)] mb-6">
+                            Registration is currently closed. Please check back later or contact admin for more information.
+                        </p>
+                        <Link href="/login">
+                            <Button className="gradient-primary border-0">
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                Go to Login
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
     if (submitted) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
@@ -193,19 +230,48 @@ function RegisterForm() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {/* QR Code placeholder */}
+                                {/* Dynamic QR Code based on selected package */}
                                 <div className="rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--muted)] p-6 text-center">
-                                    <div className="mx-auto mb-3 flex h-40 w-40 items-center justify-center rounded-xl bg-white">
-                                        <p className="text-xs text-gray-500 px-2">
-                                            Payment QR Code
-                                            <br />
-                                            (Configure in admin)
-                                        </p>
+                                    <div className="mx-auto mb-3 flex h-48 w-48 items-center justify-center rounded-xl bg-white overflow-hidden">
+                                        {formData.selectedPackage ? (
+                                            <Image
+                                                src={
+                                                    formData.selectedPackage === "live_only"
+                                                        ? "/qr/live-only-qr.png"
+                                                        : formData.selectedPackage === "recorded_only"
+                                                            ? "/qr/record-only-qr.png"
+                                                            : "/qr/combo-qr.png"
+                                                }
+                                                alt={`QR Code for ${packageOptions.find(o => o.value === formData.selectedPackage)?.label || "payment"}`}
+                                                width={192}
+                                                height={192}
+                                                className="object-contain w-full h-full"
+                                            />
+                                        ) : (
+                                            <p className="text-xs text-gray-500 px-2">
+                                                Select a package to
+                                                <br />
+                                                view payment QR
+                                            </p>
+                                        )}
                                     </div>
-                                    <Button variant="outline" size="sm" className="mt-2">
-                                        <Download className="h-4 w-4 mr-1" />
-                                        Download QR
-                                    </Button>
+                                    {formData.selectedPackage && (
+                                        <a
+                                            href={
+                                                formData.selectedPackage === "live_only"
+                                                    ? "/qr/live-only-qr.png"
+                                                    : formData.selectedPackage === "recorded_only"
+                                                        ? "/qr/record-only-qr.png"
+                                                        : "/qr/combo-qr.png"
+                                            }
+                                            download
+                                        >
+                                            <Button variant="outline" size="sm" className="mt-2">
+                                                <Download className="h-4 w-4 mr-1" />
+                                                Download QR
+                                            </Button>
+                                        </a>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2 text-sm text-[var(--muted-foreground)]">

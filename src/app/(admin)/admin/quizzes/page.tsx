@@ -125,40 +125,40 @@ export default function AdminQuizzesPage() {
                     });
                 }
 
-                if (attempts.length > 0) {
-                    // Best attempt per user
-                    const bestByUser: Record<string, any> = {};
-                    attempts.forEach((a) => {
-                        if (!bestByUser[a.userId] || a.score > bestByUser[a.userId].score) {
+                const bestByUser: Record<string, any> = {};
+                attempts.forEach((a) => {
+                    if (!bestByUser[a.userId] || a.score > bestByUser[a.userId].score) {
+                        bestByUser[a.userId] = a;
+                    } else if (a.score === bestByUser[a.userId].score) {
+                        if (a.submittedAt < bestByUser[a.userId].submittedAt) {
                             bestByUser[a.userId] = a;
-                        } else if (a.score === bestByUser[a.userId].score) {
-                            if (a.submittedAt < bestByUser[a.userId].submittedAt) {
-                                bestByUser[a.userId] = a;
-                            }
                         }
-                    });
+                    }
+                });
 
-                    const sortedRankings = Object.values(bestByUser).sort((a: any, b: any) => {
-                        if (b.score !== a.score) return b.score - a.score;
-                        return a.submittedAt - b.submittedAt;
-                    }).map((entry: any, index: number) => ({
-                        userId: entry.userId,
-                        userName: entry.userName,
-                        score: entry.score,
-                        totalQuestions: entry.totalQuestions,
-                        rank: index + 1,
-                        submittedAt: entry.submittedAt
-                    }));
+                const sortedRankings = Object.values(bestByUser).sort((a: any, b: any) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return a.submittedAt - b.submittedAt;
+                }).map((entry: any, index: number) => ({
+                    userId: entry.userId,
+                    userName: entry.userName,
+                    score: entry.score,
+                    totalQuestions: entry.totalQuestions,
+                    rank: index + 1,
+                    submittedAt: entry.submittedAt
+                }));
 
-                    await set(ref(db, `rankings/${quizId}`), {
-                        quizId,
-                        quizTitle: form.title,
-                        generatedAt: Date.now(),
-                        entries: sortedRankings
-                    });
+                await set(ref(db, `rankings/${quizId}`), {
+                    quizId,
+                    quizTitle: form.title,
+                    generatedAt: Date.now(),
+                    entries: sortedRankings
+                });
+
+                if (attempts.length > 0) {
                     toast.success("Leaderboard updated with participant rankings");
                 } else {
-                    toast.info("No attempts found to generate rankings");
+                    toast.success("Quiz closed. No attempts found to generate rankings.");
                 }
             }
 
@@ -275,15 +275,21 @@ export default function AdminQuizzesPage() {
                     </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-2 max-h-[60vh] overflow-y-auto mt-4 pr-1">
-                    {viewingRanking?.entries.map((entry: any) => (
-                        <div key={entry.userId} className="flex items-center justify-between p-3 rounded-lg bg-[var(--muted)]/50 border border-[var(--border)]">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold w-6">{entry.rank}.</span>
-                                <span className="text-sm font-medium">{entry.userName}</span>
-                            </div>
-                            <div className="text-sm font-bold">{entry.score} / {entry.totalQuestions}</div>
+                    {!viewingRanking?.entries || viewingRanking.entries.length === 0 ? (
+                        <div className="text-center py-6 text-[var(--muted-foreground)]">
+                            <p className="text-sm">No participants yet for this quiz.</p>
                         </div>
-                    ))}
+                    ) : (
+                        viewingRanking.entries.map((entry: any) => (
+                            <div key={entry.userId} className="flex items-center justify-between p-3 rounded-lg bg-[var(--muted)]/50 border border-[var(--border)]">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs font-bold w-6">{entry.rank}.</span>
+                                    <span className="text-sm font-medium">{entry.userName}</span>
+                                </div>
+                                <div className="text-sm font-bold">{entry.score} / {entry.totalQuestions}</div>
+                            </div>
+                        ))
+                    )}
                 </div>
                 <DialogFooter>
                     <Button onClick={() => setViewingRanking(null)}>Close</Button>
