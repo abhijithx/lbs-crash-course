@@ -98,7 +98,7 @@ export default function AdminUsersPage() {
             <div className="grid gap-4">
                 {filtered.map((user) => (
                     <Card key={user.uid} className={cn(
-                        "hover:border-[var(--primary)]/20 transition-all overflow-hidden",
+                        "hover:border-[var(--primary)]/20 transition-all",
                         user.banned && "border-red-500/50 bg-red-500/[0.02]"
                     )}>
                         <CardContent className="p-0">
