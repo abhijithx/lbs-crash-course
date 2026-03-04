@@ -7,13 +7,99 @@ import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild, limitToLast } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { LiveClass, Announcement } from "@/lib/types";
-import { Video, BookOpen, Trophy, Megaphone, Calendar, Clock, FileText, ArrowRight, Sparkles, MonitorPlay, AlertCircle } from "lucide-react";
+import {
+    LayoutDashboard,
+    Video,
+    MonitorPlay,
+    BookOpen,
+    FileText,
+    Trophy,
+    Megaphone,
+    Search,
+    ChevronRight,
+    Play,
+    Clock,
+    Calendar,
+    ArrowRight,
+    Sparkles,
+    AlertCircle
+} from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default function StudentDashboard() {
+// Add this component before the main DashboardPage
+function LeaderboardSummary() {
     const { userData } = useAuth();
+    const [latestRanking, setLatestRanking] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const rRef = ref(db, "rankings");
+        const unsub = onValue(rRef, (snapshot) => {
+            let latest: any = null;
+            snapshot.forEach((child) => {
+                const val = child.val();
+                if (!latest || val.generatedAt > latest.generatedAt) {
+                    latest = val;
+                }
+            });
+            setLatestRanking(latest);
+            setLoading(false);
+        });
+        return () => unsub();
+    }, []);
+
+    if (loading || !latestRanking) return null;
+
+    const myEntry = latestRanking.entries.find((e: any) => e.userId === userData?.uid);
+    const top3 = latestRanking.entries.slice(0, 3);
+
+    return (
+        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-[#254852] to-[#4b6f76] text-white">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-yellow-400" />
+                    Top Performers
+                </CardTitle>
+                <p className="text-xs text-white/70">{latestRanking.quizTitle} - Official Results</p>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-3">
+                    {top3.map((entry: any, i: number) => (
+                        <div key={entry.userId} className="flex items-center gap-3 bg-white/10 rounded-lg p-2 border border-white/10">
+                            <div className="h-6 w-6 rounded-full bg-yellow-400 text-[#254852] flex items-center justify-center text-xs font-bold">
+                                {i + 1}
+                            </div>
+                            <span className="text-sm truncate flex-1">{entry.userName}</span>
+                            <span className="text-sm font-bold">{entry.score} pts</span>
+                        </div>
+                    ))}
+
+                    {myEntry && myEntry.rank > 3 && (
+                        <div className="flex items-center gap-3 bg-[var(--primary)]/30 rounded-lg p-2 border border-white/20 mt-4">
+                            <div className="h-6 w-6 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-bold">
+                                {myEntry.rank}
+                            </div>
+                            <span className="text-sm truncate flex-1">Your Rank</span>
+                            <span className="text-sm font-bold">{myEntry.score} pts</span>
+                        </div>
+                    )}
+
+                    <Link
+                        href="/dashboard/rankings"
+                        className="flex items-center justify-center w-full gap-2 mt-2 py-2 text-xs font-medium text-white/80 hover:text-white transition-colors"
+                    >
+                        View Full Leaderboard <ArrowRight className="h-3 w-3" />
+                    </Link>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function StudentDashboard() {
+    const { userData, loading: authLoading } = useAuth();
     const [upcomingClasses, setUpcomingClasses] = useState<LiveClass[]>([]);
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [recorded, setRecorded] = useState<Array<{ id: string; subject: string; title: string }>>([]);
@@ -101,9 +187,9 @@ export default function StudentDashboard() {
     const quickActions = [
         { label: "Live Classes", description: "Join live sessions", href: "/dashboard/live-classes", icon: Video, color: "from-blue-500 to-cyan-500", show: userData?.is_live },
         { label: "Recorded Classes", description: "Watch at your pace", href: "/dashboard/recorded-classes", icon: BookOpen, color: "from-violet-500 to-purple-500", show: userData?.is_record_class },
-        { label: "Quizzes", description: "Test your knowledge", href: "/dashboard/quizzes", icon: Trophy, color: "from-pink-500 to-rose-500", show: true },
-        { label: "Mock Tests", description: "Full-length practice", href: "/dashboard/mock-tests", icon: FileText, color: "from-amber-500 to-orange-500", show: true },
-        { label: "Rankings", description: "See your standing", href: "/dashboard/rankings", icon: Sparkles, color: "from-teal-500 to-emerald-500", show: true },
+        { label: "Quizzes", description: "Test your knowledge", href: "/dashboard/quizzes", icon: FileText, color: "from-pink-500 to-rose-500", show: true },
+        { label: "Mock Tests", description: "Full-length practice", href: "/dashboard/mock-tests", icon: BookOpen, color: "from-amber-500 to-orange-500", show: true },
+        { label: "Leaderboard & Rankings", description: "See your standing", href: "/dashboard/rankings", icon: Trophy, color: "from-teal-500 to-emerald-500", show: true },
         { label: "Announcements", description: "Latest updates", href: "/dashboard/announcements", icon: Megaphone, color: "from-green-500 to-lime-500", show: true },
     ];
     const quickActionsWithResume = resumeTarget
@@ -112,37 +198,34 @@ export default function StudentDashboard() {
 
     return (
         <div className="space-y-8 animate-fade-in">
-            {/* Welcome Banner */}
-            <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[var(--primary)]/10 via-transparent to-transparent rounded-full blur-2xl" />
-                <div className="relative">
-                    <h1 className="text-2xl sm:text-3xl font-bold">
-                        Welcome back, <span className="gradient-text">{userData?.name?.split(" ")[0]}</span> 👋
-                    </h1>
-                    <p className="mt-2 text-[var(--muted-foreground)] max-w-lg">
-                        Continue your MCA entrance preparation. Stay consistent and track your progress.
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {userData?.is_live && (
-                            <span className="inline-flex items-center rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-400">
-                                <Video className="h-3 w-3 mr-1.5" />
-                                Live Access
-                            </span>
-                        )}
-                        {userData?.is_record_class && (
-                            <span className="inline-flex items-center rounded-full bg-violet-500/10 border border-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-400">
-                                <BookOpen className="h-3 w-3 mr-1.5" />
-                                Recorded Access
-                            </span>
-                        )}
-                        {userData?.is_record_class && (
-                            <span className="inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
-                                <Sparkles className="h-3 w-3 mr-1.5" />
-                                Progress {overallPct}%
-                            </span>
-                        )}
+            {/* Top Row: Welcome & Leaderboard */}
+            <div className="grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[var(--primary)]/10 via-transparent to-transparent rounded-full blur-2xl" />
+                    <div className="relative">
+                        <h1 className="text-2xl sm:text-3xl font-bold">
+                            Welcome back, <span className="gradient-text">{userData?.name?.split(" ")[0]}</span> 👋
+                        </h1>
+                        <p className="mt-2 text-[var(--muted-foreground)] max-w-lg">
+                            Continue your MCA entrance preparation. Stay consistent and track your progress.
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {userData?.is_live && (
+                                <span className="inline-flex items-center rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-400">
+                                    <Video className="h-3 w-3 mr-1.5" />
+                                    Live Access
+                                </span>
+                            )}
+                            {userData?.is_record_class && (
+                                <span className="inline-flex items-center rounded-full bg-violet-500/10 border border-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-400">
+                                    <BookOpen className="h-3 w-3 mr-1.5" />
+                                    Recorded Access
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
+                <LeaderboardSummary />
             </div>
 
             {/* Quick Actions */}

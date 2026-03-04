@@ -31,7 +31,7 @@ const navItems = [
     { href: "/dashboard/quizzes", label: "Quizzes", icon: FileText },
     { href: "/dashboard/papers", label: "Previous Papers", icon: FileText },
     { href: "/dashboard/mock-tests", label: "Mock Tests", icon: FileText },
-    { href: "/dashboard/rankings", label: "Rankings", icon: Trophy },
+    { href: "/dashboard/rankings", label: "Leaderboard & Rankings", icon: Trophy },
     { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
     { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
