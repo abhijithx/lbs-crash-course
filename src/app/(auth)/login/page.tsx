@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import { PageLoader } from "@/components/ui/loading";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/firebase"; // Assuming firebase.ts is in lib/firebase
 import { ref, get } from "firebase/database";
 
@@ -84,13 +85,22 @@ function LoginForm() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] p-4">
+            <div className="w-full max-w-md mb-6">
+                <Link href="/">
+                    <Button variant="ghost" className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] -ml-4">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Home
+                    </Button>
+                </Link>
+            </div>
+
             <div className="fixed inset-0 -z-10">
                 <div className="absolute top-1/4 left-1/3 h-64 w-64 rounded-full bg-[var(--primary)]/10 blur-[100px]" />
                 <div className="absolute bottom-1/4 right-1/3 h-64 w-64 rounded-full bg-[var(--accent)]/10 blur-[100px]" />
             </div>
 
-            <Card className="w-full max-w-md">
+            <Card className="w-full max-w-md z-10">
                 <CardHeader className="text-center">
                     <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary">
                         <GraduationCap className="h-7 w-7 text-white" />

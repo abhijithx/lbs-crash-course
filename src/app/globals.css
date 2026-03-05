@@ -31,32 +31,23 @@
 
 /* ===== Light Mode ===== */
 :root {
-  --background: #d7e6e6;
-  /* Very Light Background */
-  --foreground: #1c333a;
-  /* Deep text */
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #254852;
-  /* Dark Teal */
-  --primary: #5e9ea2;
-  /* Primary Teal */
+  --card-foreground: #1e293b;
+  --primary: #0d9488;
   --primary-foreground: #ffffff;
-  --secondary: #a5c1c4;
-  /* Light Teal Background */
-  --secondary-foreground: #254852;
-  /* Dark Teal */
-  --muted: #a5c1c4;
-  /* Light Teal Background */
-  --muted-foreground: #4b6f76;
-  /* Muted Teal */
-  --accent: #5e9ea2;
-  /* Primary Teal */
+  --secondary: #e2e8f0;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #14b8a6;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
-  --border: #a5c1c4;
-  --input: #a5c1c4;
-  --ring: #5e9ea2;
-  --success: #22c55e;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0d9488;
+  --success: #10b981;
   --warning: #f59e0b;
 }
 
@@ -129,11 +120,11 @@ body {
 
 /* ===== Gradient Utilities ===== */
 .gradient-primary {
-  background: linear-gradient(135deg, #254852 0%, #4b6f76 50%, #5e9ea2 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #254852, #5e9ea2, #a5c1c4);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
