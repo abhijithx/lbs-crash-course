@@ -358,7 +358,7 @@ export default function AdminMockTestsPage() {
                                         <div>
                                             <p className="font-bold text-[var(--foreground)]">{entry.userName}</p>
                                             <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-black flex items-center gap-1">
-                                                <Clock className="h-2.5 w-2.5" /> {new Date(entry.submittedAt).toLocaleDateString()}
+                                                <Clock className="h-2.5 w-2.5" /> {entry.submittedAt ? new Date(entry.submittedAt).toLocaleDateString() : "N/A"}
                                             </p>
                                         </div>
                                     </div>
