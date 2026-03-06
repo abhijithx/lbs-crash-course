@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ref, onValue, update, set } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { PendingRegistration } from "@/lib/types";
