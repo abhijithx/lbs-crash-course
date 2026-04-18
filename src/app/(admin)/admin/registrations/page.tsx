@@ -25,12 +25,19 @@ async function syncStatusToGoogleSheet(email: string, status: "Verified" | "Reje
         formData.append("email", email);
         formData.append("status", status);
 
-        fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: "POST",
             body: formData,
-        }).catch(err => console.error("Sheet sync error:", err));
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text().catch(() => "Unknown error");
+            console.error("Sheet sync failed:", errorText);
+        } else {
+            console.log(`Sheet sync successful for ${email}: ${status}`);
+        }
     } catch (e) {
-        console.error(e);
+        console.error("Sheet sync network/system error:", e);
     }
 }
 

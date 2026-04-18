@@ -50,7 +50,7 @@ export default function SyllabusPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 border border-dashed rounded-2xl bg-(--card)/40">
+        <div className="text-center py-16 border border-dashed rounded-2xl bg-card/40">
           <ImageIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
           <p className="text-muted-foreground">No syllabus found</p>
         </div>
@@ -60,7 +60,7 @@ export default function SyllabusPage() {
             <Card key={it.id} className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setOpen(it)}>
               <CardContent className="p-0">
                 <div className="relative aspect-3/4 bg-muted/20 overflow-hidden">
-                  <Image src={it.url} alt={it.title || "Syllabus"} fill className="object-cover" unoptimized />
+                  <Image src={it.url} alt={it.title || "Syllabus"} fill className="object-cover" />
                 </div>
                 <div className="p-4 flex items-center justify-between">
                   <p className="font-medium truncate pr-2">{it.title || "Syllabus"}</p>
@@ -89,7 +89,7 @@ export default function SyllabusPage() {
               </div>
               <div className="bg-black p-4 flex items-center justify-center min-h-[60vh]">
                 <div className="relative w-full h-[80vh]">
-                  <Image src={open.url} alt={open.title || "Syllabus"} fill className="object-contain" unoptimized />
+                  <Image src={open.url} alt={open.title || "Syllabus"} fill className="object-contain" />
                 </div>
               </div>
             </div>

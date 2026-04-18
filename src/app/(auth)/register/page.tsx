@@ -136,24 +136,37 @@ function RegisterForm() {
 
             // STEP 2: Send metadata to Apps Script (Google Sheets)
             if (APPS_SCRIPT_URL) {
-                const formPayload = new FormData();
-                formPayload.append("name", formData.name);
-                formPayload.append("email", formData.email);
-                formPayload.append("phone", formData.phone);
-                formPayload.append("whatsapp", formData.whatsapp);
-                formPayload.append("graduationYear", formData.graduationYear);
-                formPayload.append("selectedPackage", formData.selectedPackage);
-                if (formData.transactionId) {
-                    formPayload.append("transactionId", formData.transactionId);
-                }
-                // Send Cloudinary URL instead of massive base64 file string
-                formPayload.append("screenshotUrl", cloudinaryUrl);
+                try {
+                    const formPayload = new FormData();
+                    formPayload.append("name", formData.name);
+                    formPayload.append("email", formData.email);
+                    formPayload.append("phone", formData.phone);
+                    formPayload.append("whatsapp", formData.whatsapp);
+                    formPayload.append("graduationYear", formData.graduationYear);
+                    formPayload.append("selectedPackage", formData.selectedPackage);
+                    if (formData.transactionId) {
+                        formPayload.append("transactionId", formData.transactionId);
+                    }
+                    // Send Cloudinary URL instead of massive base64 file string
+                    formPayload.append("screenshotUrl", cloudinaryUrl);
 
-                // Fire and forget (optional await)
-                fetch(APPS_SCRIPT_URL, {
-                    method: "POST",
-                    body: formPayload,
-                }).catch(err => console.error("Apps Script Error:", err));
+                    const sheetResponse = await fetch(APPS_SCRIPT_URL, {
+                        method: "POST",
+                        body: formPayload,
+                    });
+
+                    if (!sheetResponse.ok) {
+                        const errorText = await sheetResponse.text().catch(() => "Unknown error");
+                        console.error("Apps Script Sync Failed:", errorText);
+                        toast.error("Spreadsheet sync failed, but your registration is being processed internally.");
+                    } else {
+                        console.log("Apps Script Sync Successful");
+                        // Silent success is better for UX, or a subtle message
+                    }
+                } catch (sheetErr) {
+                    console.error("Apps Script Sync Network/System Error:", sheetErr);
+                    toast.warning("Minor sync issue, but registration is proceeding.");
+                }
             }
 
             // STEP 3: Create pending registration in Firebase
