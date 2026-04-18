@@ -41,29 +41,64 @@ interface RankData {
 // Add this component before the main DashboardPage
 function LeaderboardSummary() {
     const { userData } = useAuth();
-    const [latestRanking, setLatestRanking] = useState<RankData | null>(null);
+    const [data, setData] = useState<{
+        rankings: any;
+        mockRankings: any;
+        quizIds: Set<string>;
+        mockTestIds: Set<string>;
+    }>({ rankings: {}, mockRankings: {}, quizIds: new Set(), mockTestIds: new Set() });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const rRef = ref(db, "rankings");
-        const unsub = onValue(rRef, (snapshot) => {
-            let latest: RankData | null = null;
-            snapshot.forEach((child) => {
-                const val = child.val() as RankData;
-                if (!latest || val.generatedAt > latest.generatedAt) {
-                    latest = val;
-                }
-            });
-            setLatestRanking(latest);
-            setLoading(false);
-        });
-        return () => unsub();
+        const unsubs = [
+            onValue(ref(db, "rankings"), (s) => {
+                setData(prev => ({ ...prev, rankings: s.val() || {} }));
+                setLoading(false);
+            }),
+            onValue(ref(db, "mockRankings"), (s) => {
+                setData(prev => ({ ...prev, mockRankings: s.val() || {} }));
+                setLoading(false);
+            }),
+            onValue(ref(db, "quizzes"), (s) => {
+                const ids = new Set<string>();
+                s.forEach(c => { ids.add(c.key!); });
+                setData(prev => ({ ...prev, quizIds: ids }));
+            }),
+            onValue(ref(db, "mockTests"), (s) => {
+                const ids = new Set<string>();
+                s.forEach(c => { ids.add(c.key!); });
+                setData(prev => ({ ...prev, mockTestIds: ids }));
+            }),
+        ];
+        return () => unsubs.forEach(u => u());
     }, []);
+
+    const latestRanking = useMemo(() => {
+        const allValidRankings: (RankData & { sourceType: 'quiz' | 'mock' })[] = [];
+
+        // Add valid quiz rankings
+        Object.entries(data.rankings).forEach(([id, val]: [string, any]) => {
+            if (data.quizIds.has(id)) {
+                allValidRankings.push({ ...val, quizId: id, sourceType: 'quiz' });
+            }
+        });
+
+        // Add valid mock test rankings
+        Object.entries(data.mockRankings).forEach(([id, val]: [string, any]) => {
+            if (data.mockTestIds.has(id)) {
+                allValidRankings.push({ ...val, quizId: id, sourceType: 'mock' });
+            }
+        });
+
+        // Sort by generation time (latest first)
+        return allValidRankings.sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0))[0] || null;
+    }, [data]);
 
     if (loading || !latestRanking) return null;
 
     const myEntry = latestRanking.entries.find((e) => e.userId === userData?.uid);
     const top3 = latestRanking.entries.slice(0, 3);
+    const isMock = latestRanking.sourceType === 'mock';
 
     return (
         <Card className="overflow-hidden border-0 shadow-lg bg-linear-to-br from-[#254852] to-[#4b6f76] text-white">
@@ -72,7 +107,12 @@ function LeaderboardSummary() {
                     <Trophy className="h-5 w-5 text-yellow-400" />
                     Top Performers
                 </CardTitle>
-                <p className="text-xs text-white/70">{latestRanking.quizTitle} - Official Results</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-xs text-white/70 truncate flex-1">{latestRanking.quizTitle}</p>
+                    <Badge variant="outline" className="text-[10px] bg-white/10 text-white border-white/20 px-1 py-0 h-4">
+                        {isMock ? "Mock Test" : "Quiz"}
+                    </Badge>
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="space-y-3">

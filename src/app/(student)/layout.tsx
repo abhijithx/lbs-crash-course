@@ -11,10 +11,16 @@ export const metadata: Metadata = {
   },
 };
 
+import RouteGuard from "@/components/auth/RouteGuard";
+
 export default function StudentSegmentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <RouteGuard requireStudent={true} requireVerified={true}>
+      {children}
+    </RouteGuard>
+  );
 }

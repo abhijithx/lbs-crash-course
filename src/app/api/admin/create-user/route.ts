@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
     try {
+        // Authorization check
+        const secret = process.env.ADMIN_API_SECRET;
+        const requestSecret = request.headers.get("x-admin-secret");
+
+        if (!secret || requestSecret !== secret) {
+            return NextResponse.json(
+                { message: "Unauthorized: Invalid or missing admin secret" },
+                { status: 401 }
+            );
+        }
+
         const body = await request.json();
         const { email, password } = body;
 
@@ -13,6 +24,13 @@ export async function POST(request: NextRequest) {
         }
 
         const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+        if (!API_KEY) {
+            console.error("FIREBASE_API_KEY is not configured in environment variables");
+            return NextResponse.json(
+                { message: "Server configuration error: Firebase API Key missing" },
+                { status: 500 }
+            );
+        }
 
         // 1. Create User via Firebase REST API
         const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`, {
@@ -46,12 +64,14 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ uid: loginData.localId });
                 }
             }
-            throw new Error(data.error?.message || "Failed to create user");
+            const errorMessage = data.error?.message || "Unknown Firebase error";
+            throw new Error(errorMessage);
         }
 
         return NextResponse.json({ uid: data.localId });
 
     } catch (error: unknown) {
+        console.error("Create User API Error:", error);
         const err = error as Error;
         return NextResponse.json(
             { message: `Failed to create user: ${err.message}` },

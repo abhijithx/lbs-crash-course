@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
 
     const targetUrl = isDriveUrl(sourceUrl) ? normalizeGoogleDriveUrl(sourceUrl) : sourceUrl;
 
-    let response: Response | null = null;
+    let finalBuffer: ArrayBuffer | null = null;
     const requestInit: RequestInit = {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -92,44 +92,43 @@ export async function GET(req: NextRequest) {
       redirect: "follow",
     };
 
+    const fileId = extractGoogleDriveFileId(sourceUrl) || extractGoogleDriveFileId(targetUrl);
     const candidateUrls = isDriveUrl(sourceUrl)
-      ? buildGoogleDriveCandidates(extractGoogleDriveFileId(sourceUrl) || extractGoogleDriveFileId(targetUrl) || "")
+      ? buildGoogleDriveCandidates(fileId || "")
       : [targetUrl];
 
     for (const candidate of candidateUrls) {
+      if (!candidate) continue;
       try {
         const candidateResponse = await fetch(candidate, requestInit);
         if (!candidateResponse.ok || !candidateResponse.body) continue;
 
         const contentType = (candidateResponse.headers.get("content-type") || "application/pdf").toLowerCase();
+        // Skip if it looks like a landing page or JSON error
         if (contentType.includes("text/html") || contentType.includes("application/json")) continue;
-        if (!contentType.includes("pdf") && !contentType.includes("octet-stream")) continue;
 
         const buffer = await candidateResponse.arrayBuffer();
         const bytes = new Uint8Array(buffer);
+        
+        // PDF Magic Number Check: %PDF-
         const isPdfSignature =
           bytes.length >= 5 &&
-          bytes[0] === 0x25 &&
-          bytes[1] === 0x50 &&
-          bytes[2] === 0x44 &&
-          bytes[3] === 0x46 &&
-          bytes[4] === 0x2d;
+          bytes[0] === 0x25 && // %
+          bytes[1] === 0x50 && // P
+          bytes[2] === 0x44 && // D
+          bytes[3] === 0x46 && // F
+          bytes[4] === 0x2d;   // -
 
         if (!isPdfSignature) continue;
 
-        response = new Response(buffer, {
-          status: 200,
-          headers: new Headers({
-            "Content-Type": "application/pdf",
-          }),
-        });
+        finalBuffer = buffer;
         break;
-      } catch {
-        // Try next candidate.
+      } catch (err) {
+        console.warn(`Failed to retrieve note from candidate ${candidate}:`, err);
       }
     }
 
-    if (!response) {
+    if (!finalBuffer) {
       return errorResponse("The note could not be retrieved. Please ensure the link is public and points to a valid PDF file.", 404);
     }
 
@@ -142,13 +141,12 @@ export async function GET(req: NextRequest) {
     headers.set("X-Frame-Options", "SAMEORIGIN");
     headers.set("Accept-Ranges", "none");
 
-    const successfulBuffer = await response.arrayBuffer();
-
-    return new NextResponse(successfulBuffer, {
+    return new NextResponse(finalBuffer, {
       status: 200,
       headers,
     });
   } catch (err) {
+    console.error("PDF Proxy Error:", err);
     const errMsg = err instanceof Error ? err.message : String(err);
     return errorResponse(`Server proxy error: ${errMsg}`, 500);
   }

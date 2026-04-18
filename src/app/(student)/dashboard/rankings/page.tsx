@@ -39,41 +39,62 @@ export default function RankingsPage() {
             setLoadingQuizzes(true);
             setLoadingMocks(true);
         });
-        const qRef = ref(db, "rankings");
-        const unsub1 = onValue(qRef, (snapshot) => {
-            const list: RankData[] = [];
-            if (snapshot.exists()) {
-                snapshot.forEach((child) => {
-                    list.push({ ...child.val(), quizId: child.key! });
-                });
-            }
-            const sorted = list.sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0));
-            setQuizRankings(sorted);
-            setLoadingQuizzes(false);
-        }, (error) => {
-            console.error("Error fetching quiz rankings:", error);
-            toast.error("Failed to load quiz leaderboard.");
-            setLoadingQuizzes(false);
-        });
 
-        const mRef = ref(db, "mockRankings");
-        const unsub2 = onValue(mRef, (snapshot) => {
-            const list: RankData[] = [];
-            if (snapshot.exists()) {
-                snapshot.forEach((child) => {
-                    list.push({ ...child.val(), quizId: child.key! });
-                });
-            }
-            const sorted = list.sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0));
-            setMockRankings(sorted);
-            setLoadingMocks(false);
-        }, (error) => {
-            console.error("Error fetching mock rankings:", error);
-            toast.error("Failed to load mock leaderboard.");
-            setLoadingMocks(false);
-        });
+        // Listen for quizzes and mock tests existence
+        let quizIds = new Set<string>();
+        let mockIds = new Set<string>();
+        let rankingsRaw: RankData[] = [];
+        let mockRankingsRaw: RankData[] = [];
 
-        return () => { unsub1(); unsub2(); };
+        const updateStates = () => {
+            setQuizRankings(rankingsRaw.filter(r => quizIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
+            setMockRankings(mockRankingsRaw.filter(r => mockIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
+        };
+
+        const unsubs = [
+            onValue(ref(db, "quizzes"), (s) => {
+                const ids = new Set<string>();
+                s.forEach(c => { ids.add(c.key!); });
+                quizIds = ids;
+                updateStates();
+            }),
+            onValue(ref(db, "mockTests"), (s) => {
+                const ids = new Set<string>();
+                s.forEach(c => { ids.add(c.key!); });
+                mockIds = ids;
+                updateStates();
+            }),
+            onValue(ref(db, "rankings"), (snapshot) => {
+                const list: RankData[] = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        list.push({ ...child.val(), quizId: child.key! });
+                    });
+                }
+                rankingsRaw = list;
+                updateStates();
+                setLoadingQuizzes(false);
+            }, (error) => {
+                console.error("Error fetching quiz rankings:", error);
+                setLoadingQuizzes(false);
+            }),
+            onValue(ref(db, "mockRankings"), (snapshot) => {
+                const list: RankData[] = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        list.push({ ...child.val(), quizId: child.key! });
+                    });
+                }
+                mockRankingsRaw = list;
+                updateStates();
+                setLoadingMocks(false);
+            }, (error) => {
+                console.error("Error fetching mock rankings:", error);
+                setLoadingMocks(false);
+            }),
+        ];
+
+        return () => unsubs.forEach(u => u());
     }, []);
 
     // Effect to reset selection when tab changes or data arrives
