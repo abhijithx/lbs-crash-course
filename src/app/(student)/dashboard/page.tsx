@@ -87,7 +87,7 @@ function LeaderboardSummary() {
                     ))}
 
                     {myEntry && myEntry.rank > 3 && (
-                        <div className="flex items-center gap-3 bg-(--primary)/30 rounded-lg p-2 border border-white/20 mt-4">
+                        <div className="flex items-center gap-3 bg-primary/30 rounded-lg p-2 border border-white/20 mt-4">
                             <div className="h-6 w-6 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-bold">
                                 {myEntry.rank}
                             </div>
@@ -211,7 +211,7 @@ export default function StudentDashboard() {
             {/* Top Row: Welcome & Leaderboard */}
             <div className="grid lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 relative overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-bl from-(--primary)/10 via-transparent to-transparent rounded-full blur-2xl" />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-bl from-primary/10 via-transparent to-transparent rounded-full blur-2xl" />
                     <div className="relative">
                         <h1 className="text-2xl sm:text-3xl font-bold">
                             Welcome back, <span className="gradient-text">{userData?.name?.split(" ")[0]}</span> 👋
@@ -246,7 +246,7 @@ export default function StudentDashboard() {
                         .filter((a) => a.show)
                         .map((action) => (
                             <Link key={action.href} href={action.href}>
-                                <Card className="hover:border-(--primary)/40 hover:shadow-lg hover:shadow-(--primary)/5 transition-all duration-300 cursor-pointer group h-full">
+                                <Card className="hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer group h-full">
                                     <CardContent className="p-4 text-center">
                                         <div
                                             className={`mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br ${action.color} transition-transform duration-300 group-hover:scale-110`}
@@ -288,7 +288,7 @@ export default function StudentDashboard() {
                                     {upcomingClasses.map((cls) => (
                                         <div
                                             key={cls.id}
-                                            className="flex items-center justify-between rounded-xl border border-border p-3.5 transition-colors hover:bg-(--muted)/30"
+                                            className="flex items-center justify-between rounded-xl border border-border p-3.5 transition-colors hover:bg-muted/30"
                                         >
                                             <div className="space-y-1 min-w-0 flex-1">
                                                 <p className="text-sm font-medium truncate">{cls.title}</p>
@@ -337,7 +337,7 @@ export default function StudentDashboard() {
                                         return (
                                             <div key={subj} className="flex items-center gap-3">
                                                 <div className="w-40 text-sm font-medium truncate">{subj}</div>
-                                                <div className="flex-1 h-2 rounded-full bg-(--muted)/30 overflow-hidden">
+                                                <div className="flex-1 h-2 rounded-full bg-muted/30 overflow-hidden">
                                                     <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                                                 </div>
                                                 <div className="w-28 text-right text-xs text-muted-foreground">{v.done}/{v.total} • {pct}%</div>
@@ -372,7 +372,7 @@ export default function StudentDashboard() {
                         ) : (
                             <div className="space-y-3">
                                 {announcements.map((ann) => (
-                                    <div key={ann.id} className="rounded-xl border border-border p-3.5 hover:bg-(--muted)/30 transition-colors">
+                                    <div key={ann.id} className="rounded-xl border border-border p-3.5 hover:bg-muted/30 transition-colors">
                                         <p className="text-sm font-medium">{ann.title}</p>
                                         <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{ann.content}</p>
                                         <p className="mt-2 text-[10px] text-muted-foreground">

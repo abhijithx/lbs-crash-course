@@ -61,20 +61,20 @@ export default function AdminAnnouncementsPage() {
             </div>
 
             {announcements.length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-[var(--muted-foreground)]"><Megaphone className="h-10 w-10 mx-auto mb-2" /><p>No announcements</p></CardContent></Card>
+                <Card><CardContent className="py-12 text-center text-muted-foreground"><Megaphone className="h-10 w-10 mx-auto mb-2" /><p>No announcements</p></CardContent></Card>
             ) : (
                 <div className="space-y-3">{announcements.map((ann) => (
-                    <Card key={ann.id} className="hover:border-[var(--primary)]/20 transition-all">
+                    <Card key={ann.id} className="hover:border-(--primary)/20 transition-all">
                         <CardContent className="p-5">
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1">
                                     <p className="font-semibold">{ann.title}</p>
-                                    <p className="text-sm text-[var(--muted-foreground)] mt-1 whitespace-pre-wrap line-clamp-3">{ann.content}</p>
-                                    <p className="text-xs text-[var(--muted-foreground)] mt-2">{format(new Date(ann.createdAt), "MMM d, yyyy h:mm a")}</p>
+                                    <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap line-clamp-3">{ann.content}</p>
+                                    <p className="text-xs text-muted-foreground mt-2">{format(new Date(ann.createdAt), "MMM d, yyyy h:mm a")}</p>
                                 </div>
                                 <div className="flex gap-2 shrink-0">
                                     <Button variant="outline" size="sm" onClick={() => openEdit(ann)}><Edit className="h-3.5 w-3.5" /></Button>
-                                    <Button variant="outline" size="sm" onClick={() => handleDelete(ann.id)} className="text-[var(--destructive)]"><Trash2 className="h-3.5 w-3.5" /></Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleDelete(ann.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
                                 </div>
                             </div>
                         </CardContent>

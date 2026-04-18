@@ -147,3 +147,10 @@ export interface RankData {
     generatedAt: number;
     entries: RankEntry[];
 }
+export interface SyllabusItem {
+    id: string;
+    subject: string;
+    topic: string;
+    completed?: boolean;
+    updatedAt?: number;
+}

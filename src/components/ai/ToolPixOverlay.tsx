@@ -69,7 +69,7 @@ export default function ToolPixOverlay() {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="h-125 w-87.5 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-xl sm:w-100"
+                        className="flex h-125 w-87.5 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-xl sm:w-100"
                     >
                         {/* Header */}
                         <div className="p-4 gradient-primary text-white flex items-center justify-between shadow-lg">
@@ -115,8 +115,8 @@ export default function ToolPixOverlay() {
                                     className={cn(
                                         "max-w-[85%] p-3 rounded-[1.2rem] text-[13px] leading-relaxed shadow-sm",
                                         msg.role === "user"
-                                            ? "ml-auto rounded-tr-none bg-primary text-white"
-                                            : "rounded-tl-none border border-border bg-white text-foreground"
+                                            ? "ml-auto rounded-tr-none bg-primary text-white shadow-md shadow-primary/20"
+                                            : "rounded-tl-none border border-border bg-muted/60 text-foreground backdrop-blur-sm"
                                     )}
                                 >
                                     <FormattedMessage content={msg.content} role={msg.role === "user" ? "user" : "assistant"} />
@@ -124,7 +124,7 @@ export default function ToolPixOverlay() {
                             ))}
                             {isLoading && (
                                 <div className="flex justify-start">
-                                    <div className="flex min-w-15 items-center justify-center rounded-[1.2rem] rounded-tl-none border border-border bg-white p-3 shadow-sm">
+                                    <div className="flex min-w-15 items-center justify-center rounded-[1.2rem] rounded-tl-none border border-border bg-muted p-3 shadow-sm">
                                         <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                     </div>
                                 </div>
@@ -141,15 +141,15 @@ export default function ToolPixOverlay() {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Type your message..."
-                                    className="rounded-xl border-border focus:border-border focus-visible:ring-0 focus-visible:ring-offset-0"
+                                    className="rounded-full border-border bg-muted/30 focus:border-primary/50 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
                                     disabled={isLoading}
                                 />
                                 <Button
                                     type="submit"
                                     disabled={!input.trim() || isLoading}
-                                    className="gradient-primary border-0 rounded-xl shadow-md px-4 shrink-0"
+                                    className="gradient-primary h-10 w-10 border-0 rounded-full shadow-lg shadow-primary/20 p-0 shrink-0"
                                 >
-                                    <Send className="h-4 w-4" />
+                                    <Send className="h-4.5 w-4.5" />
                                 </Button>
                             </form>
                         </div>

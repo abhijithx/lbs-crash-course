@@ -1,8 +1,11 @@
 User-agent: *
 Allow: /
+Allow: /$
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
-Disallow: /change-password
+Disallow: /player/
+Disallow: /change-password/
 
 Sitemap: https://lbscourse.cetmca.in/sitemap.xml
+Host: lbscourse.cetmca.in

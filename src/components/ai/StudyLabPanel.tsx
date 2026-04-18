@@ -137,7 +137,7 @@ export default function StudyLabPanel({
     const noteText = studyNotes.map((n) => n.content).join("\n");
     const aiText = assistantMessages.join("\n");
     const extracted = extractTopicsFromText(`${noteText}\n${aiText}`);
-    return extracted.length > 0 ? extracted : ["mathematics", "aptitude", "c-programming", "data-structures", "probability"];
+    return extracted.length > 0 ? extracted : ["productivity", "learning", "organization", "planning", "goals"];
   }, [assistantMessages, studyNotes]);
 
   const loadStats = useCallback(() => {

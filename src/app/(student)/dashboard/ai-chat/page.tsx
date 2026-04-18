@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUp, Loader2, Clock, Plus, ChevronDown, Trash2, Copy as CopyIcon, ThumbsUp, ThumbsDown, Menu, Check, RotateCcw, Bookmark, BookmarkCheck, BookOpen, Download, Brain } from "lucide-react";
+import { ArrowUp, Loader2, Clock, Plus, ChevronDown, Trash2, Copy as CopyIcon, ThumbsUp, ThumbsDown, Menu, Check, Bookmark, BookmarkCheck, BookOpen, Download, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,19 +25,8 @@ import {
 
 const MESSAGE_FEEDBACK_STORAGE_KEY = "toolpix_message_feedback";
 const STUDY_NOTES_STORAGE_KEY = "toolpix_study_notes";
-const STARTER_PROMPTS = [
-    "Explain Bayes theorem with a simple solved example.",
-    "Give me a 7-day LBS MCA maths revision plan.",
-    "Teach me quick tricks for probability questions.",
-    "Create 5 aptitude questions and then evaluate my answers."
-];
-const STUDY_TOOL_PROMPTS = [
-    "Create a 30-minute revision sprint with 3 micro-goals for today.",
-    "Generate 10 mixed LBS MCA practice questions with answer key.",
-    "Make a memory sheet of formulas I must revise before mock tests.",
-    "Give me a topic-priority plan based on high-yield exam weightage.",
-    "Start a viva-style rapid fire round and ask one question at a time."
-];
+const STARTER_PROMPTS: string[] = [];
+const STUDY_TOOL_PROMPTS: string[] = [];
 
 type MessageFeedback = "up" | "down";
 type SessionFeedback = Record<string, MessageFeedback>;
@@ -430,46 +419,6 @@ export default function DashboardAIChatPage() {
         }
     }, [sessionStudyNotes]);
 
-    const regenerateLastAnswer = useCallback(async () => {
-        if (!activeSessionId || isLoading) return;
-        if (messages.length < 2) return;
-
-        const last = messages[messages.length - 1];
-        if (last.role !== "assistant") {
-            toast.error("Regenerate works after an assistant reply.");
-            return;
-        }
-
-        const withoutLastAssistant = messages.slice(0, -1);
-        const hasUser = withoutLastAssistant.some((msg) => msg.role === "user");
-        if (!hasUser) {
-            toast.error("No user message found to regenerate from.");
-            return;
-        }
-
-        const optimisticSessions = sessions.map((session) =>
-            session.id === activeSessionId
-                ? { ...session, messages: withoutLastAssistant, updatedAt: Date.now() }
-                : session
-        );
-        setSessions(optimisticSessions);
-        setIsLoading(true);
-
-        try {
-            const aiResponse = await chatWithAI(withoutLastAssistant);
-            const finalMessages: ChatMessage[] = [...withoutLastAssistant, { role: "assistant", content: aiResponse }];
-            updateSession(activeSessionId, finalMessages);
-            setSessions(loadSessions());
-            toast.success("Generated a new answer");
-        } catch {
-            updateSession(activeSessionId, messages);
-            setSessions(loadSessions());
-            toast.error("Could not regenerate right now");
-        } finally {
-            setIsLoading(false);
-        }
-    }, [activeSessionId, isLoading, messages, sessions]);
-
     const sendMessage = useCallback(async (rawInput: string) => {
         if (!rawInput.trim() || isLoading || !activeSessionId) return;
 
@@ -535,7 +484,7 @@ export default function DashboardAIChatPage() {
                         <Menu className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-lg font-semibold tracking-tight text-foreground">ToolPix AI</h1>
+                        <h1 className="text-lg font-semibold tracking-tight text-foreground">AI Assistant</h1>
                     </div>
                 </div>
 
@@ -584,18 +533,6 @@ export default function DashboardAIChatPage() {
                         <Trash2 className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Clear</span>
                     </Button>
-                    <div className="mx-0.5 h-4 w-px bg-border" />
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={regenerateLastAnswer}
-                        disabled={isLoading || !messages.some((m) => m.role === "assistant")}
-                        className="h-9 gap-1.5 rounded-xl border border-border px-3 text-xs font-medium text-muted-foreground transition-all hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <RotateCcw className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Regenerate</span>
-                    </Button>
-                    <div className="mx-0.5 h-4 w-px bg-border" />
                     <Button
                         variant="ghost"
                         size="icon"
@@ -625,39 +562,11 @@ export default function DashboardAIChatPage() {
                                 >
                                     <div className="space-y-3">
                                         <h2 className="text-4xl font-medium leading-tight tracking-tight text-foreground sm:text-5xl">
-                                            What&apos;s on your mind today?
+                                            How can I help you?
                                         </h2>
                                         <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
-                                            Ask anything about your LBS MCA prep, strategy, rankings, or weak topics.
+                                            Type your question below to get started.
                                         </p>
-                                    </div>
-
-                                    <div className="mt-6 flex w-full max-w-3xl flex-wrap items-center justify-center gap-2">
-                                        {STARTER_PROMPTS.map((prompt) => (
-                                            <button
-                                                key={prompt}
-                                                type="button"
-                                                onClick={() => sendMessage(prompt)}
-                                                disabled={isLoading}
-                                                className="rounded-full border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                {prompt}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-3 flex w-full max-w-3xl flex-wrap items-center justify-center gap-2">
-                                        {STUDY_TOOL_PROMPTS.slice(0, 3).map((prompt) => (
-                                            <button
-                                                key={prompt}
-                                                type="button"
-                                                onClick={() => sendMessage(prompt)}
-                                                disabled={isLoading}
-                                                className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                {prompt}
-                                            </button>
-                                        ))}
                                     </div>
 
                                     <form

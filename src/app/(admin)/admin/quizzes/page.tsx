@@ -201,7 +201,7 @@ export default function AdminQuizzesPage() {
             ) : (
                 <div className="space-y-3">
                     {quizzes.map((quiz) => (
-                        <Card key={quiz.id} className="hover:border-(--primary)/20 transition-all">
+                        <Card key={quiz.id} className="hover:border-primary/20 transition-all">
                             <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
                                 <div>
                                     <div className="flex items-center gap-2">

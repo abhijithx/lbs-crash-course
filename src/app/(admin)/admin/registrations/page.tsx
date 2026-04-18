@@ -227,17 +227,17 @@ LBS MCA Team`;
                         <UserPlus className="h-6 w-6 text-amber-500" />
                         Registrations
                     </h1>
-                    <p className="text-[var(--muted-foreground)] mt-1">
+                    <p className="text-muted-foreground mt-1">
                         Review and manage student registrations
                     </p>
                 </div>
 
-                <div className="flex p-1 bg-[var(--muted)]/50 border border-[var(--border)] rounded-lg">
+                <div className="flex p-1 bg-muted/50 border border-border rounded-lg">
                     <button
                         onClick={() => setActiveTab("pending")}
                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${activeTab === "pending"
-                            ? "bg-white text-[var(--foreground)] shadow-sm dark:bg-[var(--background)]"
-                            : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                            ? "bg-white text-foreground shadow-sm dark:bg-background"
+                            : "text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         Pending ({registrations.filter(r => r.status === "pending").length})
@@ -245,8 +245,8 @@ LBS MCA Team`;
                     <button
                         onClick={() => setActiveTab("rejected")}
                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${activeTab === "rejected"
-                            ? "bg-white text-[var(--foreground)] shadow-sm dark:bg-[var(--background)]"
-                            : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                            ? "bg-white text-foreground shadow-sm dark:bg-background"
+                            : "text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         Rejected ({registrations.filter(r => r.status === "rejected").length})
@@ -256,7 +256,7 @@ LBS MCA Team`;
 
             {filteredRegistrations.length === 0 ? (
                 <Card>
-                    <CardContent className="py-12 text-center text-[var(--muted-foreground)]">
+                    <CardContent className="py-12 text-center text-muted-foreground">
                         {activeTab === "pending" ? (
                             <UserPlus className="h-10 w-10 mx-auto mb-2 opacity-50" />
                         ) : (
@@ -267,31 +267,31 @@ LBS MCA Team`;
                     </CardContent>
                 </Card>
             ) : (
-                <div className="rounded-xl border border-[var(--border)] overflow-hidden">
+                <div className="rounded-xl border border-border overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="border-b border-[var(--border)] bg-[var(--muted)]/50">
-                                    <th className="px-4 py-3 text-left font-medium text-[var(--muted-foreground)]">Name</th>
-                                    <th className="px-4 py-3 text-left font-medium text-[var(--muted-foreground)] hidden sm:table-cell">Email</th>
-                                    <th className="px-4 py-3 text-left font-medium text-[var(--muted-foreground)] hidden md:table-cell">Phone</th>
-                                    <th className="px-4 py-3 text-left font-medium text-[var(--muted-foreground)]">Package</th>
-                                    <th className="px-4 py-3 text-left font-medium text-[var(--muted-foreground)] hidden lg:table-cell">Date</th>
-                                    <th className="px-4 py-3 text-right font-medium text-[var(--muted-foreground)]">Action</th>
+                                <tr className="border-b border-border bg-muted/50">
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Email</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Phone</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Package</th>
+                                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">Date</th>
+                                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[var(--border)]">
+                            <tbody className="divide-y divide-border">
                                 {filteredRegistrations.map((reg) => (
-                                    <tr key={reg.id} className="hover:bg-[var(--muted)]/30 transition-colors">
+                                    <tr key={reg.id} className="hover:bg-muted/30 transition-colors">
                                         <td className="px-4 py-3 font-medium">{reg.name}</td>
-                                        <td className="px-4 py-3 hidden sm:table-cell text-[var(--muted-foreground)]">{reg.email}</td>
-                                        <td className="px-4 py-3 hidden md:table-cell text-[var(--muted-foreground)]">{reg.phone}</td>
+                                        <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">{reg.email}</td>
+                                        <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{reg.phone}</td>
                                         <td className="px-4 py-3">
                                             <Badge variant={activeTab === "rejected" ? "secondary" : "outline"} className="text-xs">
                                                 {packageLabel(reg.selectedPackage)}
                                             </Badge>
                                         </td>
-                                        <td className="px-4 py-3 hidden lg:table-cell text-[var(--muted-foreground)] text-xs">
+                                        <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground text-xs">
                                             {format(new Date(reg.submittedAt), "MMM d, yyyy")}
                                         </td>
                                         <td className="px-4 py-3 text-right">
@@ -333,39 +333,39 @@ LBS MCA Team`;
                         <div className="space-y-4 pt-1">
                             <div className="grid grid-cols-2 gap-3 text-xs">
                                 <div className="space-y-1">
-                                    <p className="text-[var(--muted-foreground)] text-[9px] uppercase tracking-wider font-semibold">Full Name</p>
+                                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold">Full Name</p>
                                     <p className="font-bold text-sm">{selectedReg.name}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[var(--muted-foreground)] text-[9px] uppercase tracking-wider font-semibold">Email</p>
+                                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold">Email</p>
                                     <p className="font-medium">{selectedReg.email}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[var(--muted-foreground)] text-[9px] uppercase tracking-wider font-semibold">Phone</p>
+                                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold">Phone</p>
                                     <p className="font-medium">{selectedReg.phone}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[var(--muted-foreground)] text-[9px] uppercase tracking-wider font-semibold">WhatsApp</p>
+                                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold">WhatsApp</p>
                                     <p className="font-medium">{selectedReg.whatsapp}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[var(--muted-foreground)] text-[9px] uppercase tracking-wider font-semibold">Graduation Year</p>
+                                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold">Graduation Year</p>
                                     <p className="font-medium">{selectedReg.graduationYear}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[var(--muted-foreground)] text-[9px] uppercase tracking-wider font-semibold">Package</p>
-                                    <div><Badge variant="outline" className="bg-[var(--primary)]/5 text-[var(--primary)] border-[var(--primary)]/20 text-[10px] py-0">{packageLabel(selectedReg.selectedPackage)}</Badge></div>
+                                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold">Package</p>
+                                    <div><Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[10px] py-0">{packageLabel(selectedReg.selectedPackage)}</Badge></div>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[var(--muted-foreground)] text-[9px] uppercase tracking-wider font-semibold">Submitted</p>
+                                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold">Submitted</p>
                                     <p className="font-medium text-[10px] flex items-center gap-1">
                                         <Clock className="h-2.5 w-2.5" />
                                         {format(new Date(selectedReg.submittedAt), "MMM d, yyyy h:mm a")}
                                     </p>
                                 </div>
-                                <div className="col-span-2 bg-[var(--muted)]/50 p-3 rounded-lg border border-[var(--border)]">
-                                    <p className="text-[9px] text-[var(--muted-foreground)] uppercase tracking-wider font-semibold mb-1">Transaction ID</p>
-                                    <p className="font-mono text-xs break-all font-medium text-[var(--foreground)]">{selectedReg.transactionId || "Not provided"}</p>
+                                <div className="col-span-2 bg-muted/50 p-3 rounded-lg border border-border">
+                                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold mb-1">Transaction ID</p>
+                                    <p className="font-mono text-xs break-all font-medium text-foreground">{selectedReg.transactionId || "Not provided"}</p>
                                 </div>
 
                                 {selectedReg.status === "rejected" && selectedReg.rejectionReason && (
@@ -377,7 +377,7 @@ LBS MCA Team`;
                             </div>
                             <div className="space-y-4">
                                 {selectedReg.screenshotUrl && (
-                                    <div className="rounded-2xl border border-[var(--border)] overflow-hidden bg-zinc-950/5 p-1">
+                                    <div className="rounded-2xl border border-border overflow-hidden bg-zinc-950/5 p-1">
                                         <a
                                             href={selectedReg.screenshotUrl}
                                             target="_blank"
@@ -447,9 +447,9 @@ LBS MCA Team`;
                     {credentials && (
                         <div className="space-y-5 pt-2">
                             <div className="grid grid-cols-1 gap-4">
-                                <div className="bg-[var(--primary)]/5 p-4 rounded-2xl border border-[var(--primary)]/10">
-                                    <p className="text-[10px] text-[var(--primary)] uppercase tracking-[0.2em] font-black mb-1.5">Login ID</p>
-                                    <p className="font-mono text-xl font-bold text-[var(--foreground)]">{credentials.loginId}</p>
+                                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                                    <p className="text-[10px] text-primary uppercase tracking-[0.2em] font-black mb-1.5">Login ID</p>
+                                    <p className="font-mono text-xl font-bold text-foreground">{credentials.loginId}</p>
                                 </div>
                                 <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
                                     <p className="text-[10px] text-zinc-400 uppercase tracking-[0.2em] font-black mb-1.5">Registered Email</p>
@@ -461,11 +461,11 @@ LBS MCA Team`;
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-[var(--border)] overflow-hidden">
-                                <div className="bg-[var(--muted)]/50 px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between">
-                                    <span className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">Email Template</span>
+                            <div className="rounded-2xl border border-border overflow-hidden">
+                                <div className="bg-muted/50 px-4 py-2.5 border-b border-border flex items-center justify-between">
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Email Template</span>
                                 </div>
-                                <pre className="p-4 text-xs text-[var(--foreground)] whitespace-pre-wrap bg-[var(--background)] max-h-48 overflow-y-auto font-mono leading-relaxed CustomScrollbar">
+                                <pre className="p-4 text-xs text-foreground whitespace-pre-wrap bg-background max-h-48 overflow-y-auto font-mono leading-relaxed CustomScrollbar">
                                     {generateEmailTemplate(credentials.name, credentials.loginId, credentials.email, credentials.password)}
                                 </pre>
                             </div>
@@ -484,7 +484,7 @@ LBS MCA Team`;
                                 <Button
                                     variant="outline"
                                     onClick={handleOpenMailClient}
-                                    className="w-full sm:w-auto h-11 rounded-xl px-6 border-[var(--border)]"
+                                    className="w-full sm:w-auto h-11 rounded-xl px-6 border-border"
                                 >
                                     <Mail className="h-4 w-4 mr-2" /> Send Email
                                 </Button>
@@ -509,7 +509,7 @@ LBS MCA Team`;
                                 onChange={(e) => setRejectionReason(e.target.value)}
                                 placeholder="e.g., Payment screenshot is not clear, or transaction ID mismatch..."
                                 rows={4}
-                                className="rounded-xl border-[var(--border)] focus:ring-2 focus:ring-red-500/20"
+                                className="rounded-xl border-border focus:ring-2 focus:ring-red-500/20"
                             />
                         </div>
                         <DialogFooter className="gap-3 sm:gap-0">

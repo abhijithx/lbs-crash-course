@@ -90,7 +90,7 @@ export default function AdminUsersPage() {
         const filtered = filterUsers(list);
         if (filtered.length === 0) {
             return (
-                <div className="text-center py-12 text-[var(--muted-foreground)]">
+                <div className="text-center py-12 text-muted-foreground">
                     <Users className="h-10 w-10 mx-auto mb-2" />
                     <p>No users found</p>
                 </div>
@@ -100,8 +100,8 @@ export default function AdminUsersPage() {
             <div className="grid gap-4">
                 {filtered.map((user) => (
                     <Card key={user.uid} className={cn(
-                        "hover:border-[var(--primary)]/20 transition-all",
-                        user.banned && "border-red-500/50 bg-red-500/[0.02]"
+                        "hover:border-(--primary)/20 transition-all",
+                        user.banned && "border-red-500/50 bg-red-500/2"
                     )}>
                         <CardContent className="p-0">
                             <div className="p-4 flex items-center justify-between gap-4">
@@ -122,7 +122,7 @@ export default function AdminUsersPage() {
                                                 <Badge variant="destructive" className="text-[10px] h-4 uppercase tracking-tighter">Banned</Badge>
                                             )}
                                         </div>
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm text-[var(--muted-foreground)]">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm text-muted-foreground">
                                             <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{user.email}</span>
                                             <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />{user.phone}</span>
                                         </div>
@@ -147,8 +147,8 @@ export default function AdminUsersPage() {
                                                 <MoreVertical className="h-5 w-5" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-56 rounded-xl p-2 shadow-xl border-[var(--border)]">
-                                            <DropdownMenuLabel className="text-xs uppercase text-[var(--muted-foreground)] px-2">Actions</DropdownMenuLabel>
+                                        <DropdownMenuContent className="w-56 rounded-xl p-2 shadow-xl border-border">
+                                            <DropdownMenuLabel className="text-xs uppercase text-muted-foreground px-2">Actions</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
 
                                             <DropdownMenuItem
@@ -201,23 +201,23 @@ export default function AdminUsersPage() {
                         <Users className="h-6 w-6 text-green-500" />
                         User Management
                     </h1>
-                    <p className="text-[var(--muted-foreground)] mt-1">
+                    <p className="text-muted-foreground mt-1">
                         Manage {verified.length} verified and {rejected.length} rejected students
                     </p>
                 </div>
                 <div className="relative w-full sm:w-80">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)]" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search by name, email or phone..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 h-11 rounded-xl bg-[var(--card)]"
+                        className="pl-9 h-11 rounded-xl bg-card"
                     />
                 </div>
             </div>
 
             <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-                <TabsList className="p-1.5 h-auto bg-[var(--muted)]/50 border gap-2 rounded-2xl">
+                <TabsList className="p-1.5 h-auto bg-muted/50 border gap-2 rounded-2xl">
                     <TabsTrigger value="verified" className="px-6 py-2 rounded-xl data-[state=active]:shadow-md">
                         Verified ({verified.length})
                     </TabsTrigger>

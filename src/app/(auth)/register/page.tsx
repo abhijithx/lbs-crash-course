@@ -33,8 +33,8 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary";
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
 const basePackageOptions = [
-    { value: "recorded_only", label: "Recorded Only - ₹299" },
-    { value: "live_only", label: "Live Only - ₹299" },
+    { value: "recorded_only", label: "Recorded Only - ₹350" },
+    { value: "live_only", label: "Live Only - ₹350" },
     { value: "both", label: "Live + Recorded (Both) - ₹499" },
 ];
 
@@ -44,15 +44,17 @@ function RegisterForm() {
     // Evaluate options dynamically inside the component to ensure process.env reads correctly client-side
     const liveOnlyEnabled = process.env.NEXT_PUBLIC_LIVE_ONLY === "true";
     const recordOnlyEnabled = process.env.NEXT_PUBLIC_RECORD_ONLY === "true";
+    const bothEnabled = process.env.NEXT_PUBLIC_BOTH_PACKAGE === "true";
 
     const packageOptions = basePackageOptions.filter((pkg) => {
         if (pkg.value === "live_only") return liveOnlyEnabled;
         if (pkg.value === "recorded_only") return recordOnlyEnabled;
-        return true; // 'both' is always visible unless user wants it otherwise
+        if (pkg.value === "both") return bothEnabled;
+        return true;
     });
 
     const initialPackage = searchParams.get("package") || "";
-    const PACKAGE_PRICES: Record<string, number> = { recorded_only: 299, live_only: 299, both: 499 };
+    const PACKAGE_PRICES: Record<string, number> = { recorded_only: 350, live_only: 350, both: 499 };
     const [formData, setFormData] = useState({
         name: "",
         email: "",
