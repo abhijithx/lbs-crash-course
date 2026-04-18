@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild, limitToLast } from "firebase/database";
 import { db } from "@/lib/firebase";
-import type { LiveClass, Announcement } from "@/lib/types";
+import type { LiveClass, Announcement, RankData, RankEntry } from "@/lib/types";
 import {
     Video,
     MonitorPlay,
@@ -22,21 +22,6 @@ import {
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
-interface RankEntry {
-    userId: string;
-    userName: string;
-    score: number;
-    totalQuestions: number;
-    rank: number;
-}
-
-interface RankData {
-    quizId: string;
-    quizTitle: string;
-    entries: RankEntry[];
-    generatedAt: number;
-}
 
 // Add this component before the main DashboardPage
 function LeaderboardSummary() {

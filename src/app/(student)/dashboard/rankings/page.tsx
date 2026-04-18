@@ -13,12 +13,7 @@ import { toast } from "sonner";
 
 import { Select } from "@/components/ui/select";
 
-interface RankData {
-    quizId: string;
-    quizTitle: string;
-    entries: { userName: string; score: number; totalQuestions: number; rank: number; userId: string }[];
-    generatedAt?: number;
-}
+import type { RankData, RankEntry } from "@/lib/types";
 
 export default function RankingsPage() {
     const { userData } = useAuth();
@@ -47,8 +42,8 @@ export default function RankingsPage() {
         let mockRankingsRaw: RankData[] = [];
 
         const updateStates = () => {
-            setQuizRankings(rankingsRaw.filter(r => quizIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
-            setMockRankings(mockRankingsRaw.filter(r => mockIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
+            setQuizRankings(rankingsRaw.filter(r => r.quizId && quizIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
+            setMockRankings(mockRankingsRaw.filter(r => r.quizId && mockIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
         };
 
         const unsubs = [
@@ -68,7 +63,11 @@ export default function RankingsPage() {
                 const list: RankData[] = [];
                 if (snapshot.exists()) {
                     snapshot.forEach((child) => {
-                        list.push({ ...child.val(), quizId: child.key! });
+                        list.push({ 
+                            ...child.val(), 
+                            quizId: child.key!,
+                            generatedAt: child.val().generatedAt || 0
+                        });
                     });
                 }
                 rankingsRaw = list;
@@ -82,7 +81,11 @@ export default function RankingsPage() {
                 const list: RankData[] = [];
                 if (snapshot.exists()) {
                     snapshot.forEach((child) => {
-                        list.push({ ...child.val(), quizId: child.key! });
+                        list.push({ 
+                            ...child.val(), 
+                            quizId: child.key!,
+                            generatedAt: child.val().generatedAt || 0
+                        });
                     });
                 }
                 mockRankingsRaw = list;
@@ -102,18 +105,18 @@ export default function RankingsPage() {
         startTransition(() => {
             if (tab === "quizzes" && quizRankings.length > 0) {
                 if (!selectedId || !quizRankings.find(r => r.quizId === selectedId)) {
-                    setSelectedId(quizRankings[0].quizId);
+                    setSelectedId(quizRankings[0].quizId || "");
                 }
             } else if (tab === "mockTests" && mockRankings.length > 0) {
                 if (requestedAiPracticeId) {
                     const requested = mockRankings.find((ranking) => ranking.quizId === requestedAiPracticeId);
                     if (requested && selectedId !== requested.quizId) {
-                        setSelectedId(requested.quizId);
+                        setSelectedId(requested.quizId || "");
                         return;
                     }
                 }
                 if (!selectedId || !mockRankings.find(r => r.quizId === selectedId)) {
-                    setSelectedId(mockRankings[0].quizId);
+                    setSelectedId(mockRankings[0].quizId || "");
                 }
             } else if ((tab === "quizzes" && quizRankings.length === 0) || (tab === "mockTests" && mockRankings.length === 0)) {
                 setSelectedId("");
@@ -122,7 +125,7 @@ export default function RankingsPage() {
     }, [tab, quizRankings, mockRankings, requestedAiPracticeId, selectedId]);
 
     const aiPracticeRankings = useMemo(
-        () => mockRankings.filter((item) => item.quizId.startsWith("ai-practice-")),
+        () => mockRankings.filter((item) => item.quizId && item.quizId.startsWith("ai-practice-")),
         [mockRankings]
     );
 
@@ -138,7 +141,7 @@ export default function RankingsPage() {
 
         const target = withMe || aiPracticeRankings[0];
         setTab("mockTests");
-        setSelectedId(target.quizId);
+        setSelectedId(target.quizId || "");
         toast.success("Opened AI Practice leaderboard");
     };
 
@@ -206,7 +209,7 @@ export default function RankingsPage() {
     const activeRanking = currentRankings.find(r => r.quizId === selectedId);
 
     const rankingOptions = currentRankings.map(r => ({
-        value: r.quizId,
+        value: r.quizId || "",
         label: r.quizTitle
     }));
 

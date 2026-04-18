@@ -1,7 +1,61 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import Script from "next/script";
+
+const courseSchema = {
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "LBS MCA Entrance Crash Course 2025",
+  "description": "Comprehensive preparation program for Kerala LBS MCA Entrance. Includes live classes, recorded lectures, weekly quizzes, and full-length mock tests.",
+  "provider": {
+    "@type": "Organization",
+    "name": "LBS MCA",
+    "sameAs": "https://lbscourse.cetmca.in"
+  },
+  "courseCode": "LBS-MCA-2025",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "online",
+    "courseWorkload": "PT10H",
+    "instructor": {
+      "@type": "Person",
+      "name": "Expert MCA Mentors"
+    }
+  }
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is included in the LBS MCA Entrance Crash Course?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The course includes live interactive classes, recorded and sorted video lectures, weekly subject-wise quizzes, full-length mock tests with national ranking, and push notifications for class alerts."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I access recorded classes if I miss the live session?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, all live sessions are recorded and made available in our library for students to re-watch at any time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does the platform provide mock tests for LBS MCA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Absolutely. We provide comprehensive mock tests that simulate the actual LBS MCA Exam pattern, including rank tracking to help you gauge your performance."
+      }
+    }
+  ]
+};
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -74,14 +128,14 @@ const stats = [
 const packages = [
   {
     name: "Recorded Only",
-    price: "Affordable",
+    price: "₹350",
     description: "Access all recorded video lectures and study materials",
     features: ["Full recorded class library", "Weekly quizzes", "Mock tests", "Rank tracking", "Push notifications"],
     highlighted: false,
   },
   {
     name: "Live + Recorded",
-    price: "Best Value",
+    price: "₹499",
     description: "Complete access to both live and recorded classes",
     features: [
       "Everything in Recorded",
@@ -94,7 +148,7 @@ const packages = [
   },
   {
     name: "Live Only",
-    price: "Interactive",
+    price: "₹350",
     description: "Join live classes with real-time interaction",
     features: ["Live interactive classes", "Live class recordings", "Weekly quizzes", "Mock tests", "Push notifications"],
     highlighted: false,
@@ -139,93 +193,20 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background">
       <Script id="course-schema" type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Course",
-            "name": "LBS MCA Entrance Examination Comprehensive Coaching",
-            "description": "Expert online coaching for Kerala LBS MCA Entrance Examination. Includes live interactive classes, HD recorded lectures, mock tests according to LBS pattern, and previous year paper discussions.",
-            "provider": {
-              "@type": "Organization",
-              "name": "LBS MCA",
-              "sameAs": "https://lbscourse.cetmca.in"
-            },
-            "offers": {
-              "@type": "Offer",
-              "category": "Paid",
-              "priceCurrency": "INR"
-            },
-            "hasCourseInstance": {
-              "@type": "CourseInstance",
-              "courseMode": "Online",
-              "courseWorkload": "Complete preparation for LBS Entrance"
-            }
-          })
+          __html: JSON.stringify(courseSchema)
         }}
       />
       <Script id="faq-schema" type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "What does the LBS MCA Entrance course include?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Live classes, recorded lectures, quizzes, mock tests, previous year papers and rank tracking."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Is LBS MCA prospectus available?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Yes, our course covers all topics from the official LBS MCA prospectus and syllabus."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What is the LBS MCA exam timing?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "The LBS MCA entrance exam is typically conducted in April/May. Our platform provides timed mock tests to help you prepare for the actual exam schedule."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "How to apply for LBS MCA?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Applications are submitted through the official LBS Centre for Science and Technology website. Our platform helps you prepare thoroughly for the entrance exam."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Is the platform mobile friendly?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Yes. The entire platform is optimized for mobile with secure video playback."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What is the syllabus for LBS MCA Entrance?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "The LBS MCA syllabus includes Mathematics, Statistics, Quantitative Aptitude, Logical Reasoning, English, and General Knowledge. Our comprehensive course covers all subjects."
-                }
-              }
-            ]
-          })
+          __html: JSON.stringify(faqSchema)
         }}
       />
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-primary/90 backdrop-blur-xl border-b border-border text-white transition-all duration-300">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg group-hover:scale-105 transition-transform duration-300">
-              <GraduationCap className="h-6 w-6 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+              <Image src="/icon.png" alt="LBS MCA Logo" width={40} height={40} className="h-full w-full object-contain" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">LBS MCA</span>
           </Link>
@@ -600,7 +581,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Email Us</div>
-                    <div className="text-lg font-semibold text-foreground">support@cetmca.in</div>
+                    <div className="text-lg font-semibold text-foreground">cetmca2025@gmail.com</div>
                   </div>
                 </div>
 
@@ -610,7 +591,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">WhatsApp Support</div>
-                    <div className="text-lg font-semibold text-foreground">+91 97477 22003</div>
+                    <div className="text-lg font-semibold text-foreground">+91 70128 23414</div>
                   </div>
                 </div>
 
@@ -620,7 +601,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Response Time</div>
-                    <div className="text-lg font-semibold text-foreground">Usually within 1 hour</div>
+                    <div className="text-lg font-semibold text-foreground">Usually within 12 hour</div>
                   </div>
                 </div>
               </div>
@@ -643,7 +624,7 @@ export default function LandingPage() {
                 </h3>
 
                 <div className="space-y-5">
-                  <Link href="https://wa.me/919747722003" target="_blank" className="block transform transition-transform hover:-translate-y-1">
+                  <Link href="https://wa.me/917012823414" target="_blank" className="block transform transition-transform hover:-translate-y-1">
                     <Button className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white border-0 h-14 rounded-2xl text-lg font-bold shadow-lg shadow-green-500/20">
                       Chat on WhatsApp
                       <MessageCircle className="ml-2 h-6 w-6" />

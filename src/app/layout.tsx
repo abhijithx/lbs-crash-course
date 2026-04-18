@@ -21,29 +21,25 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://lbscourse.cetmca.in"),
-  applicationName: "LBS MCA",
+  applicationName: "LBS MCA Entrance Platform",
   title: {
-    default: "LBS MCA Entrance Examination - LBS Centre for Science and Technology",
-    template: "%s | LBS MCA Entrance",
+    default: "LBS MCA Entrance Preparation - Official Training for Kerala MCA Aspirants",
+    template: "%s | LBS MCA Entrance Preparation",
   },
   description:
-    "Prepare for LBS MCA Entrance Examination with our comprehensive online coaching program. Access live classes, recorded lectures, mock tests, and previous year papers. Official LBS Centre for Science and Technology MCA preparation platform.",
+    "Master the LBS MCA Entrance Examination with the official Kerala preparation platform. Access live classes, interactive quizzes, comprehensive mock tests, and previous year sorted papers. Join the community of successful MCA students today.",
   keywords: [
-    "LBS MCA Entrance Examination",
-    "LBS Centre for Science and Technology",
-    "MCA entrance exam",
-    "Kerala MCA",
-    "MCA entrance coaching",
-    "MCA mock tests",
-    "LBS MCA syllabus",
-    "LBS MCA previous papers",
-    "MCA preparation",
-    "Kerala MCA allotment",
-    "MCA online coaching",
-    "MCA crash course",
+    "LBS MCA Entrance 2025",
+    "LBS Center MCA preparation",
+    "Kerala MCA Entrance Coaching",
+    "MCA Entrance Kerala Syllabus",
+    "LBS MCA Previous Year Papers",
+    "MCA Entrance Mock Test Kerala",
+    "LBS MCA Mock Test series",
+    "Kerala State MCA Entrance Exam",
   ],
-  authors: [{ name: "LBS MCA" }],
-  creator: "LBS MCA",
+  authors: [{ name: "LBS MCA Entrance Team", url: "https://lbscourse.cetmca.in" }],
+  creator: "LBS MCA Team",
   publisher: "LBS MCA",
   formatDetection: {
     email: false,
@@ -51,40 +47,45 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/ai-logo.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+      { url: "/favicon.ico", sizes: "48x48" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
   alternates: {
     canonical: "/",
   },
   category: "education",
+  classification: "Educational Coaching",
   verification: {
     google: "google83f8616f6a5b1974",
   },
   openGraph: {
     type: "website",
     url: "/",
-    title: "LBS MCA Entrance Examination | LBS Centre for Science and Technology",
+    title: "Official LBS MCA Entrance Preparation Platform",
     description:
-      "Prepare for LBS MCA Entrance Examination with live classes, recorded lectures, quizzes, mock tests, and previous year papers.",
-    siteName: "LBS MCA",
-    countryName: "India",
-    locale: "en_US",
+      "Elite coaching for Kerala LBS MCA aspirants. Live sessions, recorded classes, and rank-boosting mock tests. Start your preparation now.",
+    siteName: "LBS MCA Entrance Platform",
+    locale: "en_IN",
     images: [
       {
-        url: "/ai-logo.png",
+        url: "/icon.png",
         width: 512,
         height: 512,
-        alt: "LBS MCA Entrance Preparation Platform",
+        alt: "LBS MCA Entrance Preparation Official Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "LBS MCA Entrance Examination | LBS Centre for Science and Technology",
-    description: "Prepare for LBS MCA entrance with live + recorded classes, quizzes, mock tests and rank tracking.",
-    images: ["/ai-logo.png"],
+    title: "Kerala LBS MCA Entrance Preparation Platform",
+    description: "Launch your MCA career with expert guidance. Comprehensive LBS MCA coaching with mock tests and live classes.",
+    images: ["/icon.png"],
+    creator: "@lbsmca",
   },
   robots: {
     index: true,
@@ -105,8 +106,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
 };
-
-
 
 export default function RootLayout({
   children,
@@ -136,6 +135,46 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Script id="local-business-schema" type="application/ld+json" strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              "name": "LBS MCA Entrance Preparation Center",
+              "image": "https://lbscourse.cetmca.in/icon.png",
+              "@id": "https://lbscourse.cetmca.in",
+              "url": "https://lbscourse.cetmca.in",
+              "telephone": "+917012823414",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Kannur",
+                "addressLocality": "Kannur",
+                "addressRegion": "Kerala",
+                "postalCode": "670001",
+                "addressCountry": "IN"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 11.8745,
+                "longitude": 75.3704
+              },
+              "openingHoursSpecification": {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday"
+                ],
+                "opens": "00:00",
+                "closes": "23:59"
+              }
+            })
+          }}
+        />
         <Script id="org-schema" type="application/ld+json" strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -145,17 +184,14 @@ export default function RootLayout({
               "alternateName": "LBS Centre for Science and Technology",
               "url": "https://lbscourse.cetmca.in",
               "description": "Premier online learning platform for LBS MCA Entrance Examination preparation. Comprehensive MCA coaching with live classes, recorded lectures, mock tests, and previous year papers.",
-              "logo": "https://lbscourse.cetmca.in/logo.png",
+              "logo": "https://lbscourse.cetmca.in/icon.png",
               "contactPoint": {
                 "@type": "ContactPoint",
-                "telephone": "+91-9747722003",
+                "telephone": "+917012823414",
                 "contactType": "customer service",
-                "email": "support@cetmca.in",
+                "email": "cetmca2025@gmail.com",
                 "availableLanguage": ["English", "Malayalam"]
-              },
-              "sameAs": [
-                "https://lbscourse.cetmca.in"
-              ]
+              }
             })
           }}
         />

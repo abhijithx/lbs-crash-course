@@ -99,7 +99,7 @@ export default function HistoryOverlay({
                         <div className="rounded-3xl border border-border/60 bg-card/70 shadow-2xl shadow-black/30">
                             <header className="flex items-center gap-3 border-b border-border/60 px-3 py-3 sm:px-5">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/70 p-2">
-                                    <Image src="/ai-logo.png" alt="AI History" width={30} height={30} className="h-full w-full object-contain" />
+                                    <Image src="/favicon-96x96.png" alt="AI History" width={30} height={30} className="h-full w-full object-contain" />
                                 </div>
                                 <div className="relative flex-1">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

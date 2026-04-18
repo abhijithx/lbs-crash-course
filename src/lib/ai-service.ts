@@ -307,7 +307,7 @@ export async function chatWithAI(messages: ChatMessage[]) {
 
     try {
         const packedPrompt = buildPackedPrompt(messages);
-        const response = await fetch(API_URL, {
+        const response = await fetch("/api/ai/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

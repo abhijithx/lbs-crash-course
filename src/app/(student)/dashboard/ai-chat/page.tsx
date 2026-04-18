@@ -25,8 +25,18 @@ import {
 
 const MESSAGE_FEEDBACK_STORAGE_KEY = "toolpix_message_feedback";
 const STUDY_NOTES_STORAGE_KEY = "toolpix_study_notes";
-const STARTER_PROMPTS: string[] = [];
-const STUDY_TOOL_PROMPTS: string[] = [];
+const STARTER_PROMPTS: string[] = [
+    "Give me a 30-day LBS MCA study roadmap",
+    "What are the most repeated topics in C Programming?",
+    "Explain the LBS MCA marking scheme and strategy",
+    "Predict my rank based on my mock scores"
+];
+const STUDY_TOOL_PROMPTS: string[] = [
+    "Create a 10-question practice quiz on Data Structures",
+    "Summarize my weak areas in Mathematics",
+    "Explain the concept of Pointers in C with examples",
+    "Suggest a revision plan for the next 7 days"
+];
 
 type MessageFeedback = "up" | "down";
 type SessionFeedback = Record<string, MessageFeedback>;
