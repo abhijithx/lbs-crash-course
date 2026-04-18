@@ -8,10 +8,10 @@ import { motion } from "framer-motion";
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-[var(--background)] py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <Link href="/">
-          <Button variant="ghost" className="mb-8 hover:bg-[var(--secondary)]">
+          <Button variant="ghost" className="mb-8 hover:bg-secondary">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Button>
@@ -23,24 +23,24 @@ export default function PrivacyPolicyPage() {
           transition={{ duration: 0.5 }}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-12 w-12 rounded-2xl bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)]">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
               <Shield className="h-6 w-6" />
             </div>
-            <h1 className="text-4xl font-bold text-[var(--foreground)]">Privacy Policy</h1>
+            <h1 className="text-4xl font-bold text-foreground">Privacy Policy</h1>
           </div>
 
-          <div className="prose prose-slate max-w-none text-[var(--muted-foreground)] space-y-6">
+          <div className="prose prose-slate max-w-none text-muted-foreground space-y-6">
             <p>Last updated: March 2025</p>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--foreground)]">1. Introduction</h2>
+              <h2 className="text-2xl font-bold text-foreground">1. Introduction</h2>
               <p>
                 Welcome to LBS MCA Entrance Learning Platform. We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our platform.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--foreground)]">2. Information We Collect</h2>
+              <h2 className="text-2xl font-bold text-foreground">2. Information We Collect</h2>
               <p>
                 We collect information that you provide directly to us when you register for a course, including:
               </p>
@@ -53,7 +53,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--foreground)]">3. How We Use Your Information</h2>
+              <h2 className="text-2xl font-bold text-foreground">3. How We Use Your Information</h2>
               <p>We use the collected data for various purposes, including:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Providing and maintaining our service</li>
@@ -65,21 +65,21 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--foreground)]">4. Data Security</h2>
+              <h2 className="text-2xl font-bold text-foreground">4. Data Security</h2>
               <p>
                 We implement a variety of security measures to maintain the safety of your personal information. However, no method of transmission over the Internet or method of electronic storage is 100% secure.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--foreground)] text-pretty tracking-tight">5. Third-Party Services</h2>
+              <h2 className="text-2xl font-bold text-foreground text-pretty tracking-tight">5. Third-Party Services</h2>
               <p>
                 We use third-party services like Firebase, Cloudinary, and OneSignal to provide our platform&apos;s functionality. These services have their own privacy policies.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--foreground)]">6. Contact Us</h2>
+              <h2 className="text-2xl font-bold text-foreground">6. Contact Us</h2>
               <p>
                 If you have any questions about this Privacy Policy, please contact us at:
                 <br />

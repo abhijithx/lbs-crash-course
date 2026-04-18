@@ -60,10 +60,10 @@ export default function ContactPage() {
 
               <div className="space-y-4">
                 {[
-                  { icon: Mail, title: "Email Us", detail: "support@cetmca.in", color: "bg-primary/10 text-primary" },
-                  { icon: MessageCircle, title: "WhatsApp Support", detail: "+91 97477 22003", color: "bg-teal-500/10 text-teal-600" },
-                  { icon: Phone, title: "Call Us", detail: "+91 97477 22003", color: "bg-blue-500/10 text-blue-600" },
-                  { icon: MapPin, title: "Our Office", detail: "Thiruvananthapuram, Kerala, India", color: "bg-amber-500/10 text-amber-600" }
+                  { icon: Mail, title: "Email Us", detail: "support@lbscourse.cetmca.in", color: "bg-primary/10 text-primary" },
+                  { icon: MessageCircle, title: "WhatsApp", detail: "+919747722003", color: "bg-teal-500/10 text-teal-600" },
+                  { icon: Phone, title: "Call Us", detail: "+919747722003", color: "bg-blue-500/10 text-blue-600" },
+                  { icon: MapPin, title: "Our Office", detail: "Kannur, Kerala, India", color: "bg-amber-500/10 text-amber-600" }
                 ].map((item, i) => (
                   <motion.div
                     key={item.title}

@@ -109,13 +109,15 @@ export default function LandingPage() {
 
   const liveOnlyEnabled = process.env.NEXT_PUBLIC_LIVE_ONLY === "true";
   const recordOnlyEnabled = process.env.NEXT_PUBLIC_RECORD_ONLY === "true";
+  const bothEnabled = process.env.NEXT_PUBLIC_BOTH_PACKAGE === "true";
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const activePackages = packages.filter((pkg) => {
     if (pkg.name === "Live Only") return liveOnlyEnabled;
     if (pkg.name === "Recorded Only") return recordOnlyEnabled;
-    return true; // "Live + Recorded" is always visible
+    if (pkg.name === "Live + Recorded") return bothEnabled;
+    return true;
   });
 
 
@@ -710,7 +712,7 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2024 LBS MCA. All rights reserved.
+            © 2026 LBS MCA. All rights reserved.
           </p>
         </div>
       </footer>

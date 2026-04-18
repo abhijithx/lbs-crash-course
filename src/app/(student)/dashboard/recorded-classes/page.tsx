@@ -549,7 +549,6 @@ export default function RecordedClassesPage() {
         const match = classes.find(c => c.id === id);
         if (match) {
             processedVideoIdRef.current = id;
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedVideo(match);
             // Clean up the query param to prevent re-opening
             router.replace("/dashboard/recorded-classes");

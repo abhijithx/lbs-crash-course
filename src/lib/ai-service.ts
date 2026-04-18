@@ -1,5 +1,15 @@
-import { ref, get } from "firebase/database";
+import { ref, get, query, orderByChild, equalTo, DataSnapshot } from "firebase/database";
 import { db } from "./firebase";
+import { 
+    UserData, 
+    Quiz, 
+    MockTest, 
+    QuizAttempt, 
+    MockAttempt, 
+    RankData, 
+    Announcement, 
+    SyllabusItem 
+} from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 const DEVELOPER = process.env.NEXT_PUBLIC_AI_DEVELOPER || "Ajmal U K";
@@ -12,13 +22,6 @@ export interface ChatMessage {
 const MAX_PROMPT_CHARS = 14000;
 const MAX_SYSTEM_CHARS = 6500;
 const MAX_MESSAGE_CHARS = 1800;
-
-type QuizMeta = { subject?: string };
-type AttemptRow = { userId?: string; quizId?: string; mockTestId?: string; score?: number; totalQuestions?: number };
-type RankEntryRow = { userId?: string; rank?: number; score?: number; totalQuestions?: number };
-type RankSnapshotData = { quizTitle?: string; entries?: RankEntryRow[] };
-type AnnouncementRow = { title?: string; content?: string; createdAt?: number };
-type SyllabusRow = { subject?: string; completed?: boolean };
 
 function buildFallbackResponse(messages: ChatMessage[]) {
     const lastUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content || "";
@@ -133,29 +136,46 @@ function stripAssistantNamePrefixes(text: string) {
 
 export async function getUserContext(uid: string) {
     try {
-        const [userSnap, quizSnap, mockSnap, quizAttemptsSnap, mockAttemptsSnap, rankingsSnap, mockRankingsSnap, announcementsSnap, syllabusSnap] = await Promise.all([
+        const fetchTasks = [
             get(ref(db, `users/${uid}`)),
             get(ref(db, "quizzes")),
             get(ref(db, "mockTests")),
-            get(ref(db, "quizAttempts")),
-            get(ref(db, "mockAttempts")),
+            get(query(ref(db, "quizAttempts"), orderByChild("userId"), equalTo(uid))),
+            get(query(ref(db, "mockAttempts"), orderByChild("userId"), equalTo(uid))),
             get(ref(db, "rankings")),
             get(ref(db, "mockRankings")),
             get(ref(db, "announcements")),
             get(ref(db, "syllabus"))
-        ]);
+        ];
 
-        const userData = userSnap.val();
+        const results = await Promise.allSettled(fetchTasks);
+        
+        const getSnap = (index: number): DataSnapshot | null => {
+            const res = results[index];
+            return res.status === "fulfilled" ? res.value : null;
+        };
+
+        const userSnap = getSnap(0);
+        const quizSnap = getSnap(1);
+        const mockSnap = getSnap(2);
+        const quizAttemptsSnap = getSnap(3);
+        const mockAttemptsSnap = getSnap(4);
+        const rankingsSnap = getSnap(5);
+        const mockRankingsSnap = getSnap(6);
+        const announcementsSnap = getSnap(7);
+        const syllabusSnap = getSnap(8);
+
+        const userData = userSnap?.val() as UserData | null;
 
         // Map quizzes/mocks for subject lookup
-        const quizzes: Record<string, QuizMeta> = {};
-        if (quizSnap.exists()) quizSnap.forEach(c => { quizzes[c.key!] = c.val() as QuizMeta; });
-        if (mockSnap.exists()) mockSnap.forEach(c => { quizzes[c.key!] = c.val() as QuizMeta; });
+        const quizMetaMap: Record<string, { subject: string }> = {};
+        quizSnap?.forEach(c => { quizMetaMap[c.key!] = { subject: (c.val() as Quiz).subject }; });
+        mockSnap?.forEach(c => { quizMetaMap[c.key!] = { subject: (c.val() as MockTest).subject }; });
 
         const performanceBySubject: Record<string, { totalScore: number, totalQuestions: number, attempts: number, history: number[] }> = {};
 
-        const processAttempt = (val: AttemptRow, quizId: string) => {
-            const subject = quizzes[quizId]?.subject || "General";
+        const processAttempt = (val: QuizAttempt | MockAttempt, quizId: string) => {
+            const subject = quizMetaMap[quizId]?.subject || "General";
             if (!performanceBySubject[subject]) {
                 performanceBySubject[subject] = { totalScore: 0, totalQuestions: 0, attempts: 0, history: [] };
             }
@@ -169,28 +189,24 @@ export async function getUserContext(uid: string) {
             performanceBySubject[subject].history.push(accuracy);
         };
 
-        if (quizAttemptsSnap.exists()) {
-            quizAttemptsSnap.forEach(child => {
-                const val = child.val() as AttemptRow;
-                if (val.userId === uid && val.quizId) processAttempt(val, val.quizId);
-            });
-        }
+        quizAttemptsSnap?.forEach(child => {
+            const val = child.val() as QuizAttempt;
+            if (val.quizId) processAttempt(val, val.quizId);
+        });
 
-        if (mockAttemptsSnap.exists()) {
-            mockAttemptsSnap.forEach(child => {
-                const val = child.val() as AttemptRow;
-                const quizId = val.mockTestId || val.quizId;
-                if (val.userId === uid && quizId) processAttempt(val, quizId);
-            });
-        }
+        mockAttemptsSnap?.forEach(child => {
+            const val = child.val() as MockAttempt;
+            const quizId = val.mockTestId || val.quizId;
+            if (quizId) processAttempt(val, quizId);
+        });
 
         // Extract Rankings
         let globalRankInfo = "";
-        const extractRank = (snap: { exists: () => boolean; forEach: (cb: (rankSnap: { val: () => RankSnapshotData }) => void) => void }, label: string) => {
+        const extractRank = (snap: DataSnapshot | null, label: string) => {
             let info = "";
-            if (snap.exists()) {
+            if (snap && snap.exists()) {
                 snap.forEach((quizRankSnap) => {
-                    const data = quizRankSnap.val();
+                    const data = quizRankSnap.val() as RankData;
                     const entries = data.entries || [];
                     const myEntry = entries.find((e) => e.userId === uid);
                     if (myEntry) {
@@ -228,9 +244,9 @@ export async function getUserContext(uid: string) {
 
         // Extract Announcements
         let activeAnnouncements = "";
-        if (announcementsSnap.exists()) {
-            const list: AnnouncementRow[] = [];
-            announcementsSnap.forEach(c => { list.push(c.val() as AnnouncementRow); });
+        if (announcementsSnap && announcementsSnap.exists()) {
+            const list: Announcement[] = [];
+            announcementsSnap.forEach(c => { list.push(c.val() as Announcement); });
             activeAnnouncements = list
                 .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
                 .slice(0, 3) // Latest 3
@@ -240,9 +256,9 @@ export async function getUserContext(uid: string) {
 
         // Extract Syllabus Status
         let syllabusInfo = "";
-        if (syllabusSnap.exists()) {
-            const list: SyllabusRow[] = [];
-            syllabusSnap.forEach(c => { list.push(c.val() as SyllabusRow); });
+        if (syllabusSnap && syllabusSnap.exists()) {
+            const list: SyllabusItem[] = [];
+            syllabusSnap.forEach(c => { list.push(c.val() as SyllabusItem); });
             const subjects = [...new Set(list.map(s => s.subject).filter(Boolean))] as string[];
             syllabusInfo = subjects.map(sub => {
                 const subTopics = list.filter(item => item.subject === sub);
@@ -261,7 +277,7 @@ export async function getUserContext(uid: string) {
 ### 📊 Subject Mastery Matrix
 | Subject | Accuracy | Tests | Mastery | Trend |
 | :--- | :--- | :--- | :--- | :--- |
-${subjectAnalytics || "| No data | - | - | - | - |"}
+${subjectAnalytics || "| No data | - | - | - | -|"}
 
 ### 📚 Syllabus Coverage
 ${syllabusInfo || "*No syllabus progress tracked yet.*"}
@@ -308,13 +324,16 @@ export async function chatWithAI(messages: ChatMessage[]) {
         const data = await response.json() as { text?: string; response?: string };
         let text = data.text || data.response || "No response content";
 
-        // Remove assistant name prefixes for cleaner chat-style output.
-        text = stripAssistantNamePrefixes(text);
+        // --- Post-Processing: Strip Internal Thoughts & Metadata ---
+        
+        // 1. Remove XML-style <thought> tags (common in modern reasoning models)
+        text = text.replace(/<(?:thought|details|internal_thought|reasoning)>[\s\S]*?<\/(?:thought|details|internal_thought|reasoning)>/gi, "");
 
-        // --- Post-Processing: Strip Internal Thoughts ---
-        // Many models use "Internal Thought:", "Thought:", or similar starters.
-        // We look for common markers and extract only the "Response:" part if it exists.
+        // 2. Remove plain text thought markers (Thought:, Internal Thought:, etc.)
+        const thoughtRegex = /^(?:Assistant Thought|Internal Thought|Thought|Reasoning|Reflections)[\s\S]*?(?=\n\n|\n[A-Z]|$|Response:|\*\*Response:)/i;
+        text = text.replace(thoughtRegex, "");
 
+        // 3. Remove "Response:" wrappers
         const responseMarkers = ["Response:", "The Response:", "**Response:**", "**The Response:**"];
         for (const marker of responseMarkers) {
             const markerIndex = text.indexOf(marker);
@@ -324,8 +343,7 @@ export async function chatWithAI(messages: ChatMessage[]) {
             }
         }
 
-        // Clean up remaining "Internal Thought" or "Thought" blocks if "Response:" marker wasn't found
-        text = text.replace(/^(?:Internal )?Thought:[\s\S]*?(?=\n\n|\n[A-Z]|$)/i, "").trim();
+        // 4. Final Cleanup
         text = stripAssistantNamePrefixes(text);
         text = enforceDomainTerminology(text);
 

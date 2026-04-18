@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Maximize2, Minimize2, FileText, Shield, Loader2, AlertCircle, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, FileText, Shield, Loader2, AlertCircle, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";

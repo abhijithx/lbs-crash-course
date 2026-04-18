@@ -82,11 +82,11 @@ export default function AdminUpgradesPage() {
                     <ArrowUpCircle className="h-6 w-6 text-violet-500" />
                     Upgrade Requests
                 </h1>
-                <p className="text-[var(--muted-foreground)] mt-1">{pending.length} pending requests</p>
+                <p className="text-muted-foreground mt-1">{pending.length} pending requests</p>
             </div>
 
             {pending.length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-[var(--muted-foreground)]">
+                <Card><CardContent className="py-12 text-center text-muted-foreground">
                     <ArrowUpCircle className="h-10 w-10 mx-auto mb-2" />
                     <p>No pending upgrade requests</p>
                 </CardContent></Card>
@@ -98,14 +98,14 @@ export default function AdminUpgradesPage() {
                                 <div className="flex items-center justify-between gap-3 flex-wrap">
                                     <div>
                                         <p className="font-semibold">{req.userName}</p>
-                                        <p className="text-sm text-[var(--muted-foreground)]">{req.userEmail}</p>
+                                        <p className="text-sm text-muted-foreground">{req.userEmail}</p>
                                         <div className="flex items-center gap-2 mt-2">
                                             <Badge variant="outline" className="text-xs">{req.currentPackage}</Badge>
-                                            <span className="text-xs text-[var(--muted-foreground)]">→</span>
+                                            <span className="text-xs text-muted-foreground">→</span>
                                             <Badge className="text-xs">{req.requestedPackage}</Badge>
                                         </div>
                                         {req.screenshotUrl && (
-                                            <div className="mt-4 rounded-xl border border-[var(--border)] overflow-hidden w-full max-w-sm">
+                                            <div className="mt-4 rounded-xl border border-border overflow-hidden w-full max-w-sm">
                                                 <a
                                                     href={req.screenshotUrl}
                                                     target="_blank"
@@ -127,11 +127,11 @@ export default function AdminUpgradesPage() {
                                             </div>
                                         )}
                                         {req.transactionId && (
-                                            <p className="text-xs text-[var(--muted-foreground)] mt-1 font-mono">
+                                            <p className="text-xs text-muted-foreground mt-1 font-mono">
                                                 ID: {req.transactionId}
                                             </p>
                                         )}
-                                        <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
+                                        <p className="text-[10px] text-muted-foreground mt-1">
                                             {format(new Date(req.submittedAt), "MMM d, yyyy h:mm a")}
                                         </p>
                                     </div>
@@ -152,14 +152,14 @@ export default function AdminUpgradesPage() {
 
             {processed.length > 0 && (
                 <div>
-                    <h3 className="text-sm font-medium text-[var(--muted-foreground)] mb-3">Previously Processed</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3">Previously Processed</h3>
                     <div className="space-y-2 opacity-60">
                         {processed.slice(0, 10).map((req) => (
                             <Card key={req.id}>
                                 <CardContent className="p-4 flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium">{req.userName}</p>
-                                        <p className="text-xs text-[var(--muted-foreground)]">{req.userEmail}</p>
+                                        <p className="text-xs text-muted-foreground">{req.userEmail}</p>
                                     </div>
                                     <Badge variant={req.status === "approved" ? "success" : "destructive"}>{req.status}</Badge>
                                 </CardContent>
@@ -181,7 +181,7 @@ export default function AdminUpgradesPage() {
                             onChange={(e) => setRejectionReason(e.target.value)}
                             placeholder="e.g., Payment screenshot is mismatched..."
                             rows={4}
-                            className="rounded-xl border-[var(--border)] focus:ring-2 focus:ring-red-500/20"
+                            className="rounded-xl border-border focus:ring-2 focus:ring-red-500/20"
                         />
                         <DialogFooter className="gap-3 sm:gap-0 mt-2">
                             <Button variant="outline" onClick={() => setShowReject(false)} className="h-11 rounded-xl px-6">Cancel</Button>

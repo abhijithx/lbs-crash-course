@@ -35,31 +35,31 @@ export default function SyllabusPage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold">LBS MCA Syllabus</h1>
-        <p className="text-[var(--muted-foreground)] mt-1">
+        <p className="text-muted-foreground mt-1">
           Official syllabus images uploaded by the admin
         </p>
       </div>
       <div className="relative w-full sm:w-96">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--muted-foreground)]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
           placeholder="Search syllabus pages..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-10 h-11 rounded-xl bg-[var(--card)]"
+          className="pl-10 h-11 rounded-xl bg-card"
         />
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 border border-dashed rounded-2xl bg-[var(--card)]/40">
-          <ImageIcon className="h-12 w-12 mx-auto mb-3 text-[var(--muted-foreground)]" />
-          <p className="text-[var(--muted-foreground)]">No syllabus found</p>
+        <div className="text-center py-16 border border-dashed rounded-2xl bg-(--card)/40">
+          <ImageIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+          <p className="text-muted-foreground">No syllabus found</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((it) => (
             <Card key={it.id} className="overflow-hidden hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setOpen(it)}>
               <CardContent className="p-0">
-                <div className="relative aspect-[3/4] bg-[var(--muted)]/20 overflow-hidden">
+                <div className="relative aspect-3/4 bg-muted/20 overflow-hidden">
                   <Image src={it.url} alt={it.title || "Syllabus"} fill className="object-cover" unoptimized />
                 </div>
                 <div className="p-4 flex items-center justify-between">

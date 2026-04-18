@@ -5,24 +5,24 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
     {
         variants: {
             variant: {
                 default:
-                    "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md hover:opacity-90 active:scale-[0.98]",
+                    "bg-primary text-primary-foreground shadow-md hover:opacity-90 active:scale-[0.98]",
                 destructive:
-                    "bg-[var(--destructive)] text-white shadow-md hover:opacity-90 active:scale-[0.98]",
+                    "bg-destructive text-white shadow-md hover:opacity-90 active:scale-[0.98]",
                 outline:
-                    "border border-[var(--border)] bg-transparent hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]",
+                    "border border-border bg-transparent hover:bg-accent/10 hover:text-accent",
                 secondary:
-                    "bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-80",
+                    "bg-secondary text-secondary-foreground hover:opacity-80",
                 ghost:
-                    "hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]",
+                    "hover:bg-accent/10 hover:text-accent",
                 link:
-                    "text-[var(--primary)] underline-offset-4 hover:underline",
+                    "text-primary underline-offset-4 hover:underline",
                 success:
-                    "bg-[var(--success)] text-white shadow-md hover:opacity-90 active:scale-[0.98]",
+                    "bg-success text-white shadow-md hover:opacity-90 active:scale-[0.98]",
             },
             size: {
                 default: "h-10 px-5 py-2",
