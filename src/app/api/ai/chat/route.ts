@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { adminAuth } from "@/lib/firebase-admin";
 
 const getApiKeys = (envVar: string): string[] => {
     const keys = process.env[envVar] || "";
@@ -28,14 +29,19 @@ async function callGeminiAPI(prompt: string, apiKeys: string[]): Promise<string 
         const apiKey = apiKeys[i];
         console.log(`[Gemini] Trying key ${i + 1}`);
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
             const response = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+                    signal: controller.signal
                 }
             );
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
@@ -63,6 +69,9 @@ async function callGroqAPI(prompt: string, apiKeys: string[]): Promise<string | 
         const apiKey = apiKeys[i];
         console.log(`[Groq] Trying key ${i + 1}`);
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -74,8 +83,10 @@ async function callGroqAPI(prompt: string, apiKeys: string[]): Promise<string | 
                     model: "llama-3.1-8b-instant",
                     temperature: 0.7,
                     max_tokens: 1024,
-                })
+                }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
                 const err = await response.text();
@@ -103,6 +114,9 @@ async function callNvidiaAPI(prompt: string, apiKeys: string[]): Promise<string 
         const apiKey = apiKeys[i];
         console.log(`[NVIDIA] Trying key ${i + 1}`);
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
             const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -114,8 +128,10 @@ async function callNvidiaAPI(prompt: string, apiKeys: string[]): Promise<string 
                     messages: [{ role: "user", content: prompt }],
                     max_tokens: 1024,
                     temperature: 0.6,
-                })
+                }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
                 const err = await response.text();
@@ -142,6 +158,9 @@ async function callGithubAPI(prompt: string, token: string): Promise<string | nu
     console.log(`[GitHub] Attempting API call...`);
     try {
         // GitHub Models moved to a standard Azure Inference endpoint in 2026.
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
         const response = await fetch("https://models.inference.ai.azure.com/chat/completions", {
             method: "POST",
             headers: {
@@ -153,8 +172,10 @@ async function callGithubAPI(prompt: string, token: string): Promise<string | nu
                 messages: [{ role: "user", content: prompt }],
                 temperature: 0.8,
                 max_tokens: 1024,
-            })
+            }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
             const err = await response.text();
@@ -179,11 +200,16 @@ async function callPicoAPI(prompt: string, apiUrl: string): Promise<string | nul
 
     console.log(`[PicoApps] Attempting API call...`);
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: prompt })
+            body: JSON.stringify({ prompt: prompt }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
             console.warn(`[PicoApps] API failed with status ${response.status}`);
@@ -206,14 +232,33 @@ async function callPicoAPI(prompt: string, apiUrl: string): Promise<string | nul
 export async function POST(req: NextRequest) {
     try {
         const { prompt: rawPrompt } = await req.json();
+
+        // Security: Verify ID Token (if provided)
+        const authHeader = req.headers.get("Authorization");
+        const idToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        
+        let isAuthenticated = false;
+        if (idToken && adminAuth) {
+            try {
+                await adminAuth.verifyIdToken(idToken);
+                isAuthenticated = true;
+            } catch (e) {
+                console.warn("[AI Proxy] Invalid token provided:", e);
+            }
+        }
+
+        // Allow guest access if prompt is simple (no context mapping) 
+        // but enforce login for data-heavy queries
+        const isContextSensitive = typeof rawPrompt === 'string' && rawPrompt.includes("CONTEXT:");
+        if (isContextSensitive && !isAuthenticated) {
+            return NextResponse.json({ 
+                error: "Please login to access personalized AI analytics." 
+            }, { status: 401 });
+        }
         
         const prompt = typeof rawPrompt === 'string' 
             ? rawPrompt.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim() 
             : "";
-
-        if (!prompt || prompt.length < 2) {
-            return NextResponse.json({ error: "Please provide a valid question" }, { status: 400 });
-        }
 
         const finalPrompt = prompt.includes("CONTEXT:") ? prompt : `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`;
         

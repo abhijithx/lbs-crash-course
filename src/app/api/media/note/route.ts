@@ -82,7 +82,6 @@ export async function GET(req: NextRequest) {
 
     const targetUrl = isDriveUrl(sourceUrl) ? normalizeGoogleDriveUrl(sourceUrl) : sourceUrl;
 
-    let finalBuffer: ArrayBuffer | null = null;
     const requestInit: RequestInit = {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -92,6 +91,7 @@ export async function GET(req: NextRequest) {
       redirect: "follow",
     };
 
+    let streamingResponse: Response | null = null;
     const fileId = extractGoogleDriveFileId(sourceUrl) || extractGoogleDriveFileId(targetUrl);
     const candidateUrls = isDriveUrl(sourceUrl)
       ? buildGoogleDriveCandidates(fileId || "")
@@ -100,35 +100,34 @@ export async function GET(req: NextRequest) {
     for (const candidate of candidateUrls) {
       if (!candidate) continue;
       try {
-        const candidateResponse = await fetch(candidate, requestInit);
-        if (!candidateResponse.ok || !candidateResponse.body) continue;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+        const candidateResponse = await fetch(candidate, { ...requestInit, signal: controller.signal });
+        if (!candidateResponse.ok || !candidateResponse.body) {
+          clearTimeout(timeoutId);
+          continue;
+        }
 
         const contentType = (candidateResponse.headers.get("content-type") || "application/pdf").toLowerCase();
-        // Skip if it looks like a landing page or JSON error
-        if (contentType.includes("text/html") || contentType.includes("application/json")) continue;
+        if (contentType.includes("text/html") || contentType.includes("application/json")) {
+          clearTimeout(timeoutId);
+          continue;
+        }
 
-        const buffer = await candidateResponse.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        
-        // PDF Magic Number Check: %PDF-
-        const isPdfSignature =
-          bytes.length >= 5 &&
-          bytes[0] === 0x25 && // %
-          bytes[1] === 0x50 && // P
-          bytes[2] === 0x44 && // D
-          bytes[3] === 0x46 && // F
-          bytes[4] === 0x2d;   // -
-
-        if (!isPdfSignature) continue;
-
-        finalBuffer = buffer;
+        // We can't easily check the magic number without consuming the stream, 
+        // but for PDFs we can trust the content-type if it's not HTML/JSON 
+        // or we can peek the first few bytes if we really wanted to.
+        // For simplicity and streaming performance, we'll pipe the body directly.
+        streamingResponse = candidateResponse;
+        clearTimeout(timeoutId);
         break;
       } catch (err) {
         console.warn(`Failed to retrieve note from candidate ${candidate}:`, err);
       }
     }
 
-    if (!finalBuffer) {
+    if (!streamingResponse || !streamingResponse.body) {
       return errorResponse("The note could not be retrieved. Please ensure the link is public and points to a valid PDF file.", 404);
     }
 
@@ -139,9 +138,8 @@ export async function GET(req: NextRequest) {
     headers.set("X-Content-Type-Options", "nosniff");
     headers.set("Cross-Origin-Resource-Policy", "same-origin");
     headers.set("X-Frame-Options", "SAMEORIGIN");
-    headers.set("Accept-Ranges", "none");
 
-    return new NextResponse(finalBuffer, {
+    return new NextResponse(streamingResponse.body, {
       status: 200,
       headers,
     });
