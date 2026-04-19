@@ -45,9 +45,13 @@ export async function POST(request: Request) {
             throw error;
         }
     } catch (error: unknown) {
-        console.error("[AUTH_CRITICAL] User Provisioning Failure:", error);
+        const timestamp = new Date().toISOString();
+        console.error(`[SEC_CRITICAL] [${timestamp}] User Provisioning Failure:`, error);
         return NextResponse.json(
-            { message: "Internal security error during user provisioning. Please check admin logs." },
+            { 
+                message: "Internal security error during user provisioning.",
+                errorId: crypto.randomUUID().slice(0, 8)
+            },
             { status: 500 }
         );
     }

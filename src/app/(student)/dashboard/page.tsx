@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild, limitToLast } from "firebase/database";
 import { db } from "@/lib/firebase";
-import type { LiveClass, Announcement, RankData, RankEntry } from "@/lib/types";
+import type { LiveClass, Announcement, RankData } from "@/lib/types";
 import {
     Video,
     MonitorPlay,

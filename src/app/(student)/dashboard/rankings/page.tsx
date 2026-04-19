@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, startTransition } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 import { Select } from "@/components/ui/select";
 
-import type { RankData, RankEntry } from "@/lib/types";
+import type { RankData } from "@/lib/types";
 
 import { useSearchParams } from "next/navigation";
 

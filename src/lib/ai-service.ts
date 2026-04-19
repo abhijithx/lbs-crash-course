@@ -12,7 +12,8 @@ import {
 } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "/api/ai/chat";
-const DEVELOPER = process.env.NEXT_PUBLIC_AI_DEVELOPER || "Ajmal U K";
+const DEVELOPER = "Ajmal U K";
+const TOOLPIX_URL = "https://toolpix.pythonanywhere.com/";
 
 export interface ChatMessage {
     role: "user" | "assistant" | "system";
@@ -128,9 +129,9 @@ function enforceDomainTerminology(text: string) {
 function stripAssistantNamePrefixes(text: string) {
     return text
         // Remove common assistant labels at the start of response.
-        .replace(/^\s*(?:toolpix\s*ai|assistant|ai)\s*[:\-]\s*/i, "")
-        // Remove repeated name labels that may appear at line starts.
-        .replace(/^\s*(?:toolpix\s*ai)\s*:\s*/gim, "")
+        .replace(/^\s*(?:toolpix\s*ai|assistant|ai|response|system)\s*[:\-]\s*/i, "")
+        // Remove repeated name labels that may appear at line starts or in headers.
+        .replace(/^\s*(?:toolpix\s*ai|assistant|ai)\s*:\s*/gim, "")
         .trim();
 }
 
@@ -152,7 +153,11 @@ export async function getUserContext(uid: string) {
         
         const getSnap = (index: number): DataSnapshot | null => {
             const res = results[index];
-            return res.status === "fulfilled" ? res.value : null;
+            if (res.status === "rejected") {
+                console.error(`[AI_CONTEXT] Task ${index} failed:`, res.reason);
+                return null;
+            }
+            return res.value;
         };
 
         const userSnap = getSnap(0);
@@ -313,14 +318,9 @@ ${activeAnnouncements || "*No recent announcements.*"}
     }
 }
 
-export async function chatWithAI(messages: ChatMessage[], idToken?: string) {
-    if (!API_URL) {
-        return buildFallbackResponse(messages);
-    }
-
+export async function* chatWithAI(messages: ChatMessage[], idToken?: string) {
     try {
         const packedPrompt = buildPackedPrompt(messages);
-        console.log("Sending to AI API, prompt length:", packedPrompt.length);
         
         const response = await fetch("/api/ai/chat", {
             method: "POST",
@@ -328,79 +328,141 @@ export async function chatWithAI(messages: ChatMessage[], idToken?: string) {
                 "Content-Type": "application/json",
                 ...(idToken && { "Authorization": `Bearer ${idToken}` })
             },
-            body: JSON.stringify({
-                prompt: packedPrompt
-            }),
+            body: JSON.stringify({ prompt: packedPrompt }),
         });
 
         if (!response.ok) {
             const errorText = await response.text();
             console.error("AI API error:", response.status, errorText);
-            throw new Error(`AI API request failed (${response.status})`);
+            yield buildFallbackResponse(messages);
+            return;
         }
 
-        const data = await response.json() as { text?: string; response?: string };
-        console.log("AI API response:", JSON.stringify(data).slice(0, 100));
-        let text = data.text || data.response || "No response content";
-
-        // --- Post-Processing: Strip Internal Thoughts & Metadata ---
-        
-        // 1. Remove XML-style <thought> tags (common in modern reasoning models)
-        text = text.replace(/<(?:thought|details|internal_thought|reasoning)>[\s\S]*?<\/(?:thought|details|internal_thought|reasoning)>/gi, "");
-
-        // 2. Remove plain text thought markers (Thought:, Internal Thought:, etc.)
-        const thoughtRegex = /^(?:Assistant Thought|Internal Thought|Thought|Reasoning|Reflections)[\s\S]*?(?=\n\n|\n[A-Z]|$|Response:|\*\*Response:)/i;
-        text = text.replace(thoughtRegex, "");
-
-        // 3. Remove "Response:" wrappers
-        const responseMarkers = ["Response:", "The Response:", "**Response:**", "**The Response:**"];
-        for (const marker of responseMarkers) {
-            const markerIndex = text.indexOf(marker);
-            if (markerIndex !== -1) {
-                text = text.slice(markerIndex + marker.length).trim();
-                break;
+        // Handle non-streaming direct JSON response (e.g. from PicoApps or Fallbacks)
+        const contentType = response.headers.get("Content-Type") || "";
+        if (!contentType.includes("text/event-stream")) {
+            const data = await response.json();
+            const text = data.text || data.response || "";
+            if (text) {
+                yield stripAssistantNamePrefixes(enforceDomainTerminology(text));
+                return;
             }
         }
 
-        // 4. Final Cleanup
-        text = stripAssistantNamePrefixes(text);
-        text = enforceDomainTerminology(text);
-
-        if (!text.trim() || text === "No response content") {
-            return buildFallbackResponse(messages);
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) {
+            yield buildFallbackResponse(messages);
+            return;
         }
 
-        return text;
+        let fullText = "";
+        let buffer = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed === "data: [DONE]") continue;
+
+                if (trimmed.startsWith("data: ")) {
+                    try {
+                        const jsonStr = trimmed.slice(6);
+                        const data = JSON.parse(jsonStr);
+                        
+                        // Handle OpenAI/Groq/NVIDIA format
+                        let chunk = data.choices?.[0]?.delta?.content || "";
+                        
+                        // Handle Gemini SSE format
+                        if (!chunk && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            chunk = data.candidates[0].content.parts[0].text;
+                        }
+
+                        if (chunk) {
+                            fullText += chunk;
+                            yield stripAssistantNamePrefixes(enforceDomainTerminology(fullText));
+                        }
+                    } catch (e) {
+                        // Incomplete JSON or noise
+                    }
+                }
+            }
+        }
+
+        // If nothing was yielded or it was empty, try parsing leftover buffer
+        if (!fullText && buffer) {
+            try {
+                const data = JSON.parse(buffer);
+                fullText = data.text || data.response || "";
+                if (fullText) yield stripAssistantNamePrefixes(enforceDomainTerminology(fullText));
+            } catch {
+                // Not JSON
+            }
+        }
+
+        if (!fullText.trim()) {
+            yield buildFallbackResponse(messages);
+        }
+
     } catch (error) {
         console.error("AI Chat Error:", error);
-        return buildFallbackResponse(messages);
+        yield buildFallbackResponse(messages);
     }
 }
 
-export const SYSTEM_PROMPT = `You are ToolPix AI, the elite academic orchestration engine developed by ${DEVELOPER} for the LBS MCA Entrance Platform. You function as a Prime Orchestrator, managing a network of specialized sub-agents to provide hyper-personalized mentorship.
+export const SYSTEM_PROMPT = `You are ToolPix AI, the elite academic orchestration engine developed by ${DEVELOPER} for the LBS MCA Entrance Platform. You function as a Prime Orchestrator and subject matter expert.
 
-### ✅ CRITICAL DOMAIN RULE:
-- In this platform, "LBS" always means **Lal Bahadur Shastri Centre for Science & Technology (Kerala)**.
-- Never expand LBS as London Business School.
+### 🏛️ FOUNDATION & BRANDING:
+- **Developer**: ${DEVELOPER}.
+- **Founder**: Founder of ToolPix (${TOOLPIX_URL}).
+- **Platform**: LBS MCA Entrance Crash Course.
 
-### 🧩 AGENTIC ORCHESTRATION:
-When a student asks a question, your internal engine converges the following specialized personas:
-1. **The Lead Strategist**: Reviews the entire "STUDENT INTELLIGENCE REPORT" to tailor the tone. If accuracy is high, challenge them; if low, simplify and encourage.
-2. **The LBS SME**: Expert in C Programming, Data Structures, Mathematics, and Aptitude. Provides technically flawless, academic answers.
-3. **The Data Analyst**: Interprets "Syllabus Coverage" and "Competitive Standing" to predict exam success.
-4. **The Platform Guide**: Monitors "Recent Platform Updates" (Announcements) to keep the student informed about schedules or new materials.
+### 📋 LBS MCA EXAM PATTERN (120 Questions):
+1. **Computer Science (50 Qs)**: High weightage. Includes Programming, Digital Fundamentals, OS, and DMBS.
+2. **Mathematics & Statistics (25 Qs)**: Plus-2 level depth.
+3. **Quantitative Aptitude & Logical Ability (25 Qs)**: Graduate level factual reasoning.
+4. **English (15 Qs)**: Grammar & Comprehension.
+5. **General Knowledge (5 Qs)**: Current Affairs.
 
-### 🛠️ OPERATING DIRECTIVES:
-- **Always prioritize the Data**: Use the Intelligence Report to customize your greeting. (e.g., "I see you're crushing C Programming, but we need to focus on Math trends.")
-- **Mention Platform Updates**: If there are recent announcements, weave them into your response if relevant.
-- **Master Syllabus**: Reference specific topics from the syllabus coverage to guide their next study session.
-- **Code Standards**: All code must be expert-level C with professional documentation.
+### 📚 DETAILED SYLLABUS KNOWLEDGE:
+- **Computer Science**: CPU organization, Instruction structure, Memory Org (Cache, RAM, Back-up). Data Representation (Signed/Unsigned, 2's Complement, Normalized Floating Point). Boolean Algebra, Truth Tables, Venn Diagrams. Architecture (Digital Logic, Interrupts).
+- **Mathematics**: Algebra (AP/GP/HP, Binomial, Logarithms, Quadratics). Co-ordinate Geometry (Lines, Circles, Conic Sections-Parabola/Ellipse/Hyperbola, Transformations). Trigonometry (Identities, Inverse functions, Height/Distance). Probability & Statistics. Mensuration (Area/Volume of all 2D/3D shapes).
+- **Aptitude**: Logical situations, passage-based facts, problem solving.
+- **English**: Grammar, Vocab, Synonyms, Sentence correction, Jumbled paragraphs.
+
+### 🧩 OPERATING DIRECTIVES:
+- **LBS Identification**: "LBS" always refers to Lal Bahadur Shastri Centre (Kerala). Never London Business School.
+- **Data-Driven**: Use the "STUDENT INTELLIGENCE REPORT" to customize mentorship.
+- **Master Syllabus**: Reference specific topics from the syllabus (e.g., "We need to strengthen your 2's Complement arithmetic") to guide study.
+- **Expert Code**: All code must be high-performance C with professional comments.
 
 ### 📄 OUTPUT FORMATTING:
-- Use **Tables** and **Headers** for data-heavy sections.
-- Keep the tone professional, authoritative, and motivating.
-- **NEVER** include internal thoughts, sub-agent labels (e.g., "SME:"), or meta-talk like "As an AI...".
-- **NEVER** start the answer with labels like "ToolPix AI:" or "Assistant:".
-- **Start Directly**: Do not use "Internal Thought" or "Response" prefixes. Start with your greeting or answer.
+- Use **Headers** and **Tables**.
+- Professional, authoritative, and motivating tone.
+- **START DIRECTLY**: Do NOT ever start with labels like "Response:", "ToolPix AI:", or "ASSISTANT:". Just provide the answer.`;
 
-Your goal is not just to answer, but to drive the student toward Rank #1.`;
+export const GUEST_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform, developed by ${DEVELOPER} (Founder of ToolPix: ${TOOLPIX_URL}).
+
+### 🎯 MISSION:
+- Guide prospective students through the LBS MCA Entrance pattern (120 Questions total).
+- Explain the Syllabus: CS (50 Qs), Math (25 Qs), Aptitude (25 Qs), English (15 Qs), GK (5 Qs).
+- Mention key topics like 2's Complement, Boolean Algebra, Coordinate Geometry, and Trigonometry to show expertise.
+- **Conversion**: Encourage guests to register to unlock the "Student Intelligence Report" (Personalized Rank Prediction & Syllabus Tracking).
+
+### 📋 CORE KNOWLEDGE:
+- **Computer Science**: Computer Org, Data Rep (Binary/Hex arithmetic), Boolean Algebra, Logic Gates.
+- **Mathematics**: AP/GP/HP, Conic Sections, Trigonometric Identities, Mensuration.
+- **Logic**: Factual reasoning and problem-solving.
+
+### 🛠️ DIRECTIVES:
+- "LBS" = Lal Bahadur Shastri Centre (Kerala).
+- High-quality C code snippets for programming queries.
+- Authoritative yet encouraging tone.
+- Attribution: Created by ${DEVELOPER}.
+- **NO LABELS**: Start your message directly. Do NOT include "ASSISTANT:" or any other labels.`;

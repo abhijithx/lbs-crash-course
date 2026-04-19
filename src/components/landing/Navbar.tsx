@@ -94,7 +94,7 @@ export default function Navbar({ user, userData, isAdmin, dashboardLink }: Navba
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 z-110 w-full max-w-[300px] h-[100dvh] bg-[#0b1417] border-l border-[#26464f] shadow-2xl md:hidden flex flex-col"
+                            className="fixed top-0 right-0 z-110 w-full max-w-75 h-dvh bg-[#0b1417] border-l border-[#26464f] shadow-2xl md:hidden flex flex-col"
                         >
                             {/* Sidebar Header */}
                             <div className="flex h-16 items-center justify-between px-5 border-b border-[#26464f]">

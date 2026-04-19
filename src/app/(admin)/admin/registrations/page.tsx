@@ -15,14 +15,13 @@ import {
     Loader2, 
     CheckCircle, 
     Copy, 
-    Mail,
-    Check
+    Mail
 } from "lucide-react";
 import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ref, onValue, update, set } from "firebase/database";
+import { ref, onValue, update } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { PendingRegistration } from "@/lib/types";
 import { toast } from "sonner";
