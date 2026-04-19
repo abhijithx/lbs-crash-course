@@ -50,3 +50,6 @@ CLAUDE.md
 .opencode.json
 .windsurfrules
 .cursorrules
+# Firebase/Google Cloud Secrets
+lbs-mca-cet-firebase-adminsdk-*.json
+*.json.key
