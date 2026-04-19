@@ -1,80 +1,53 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { adminAuth, isInitialized } from "@/lib/firebase-admin";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+    if (!isInitialized || !adminAuth) {
+        return NextResponse.json({ message: "Admin service unavailable" }, { status: 503 });
+    }
+
     try {
-        // Authorization check
         const secret = process.env.ADMIN_API_SECRET;
         const requestSecret = request.headers.get("x-admin-secret");
 
         if (!secret || requestSecret !== secret) {
-            return NextResponse.json(
-                { message: "Unauthorized: Invalid or missing admin secret" },
-                { status: 401 }
-            );
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
-        const body = await request.json();
-        const { email, password } = body;
+        const { email, password, displayName } = await request.json();
 
         if (!email || !password) {
-            return NextResponse.json(
-                { message: "Email and password are required" },
-                { status: 400 }
-            );
+            return NextResponse.json({ message: "Missing email or password" }, { status: 400 });
         }
 
-        const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-        if (!API_KEY) {
-            console.error("FIREBASE_API_KEY is not configured in environment variables");
-            return NextResponse.json(
-                { message: "Server configuration error: Firebase API Key missing" },
-                { status: 500 }
-            );
-        }
-
-        // 1. Create User via Firebase REST API
-        const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email,
-                password,
-                returnSecureToken: true
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            if (data.error?.message === 'EMAIL_EXISTS') {
-                // If the user happens to exist already, we need to return a failure since we cannot easily query their UID 
-                // without the Admin SDK. Or we can just login? 
-                // Since this runs on the server, we can login to get their UID.
-                const loginRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email,
-                        password,
-                        returnSecureToken: true
-                    })
+        try {
+            const existingUser = await adminAuth.getUserByEmail(email);
+            console.log(`[AUTH_AUDIT] Admin attempted to create existing user: ${email} (UID: ${existingUser.uid})`);
+            return NextResponse.json({ 
+                uid: existingUser.uid,
+                message: "User account already exists." 
+            }, { status: 200 });
+        } catch (error: any) {
+            if (error.code === 'auth/user-not-found') {
+                const userRecord = await adminAuth.createUser({
+                    email,
+                    password,
+                    displayName,
                 });
-                const loginData = await loginRes.json();
-                if (loginRes.ok) {
-                    return NextResponse.json({ uid: loginData.localId });
-                }
+
+                console.log(`[AUTH_AUDIT] User created successfully: ${email} (UID: ${userRecord.uid})`);
+
+                return NextResponse.json({ 
+                    uid: userRecord.uid,
+                    message: "User account created successfully." 
+                }, { status: 201 });
             }
-            const errorMessage = data.error?.message || "Unknown Firebase error";
-            throw new Error(errorMessage);
+            throw error;
         }
-
-        return NextResponse.json({ uid: data.localId });
-
     } catch (error: unknown) {
-        console.error("Create User API Error:", error);
-        const err = error as Error;
+        console.error("[AUTH_CRITICAL] User Provisioning Failure:", error);
         return NextResponse.json(
-            { message: `Failed to create user: ${err.message}` },
+            { message: "Internal security error during user provisioning. Please check admin logs." },
             { status: 500 }
         );
     }

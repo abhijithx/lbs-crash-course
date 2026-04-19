@@ -27,20 +27,20 @@ export const metadata: Metadata = {
     template: "%s | LBS MCA Entrance Preparation",
   },
   description:
-    "Master the LBS MCA Entrance Examination with the official Kerala preparation platform. Access live classes, interactive quizzes, comprehensive mock tests, and previous year sorted papers. Join the community of successful MCA students today.",
+    "Master the LBS MCA Entrance Examination 2025 with the premier preparation platform for Kerala and South India. Access live sessions, expert mentorship, and high-rank mock tests. Trusted by MCA aspirants across Kerala, Tamil Nadu, and neighboring states.",
   keywords: [
     "LBS MCA Entrance 2025",
-    "LBS Center MCA preparation",
     "Kerala MCA Entrance Coaching",
-    "MCA Entrance Kerala Syllabus",
+    "LBS Center Kerala MCA syllabus",
+    "Tamil Nadu MCA Entrance preparation",
+    "MCA Entrance South India",
+    "Best MCA coaching in Kerala",
+    "LBS MCA Mock Test series 2025",
     "LBS MCA Previous Year Papers",
-    "MCA Entrance Mock Test Kerala",
-    "LBS MCA Mock Test series",
-    "Kerala State MCA Entrance Exam",
   ],
-  authors: [{ name: "LBS MCA Entrance Team", url: "https://lbscourse.cetmca.in" }],
-  creator: "LBS MCA Team",
-  publisher: "LBS MCA",
+  authors: [{ name: "Infronixis Technologies", url: "https://lbscourse.cetmca.in" }],
+  creator: "Infronixis Technologies",
+  publisher: "Infronixis Technologies",
   formatDetection: {
     email: false,
     address: false,
@@ -73,10 +73,10 @@ export const metadata: Metadata = {
     locale: "en_IN",
     images: [
       {
-        url: "/icon.png",
-        width: 512,
-        height: 512,
-        alt: "LBS MCA Entrance Preparation Official Logo",
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "LBS MCA Entrance 2025 Preparation Course - Official Banner",
       },
     ],
   },
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Kerala LBS MCA Entrance Preparation Platform",
     description: "Launch your MCA career with expert guidance. Comprehensive LBS MCA coaching with mock tests and live classes.",
-    images: ["/icon.png"],
+    images: ["/og-image.png"],
     creator: "@lbsmca",
   },
   robots: {
@@ -97,6 +97,11 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "LBS MCA",
   },
 };
 
@@ -112,6 +117,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const baseUrl = "https://lbscourse.cetmca.in";
+  const oneSignalId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "3936b2f0-0dd0-4912-b5a4-9e091640e947";
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -135,15 +143,16 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* Structured Data / Schemas */}
         <Script id="local-business-schema" type="application/ld+json" strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "LocalBusiness",
-              "name": "LBS MCA Entrance Preparation Center",
-              "image": "https://lbscourse.cetmca.in/icon.png",
-              "@id": "https://lbscourse.cetmca.in",
-              "url": "https://lbscourse.cetmca.in",
+              "@type": "EducationalOrganization",
+              "name": "LBS MCA Entrance Preparation Center by Infronixis",
+              "image": `${baseUrl}/og-image.png`,
+              "@id": baseUrl,
+              "url": baseUrl,
               "telephone": "+917012823414",
               "address": {
                 "@type": "PostalAddress",
@@ -153,6 +162,11 @@ export default function RootLayout({
                 "postalCode": "670001",
                 "addressCountry": "IN"
               },
+              "areaServed": [
+                { "@type": "State", "name": "Kerala" },
+                { "@type": "State", "name": "Tamil Nadu" },
+                { "@type": "Country", "name": "India" }
+              ],
               "geo": {
                 "@type": "GeoCoordinates",
                 "latitude": 11.8745,
@@ -160,15 +174,7 @@ export default function RootLayout({
               },
               "openingHoursSpecification": {
                 "@type": "OpeningHoursSpecification",
-                "dayOfWeek": [
-                  "Monday",
-                  "Tuesday",
-                  "Wednesday",
-                  "Thursday",
-                  "Friday",
-                  "Saturday",
-                  "Sunday"
-                ],
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
                 "opens": "00:00",
                 "closes": "23:59"
               }
@@ -182,9 +188,9 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "LBS MCA",
               "alternateName": "LBS Centre for Science and Technology",
-              "url": "https://lbscourse.cetmca.in",
-              "description": "Premier online learning platform for LBS MCA Entrance Examination preparation. Comprehensive MCA coaching with live classes, recorded lectures, mock tests, and previous year papers.",
-              "logo": "https://lbscourse.cetmca.in/icon.png",
+              "url": baseUrl,
+              "description": "Premier online learning platform for LBS MCA Entrance Examination preparation.",
+              "logo": `${baseUrl}/icon.png`,
               "contactPoint": {
                 "@type": "ContactPoint",
                 "telephone": "+917012823414",
@@ -201,11 +207,11 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "LBS MCA Entrance Learning Platform",
-              "url": "https://lbscourse.cetmca.in",
-              "description": "Prepare for LBS MCA Entrance Examination with live classes, recorded lectures, quizzes, mock tests, and previous year papers",
-              "publisher": {
-                "@type": "Organization",
-                "name": "LBS MCA"
+              "url": baseUrl,
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": `${baseUrl}/search?q={search_term_string}`,
+                "query-input": "required name=search_term_string"
               }
             })
           }}
@@ -216,58 +222,37 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "BreadcrumbList",
               "itemListElement": [
-                {
-                  "@type": "ListItem",
-                  "position": 1,
-                  "name": "Home",
-                  "item": "https://lbscourse.cetmca.in/"
-                },
-                {
-                  "@type": "ListItem",
-                  "position": 2,
-                  "name": "Privacy Policy",
-                  "item": "https://lbscourse.cetmca.in/privacy-policy"
-                },
-                {
-                  "@type": "ListItem",
-                  "position": 3,
-                  "name": "Terms of Service",
-                  "item": "https://lbscourse.cetmca.in/terms-of-service"
-                },
-                {
-                  "@type": "ListItem",
-                  "position": 4,
-                  "name": "Contact Us",
-                  "item": "https://lbscourse.cetmca.in/contact"
-                }
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": `${baseUrl}/` },
+                { "@type": "ListItem", "position": 2, "name": "Privacy Policy", "item": `${baseUrl}/privacy-policy` },
+                { "@type": "ListItem", "position": 3, "name": "Terms of Service", "item": `${baseUrl}/terms-of-service` },
+                { "@type": "ListItem", "position": 4, "name": "Contact Us", "item": `${baseUrl}/contact` }
               ]
             })
           }}
         />
-        <Script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" />
-        <Script id="onesignal-init">
+
+        {/* Third-party Scripts */}
+        <Script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" strategy="afterInteractive" />
+        <Script id="onesignal-init" strategy="afterInteractive">
           {`
             window.OneSignalDeferred = window.OneSignalDeferred || [];
             OneSignalDeferred.push(async function(OneSignal) {
               try {
-                // Only initialize OneSignal if we are on the production domain
                 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                   await OneSignal.init({
-                    appId: "3936b2f0-0dd0-4912-b5a4-9e091640e947",
+                    appId: "${oneSignalId}",
                     safari_web_id: "web.onesignal.auto.204803f7-478b-4564-9a97-0318e873c676",
-                    notifyButton: {
-                      enable: true,
-                    },
+                    notifyButton: { enable: true },
+                    allowLocalhostAsSecureOrigin: true
                   });
-                } else {
-                  console.log("OneSignal: Skipping initialization on localhost");
                 }
               } catch (e) {
-                console.error("OneSignal initialization error:", e);
+                console.error("OneSignal error:", e);
               }
             });
           `}
         </Script>
+
         <AuthProvider>
           {children}
           <ToolPixOverlay />
@@ -297,3 +282,4 @@ export default function RootLayout({
     </html>
   );
 }
+

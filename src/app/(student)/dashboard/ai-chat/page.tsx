@@ -75,7 +75,7 @@ function getAssistantMessageKey(sessionId: string, index: number, content: strin
 }
 
 export default function DashboardAIChatPage() {
-    const { userData } = useAuth();
+    const { user, userData } = useAuth();
 
     // Session State
     const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -446,7 +446,8 @@ export default function DashboardAIChatPage() {
         setIsLoading(true);
 
         try {
-            const aiResponse = await chatWithAI(updatedMessages);
+            const idToken = user ? await user.getIdToken() : undefined;
+            const aiResponse = await chatWithAI(updatedMessages, idToken);
             const finalMessages: ChatMessage[] = [...updatedMessages, { role: "assistant", content: aiResponse }];
 
             // Update storage and state

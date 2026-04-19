@@ -90,18 +90,32 @@ function parseQuestionRecord(record: unknown, index: number): QuizQuestion {
 }
 
 export function parseQuestionsFromJson(rawText: string): QuizQuestion[] {
-    const parsed = JSON.parse(rawText) as unknown;
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(rawText);
+    } catch (e) {
+        throw new Error("Malformed JSON file. Please check for syntax errors like missing commas or quotes.");
+    }
+
+    if (!parsed || typeof parsed !== "object") {
+        throw new Error("Invalid content: The file must contain a JSON object or array.");
+    }
+
     const records = Array.isArray(parsed)
         ? parsed
-        : parsed && typeof parsed === "object" && Array.isArray((parsed as { questions?: unknown }).questions)
-            ? (parsed as { questions: unknown[] }).questions
+        : (parsed as any).questions && Array.isArray((parsed as any).questions)
+            ? (parsed as any).questions
             : null;
 
     if (!records) {
-        throw new Error("The file must contain either an array of questions or an object with a questions array.");
+        throw new Error("Structure Error: The file must contain either an array of questions or an object with a 'questions' array.");
     }
 
-    return records.map((record, index) => parseQuestionRecord(record, index));
+    if (records.length === 0) {
+        throw new Error("The questions list is empty.");
+    }
+
+    return records.map((record: any, index: number) => parseQuestionRecord(record, index));
 }
 
 export function dedupeQuestions(questions: QuizQuestion[]) {

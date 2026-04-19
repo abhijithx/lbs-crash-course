@@ -1,34 +1,255 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
+const getApiKeys = (envVar: string): string[] => {
+    const keys = process.env[envVar] || "";
+    return keys.split(",").map(k => k.trim()).filter(k => k.length > 0);
+};
 
-export async function POST(req: NextRequest) {
-    if (!API_URL) {
-        return NextResponse.json({ error: "AI API configuration missing" }, { status: 500 });
-    }
+const GEMINI_API_KEYS = getApiKeys("GEMINI_API_KEYS");
+const GROQ_API_KEYS = getApiKeys("GROQ_API_KEYS");
+const NVIDIA_API_KEYS = getApiKeys("NVIDIA_API_KEYS");
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
+const PICO_API_URL = process.env.AI_API_URL || "";
 
-    try {
-        const { prompt } = await req.json();
+// Standard system prompt fallback if one isn't provided in the request
+const DEFAULT_SYSTEM_PROMPT = "You are an expert tutor for the LBS MCA Entrance Exam in Kerala. Answer student queries accurately and concisely. Only answer topics related to Mathematics, Computer Science, Logical Reasoning, and General Awareness for the MCA entrance. If a user asks something unrelated, politely steer them back to their studies. Keep your responses brief and focused.";
 
-        if (!prompt) {
-            return NextResponse.json({ error: "No prompt provided" }, { status: 400 });
+async function callGeminiAPI(prompt: string, apiKeys: string[]): Promise<string | null> {
+    if (apiKeys.length === 0) return null;
+
+    for (let i = 0; i < apiKeys.length; i++) {
+        const apiKey = apiKeys[i];
+        console.log(`[Gemini] Trying key ${i + 1}`);
+        try {
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                }
+            );
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.warn(`[Gemini] API key ${i + 1} failed with status ${response.status}:`, JSON.stringify(errorData));
+                continue;
+            }
+            
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            if (text) {
+                console.log(`[Gemini] Success with key ${i + 1}`);
+                return text;
+            }
+        } catch (e) {
+            console.warn(`[Gemini] API key ${i + 1} error:`, e);
         }
+    }
+    return null;
+}
 
-        const response = await fetch(API_URL, {
+async function callGroqAPI(prompt: string, apiKeys: string[]): Promise<string | null> {
+    if (apiKeys.length === 0) return null;
+
+    for (let i = 0; i < apiKeys.length; i++) {
+        const apiKey = apiKeys[i];
+        console.log(`[Groq] Trying key ${i + 1}`);
+        try {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    messages: [{ role: "user", content: prompt }],
+                    model: "llama-3.1-8b-instant",
+                    temperature: 0.7,
+                    max_tokens: 1024,
+                })
+            });
+            
+            if (!response.ok) {
+                const err = await response.text();
+                console.warn(`[Groq] API key ${i + 1} failed with status ${response.status}:`, err.slice(0, 100));
+                continue;
+            }
+            
+            const data = await response.json();
+            const text = data.choices?.[0]?.message?.content || "";
+            if (text) {
+                console.log(`[Groq] Success with key ${i + 1}`);
+                return text;
+            }
+        } catch (e) {
+            console.warn(`[Groq] API key ${i + 1} error:`, e);
+        }
+    }
+    return null;
+}
+
+async function callNvidiaAPI(prompt: string, apiKeys: string[]): Promise<string | null> {
+    if (apiKeys.length === 0) return null;
+
+    for (let i = 0; i < apiKeys.length; i++) {
+        const apiKey = apiKeys[i];
+        console.log(`[NVIDIA] Trying key ${i + 1}`);
+        try {
+            const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "meta/llama-3.1-70b-instruct",
+                    messages: [{ role: "user", content: prompt }],
+                    max_tokens: 1024,
+                    temperature: 0.6,
+                })
+            });
+            
+            if (!response.ok) {
+                const err = await response.text();
+                console.warn(`[NVIDIA] API key ${i + 1} failed with status ${response.status}:`, err.slice(0, 100));
+                continue;
+            }
+            
+            const data = await response.json();
+            const text = data.choices?.[0]?.message?.content || "";
+            if (text) {
+                console.log(`[NVIDIA] Success with key ${i + 1}`);
+                return text;
+            }
+        } catch (e) {
+            console.warn(`[NVIDIA] API key ${i + 1} error:`, e);
+        }
+    }
+    return null;
+}
+
+async function callGithubAPI(prompt: string, token: string): Promise<string | null> {
+    if (!token) return null;
+
+    console.log(`[GitHub] Attempting API call...`);
+    try {
+        // GitHub Models moved to a standard Azure Inference endpoint in 2026.
+        const response = await fetch("https://models.inference.ai.azure.com/chat/completions", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify({ prompt }),
+            body: JSON.stringify({
+                model: "meta-llama-3.1-70b-instruct",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.8,
+                max_tokens: 1024,
+            })
         });
-
+        
         if (!response.ok) {
-            const status = response.status;
-            return NextResponse.json({ error: `AI request failed with status ${status}` }, { status });
+            const err = await response.text();
+            console.warn(`[GitHub] API failed with status ${response.status}:`, err.slice(0, 100));
+            return null;
+        }
+        
+        const data = await response.json();
+        const text = data.choices?.[0]?.message?.content || "";
+        if (text) {
+            console.log("[GitHub] Success");
+            return text;
+        }
+    } catch (e) {
+        console.warn("[GitHub] API error:", e);
+    }
+    return null;
+}
+
+async function callPicoAPI(prompt: string, apiUrl: string): Promise<string | null> {
+    if (!apiUrl) return null;
+
+    console.log(`[PicoApps] Attempting API call...`);
+    try {
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: prompt })
+        });
+        
+        if (!response.ok) {
+            console.warn(`[PicoApps] API failed with status ${response.status}`);
+            return null;
+        }
+        
+        const data = await response.json();
+        // PicoApps often returns simple text or { text: "..." }
+        const text = typeof data === 'string' ? data : (data.text || data.response || "");
+        if (text) {
+            console.log("[PicoApps] Success");
+            return text;
+        }
+    } catch (e) {
+        console.warn("[PicoApps] API error:", e);
+    }
+    return null;
+}
+
+export async function POST(req: NextRequest) {
+    try {
+        const { prompt: rawPrompt } = await req.json();
+        
+        const prompt = typeof rawPrompt === 'string' 
+            ? rawPrompt.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim() 
+            : "";
+
+        if (!prompt || prompt.length < 2) {
+            return NextResponse.json({ error: "Please provide a valid question" }, { status: 400 });
         }
 
-        const data = await response.json();
-        return NextResponse.json(data);
+        const finalPrompt = prompt.includes("CONTEXT:") ? prompt : `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`;
+        
+        let text: string | null = null;
+
+        // Try providers in priority order
+        
+        // 1. Groq (Fastest)
+        if (!text && GROQ_API_KEYS.length > 0) {
+            text = await callGroqAPI(finalPrompt, GROQ_API_KEYS);
+        }
+
+        // 2. NVIDIA
+        if (!text && NVIDIA_API_KEYS.length > 0) {
+            text = await callNvidiaAPI(finalPrompt, NVIDIA_API_KEYS);
+        }
+
+        // 3. GitHub
+        if (!text && GITHUB_TOKEN) {
+            text = await callGithubAPI(finalPrompt, GITHUB_TOKEN);
+        }
+
+        // 4. Gemini (Robust Fallback)
+        if (!text && GEMINI_API_KEYS.length > 0) {
+            text = await callGeminiAPI(finalPrompt, GEMINI_API_KEYS);
+        }
+
+        // 5. PicoApps (Ultimate Static Fallback)
+        if (!text && PICO_API_URL) {
+            text = await callPicoAPI(finalPrompt, PICO_API_URL);
+        }
+
+        // 5. PicoApps (Ultimate Static Fallback)
+        if (!text && PICO_API_URL) {
+            text = await callPicoAPI(finalPrompt, PICO_API_URL);
+        }
+
+        if (!text) {
+            const fallbackResponse = "I apologize, but AI services are currently unavailable. For immediate assistance with your LBS MCA preparation, please:\n\n1. Review your recorded classes in the dashboard\n2. Attempt practice quizzes to identify weak areas\n3. Check announcements for class schedules\n\nI will be back shortly to assist you!";
+            return NextResponse.json({ text: fallbackResponse });
+        }
+
+        return NextResponse.json({ text });
     } catch (error) {
         console.error("AI Proxy Error:", error);
         return NextResponse.json({ error: "Internal server error during AI processing" }, { status: 500 });

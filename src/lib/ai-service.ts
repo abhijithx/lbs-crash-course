@@ -11,7 +11,7 @@ import {
     SyllabusItem 
 } from "@/lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "/api/ai/chat";
 const DEVELOPER = process.env.NEXT_PUBLIC_AI_DEVELOPER || "Ajmal U K";
 
 export interface ChatMessage {
@@ -220,14 +220,17 @@ export async function getUserContext(uid: string) {
         globalRankInfo += extractRank(rankingsSnap, "Quiz");
         globalRankInfo += extractRank(mockRankingsSnap, "Mock");
 
+        // Mastery Level Computation (Constants for consistency)
+        const THRESHOLDS = { EXPERT: 80, PROFICIENT: 60, INTERMEDIATE: 40 };
+
         // Advanced Analytics
         const subjectAnalytics = Object.entries(performanceBySubject)
             .map(([sub, stats]) => {
                 const avgAccuracy = (stats.totalScore / stats.totalQuestions) * 100;
                 let level = "NOVICE";
-                if (avgAccuracy > 80) level = "EXPERT";
-                else if (avgAccuracy > 60) level = "PROFICIENT";
-                else if (avgAccuracy > 40) level = "INTERMEDIATE";
+                if (avgAccuracy >= THRESHOLDS.EXPERT) level = "EXPERT";
+                else if (avgAccuracy >= THRESHOLDS.PROFICIENT) level = "PROFICIENT";
+                else if (avgAccuracy >= THRESHOLDS.INTERMEDIATE) level = "INTERMEDIATE";
 
                 // Trend Analysis
                 let trend = "Stable";
@@ -238,7 +241,7 @@ export async function getUserContext(uid: string) {
                     else if (last < prev - 5) trend = "DOWNWARD ⚠️";
                 }
 
-                return `| ${sub} | ${avgAccuracy.toFixed(1)}% | ${stats.attempts} | ${level} | ${trend} |`;
+                return `| ${sub.padEnd(14)} | ${avgAccuracy.toFixed(1).padStart(5)}% | ${stats.attempts.toString().padStart(5)} | ${level.padEnd(12)} | ${trend.padEnd(10)} |`;
             })
             .join("\n");
 
@@ -267,6 +270,16 @@ export async function getUserContext(uid: string) {
             }).join("\n");
         }
 
+        const totalAttempts = Object.values(performanceBySubject).reduce((acc, s) => acc + s.attempts, 0);
+        const strongestDomains = Object.entries(performanceBySubject)
+            .filter((entry) => (entry[1].totalScore / entry[1].totalQuestions) > 0.75)
+            .map(e => e[0])
+            .join(", ");
+        const focusDomains = Object.entries(performanceBySubject)
+            .filter((entry) => (entry[1].totalScore / entry[1].totalQuestions) < 0.50)
+            .map(e => e[0])
+            .join(", ");
+
         return `
 # 📝 STUDENT INTELLIGENCE REPORT: ${userData?.name || "Scholar"}
 ---
@@ -277,7 +290,7 @@ export async function getUserContext(uid: string) {
 ### 📊 Subject Mastery Matrix
 | Subject | Accuracy | Tests | Mastery | Trend |
 | :--- | :--- | :--- | :--- | :--- |
-${subjectAnalytics || "| No data | - | - | - | -|"}
+${subjectAnalytics || "| *Benchmark pending* | - | - | - | -|"}
 
 ### 📚 Syllabus Coverage
 ${syllabusInfo || "*No syllabus progress tracked yet.*"}
@@ -289,9 +302,9 @@ ${globalRankInfo || "*No competitive data recorded yet.*"}
 ${activeAnnouncements || "*No recent announcements.*"}
 
 ### 💡 Academic Insights
-- **Overall Engagement**: ${Object.values(performanceBySubject).reduce((acc, s) => acc + s.attempts, 0)} assessments completed
-- **Strongest Domains**: ${Object.entries(performanceBySubject).filter((entry) => (entry[1].totalScore / entry[1].totalQuestions) > 0.75).map(e => e[0]).join(", ") || "Identifying..."}
-- **Immediate Focus**: ${Object.entries(performanceBySubject).filter((entry) => (entry[1].totalScore / entry[1].totalQuestions) < 0.50).map(e => e[0]).join(", ") || "Analyzing..."}
+- **Overall Engagement**: ${totalAttempts > 0 ? `${totalAttempts} assessments completed` : "Ready for first assessment"}
+- **Strongest Domains**: ${strongestDomains || (totalAttempts > 0 ? "Establishing baseline..." : "Complete a test to unlock")}
+- **Immediate Focus**: ${focusDomains || (totalAttempts > 0 ? "Tracking perfection..." : "Take a mock test to identify targets")}
 ---
 `;
     } catch (error) {
@@ -300,17 +313,20 @@ ${activeAnnouncements || "*No recent announcements.*"}
     }
 }
 
-export async function chatWithAI(messages: ChatMessage[]) {
+export async function chatWithAI(messages: ChatMessage[], idToken?: string) {
     if (!API_URL) {
         return buildFallbackResponse(messages);
     }
 
     try {
         const packedPrompt = buildPackedPrompt(messages);
+        console.log("Sending to AI API, prompt length:", packedPrompt.length);
+        
         const response = await fetch("/api/ai/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                ...(idToken && { "Authorization": `Bearer ${idToken}` })
             },
             body: JSON.stringify({
                 prompt: packedPrompt
@@ -318,10 +334,13 @@ export async function chatWithAI(messages: ChatMessage[]) {
         });
 
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error("AI API error:", response.status, errorText);
             throw new Error(`AI API request failed (${response.status})`);
         }
 
         const data = await response.json() as { text?: string; response?: string };
+        console.log("AI API response:", JSON.stringify(data).slice(0, 100));
         let text = data.text || data.response || "No response content";
 
         // --- Post-Processing: Strip Internal Thoughts & Metadata ---

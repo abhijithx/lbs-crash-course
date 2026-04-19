@@ -15,35 +15,35 @@ import { Select } from "@/components/ui/select";
 
 import type { RankData, RankEntry } from "@/lib/types";
 
+import { useSearchParams } from "next/navigation";
+
 export default function RankingsPage() {
     const { userData } = useAuth();
+    const searchParams = useSearchParams();
     const [tab, setTab] = useState("mockTests");
     const [quizRankings, setQuizRankings] = useState<RankData[]>([]);
     const [mockRankings, setMockRankings] = useState<RankData[]>([]);
-    const [loadingQuizzes, setLoadingQuizzes] = useState(false);
-    const [loadingMocks, setLoadingMocks] = useState(false);
+    const [loadingQuizzes, setLoadingQuizzes] = useState(true);
+    const [loadingMocks, setLoadingMocks] = useState(true);
     const [selectedId, setSelectedId] = useState<string>("");
-    const [requestedAiPracticeId] = useState<string>(() => {
-        if (typeof window === "undefined") return "";
-        const params = new URLSearchParams(window.location.search);
-        return params.get("aiPracticeId") || "";
-    });
+    
+    const requestedAiPracticeId = searchParams.get("aiPracticeId") || "";
 
     useEffect(() => {
-        startTransition(() => {
-            setLoadingQuizzes(true);
-            setLoadingMocks(true);
-        });
-
-        // Listen for quizzes and mock tests existence
         let quizIds = new Set<string>();
         let mockIds = new Set<string>();
         let rankingsRaw: RankData[] = [];
         let mockRankingsRaw: RankData[] = [];
 
         const updateStates = () => {
-            setQuizRankings(rankingsRaw.filter(r => r.quizId && quizIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
-            setMockRankings(mockRankingsRaw.filter(r => r.quizId && mockIds.has(r.quizId)).sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0)));
+            setQuizRankings(rankingsRaw
+                .filter(r => r.quizId && quizIds.has(r.quizId))
+                .sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0))
+            );
+            setMockRankings(mockRankingsRaw
+                .filter(r => r.quizId && mockIds.has(r.quizId))
+                .sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0))
+            );
         };
 
         const unsubs = [
@@ -100,29 +100,34 @@ export default function RankingsPage() {
         return () => unsubs.forEach(u => u());
     }, []);
 
-    // Effect to reset selection when tab changes or data arrives
+    // Effect to handle selection logic reactively
     useEffect(() => {
-        startTransition(() => {
-            if (tab === "quizzes" && quizRankings.length > 0) {
+        if (tab === "quizzes") {
+            if (quizRankings.length > 0) {
                 if (!selectedId || !quizRankings.find(r => r.quizId === selectedId)) {
                     setSelectedId(quizRankings[0].quizId || "");
                 }
-            } else if (tab === "mockTests" && mockRankings.length > 0) {
+            } else {
+                setSelectedId("");
+            }
+        } else if (tab === "mockTests") {
+            if (mockRankings.length > 0) {
                 if (requestedAiPracticeId) {
-                    const requested = mockRankings.find((ranking) => ranking.quizId === requestedAiPracticeId);
-                    if (requested && selectedId !== requested.quizId) {
-                        setSelectedId(requested.quizId || "");
+                    const requested = mockRankings.find(r => r.quizId === requestedAiPracticeId);
+                    if (requested && selectedId !== requestedAiPracticeId) {
+                        setSelectedId(requestedAiPracticeId);
                         return;
                     }
                 }
                 if (!selectedId || !mockRankings.find(r => r.quizId === selectedId)) {
                     setSelectedId(mockRankings[0].quizId || "");
                 }
-            } else if ((tab === "quizzes" && quizRankings.length === 0) || (tab === "mockTests" && mockRankings.length === 0)) {
+            } else {
                 setSelectedId("");
             }
-        });
+        }
     }, [tab, quizRankings, mockRankings, requestedAiPracticeId, selectedId]);
+
 
     const aiPracticeRankings = useMemo(
         () => mockRankings.filter((item) => item.quizId && item.quizId.startsWith("ai-practice-")),
@@ -172,7 +177,7 @@ export default function RankingsPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="divide-y divide-(--border)/30">
+                    <div className="divide-y divide-border/30">
                         {rankData.entries.map((entry) => {
                             const styles = getRankStyles(entry.rank);
                             const isMe = entry.userId === userData?.uid;
