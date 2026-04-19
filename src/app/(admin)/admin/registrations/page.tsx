@@ -4,16 +4,30 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
+import { 
+    UserPlus, 
+    FileWarning, 
+    Eye, 
+    Clock, 
+    ExternalLink, 
+    UserX, 
+    UserCheck, 
+    Loader2, 
+    CheckCircle, 
+    Copy, 
+    Mail,
+    Check
+} from "lucide-react";
+import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ref, onValue, update, set } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { PendingRegistration } from "@/lib/types";
-import { UserPlus, Eye, UserCheck, UserX, Loader2, ExternalLink, Clock, FileWarning, Copy, CheckCircle, Mail } from "lucide-react";
-import { format } from "date-fns";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/auth-context";
+import { approveRegistrationAction } from "@/app/actions/admin-actions";
 
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
@@ -41,7 +55,8 @@ async function syncStatusToGoogleSheet(email: string, status: "Verified" | "Reje
     }
 }
 
-export default function AdminRegistrations() {
+export default function RegistrationsPage() {
+    const { user } = useAuth();
     const [registrations, setRegistrations] = useState<PendingRegistration[]>([]);
     const [selectedReg, setSelectedReg] = useState<PendingRegistration | null>(null);
     const [showDetail, setShowDetail] = useState(false);
@@ -110,6 +125,19 @@ LBS MCA Team`;
         window.location.href = `mailto:${credentials.email}?subject=${subject}&body=${body}`;
     };
 
+    const handleSendWhatsApp = () => {
+        if (!credentials || !selectedReg) return;
+        const rawPhone = selectedReg.whatsapp || selectedReg.phone;
+        // Strip all non-numeric characters
+        let cleanPhone = rawPhone.replace(/\D/g, "");
+        // Prepend 91 if it's a 10-digit number (common in India)
+        if (cleanPhone.length === 10) {
+            cleanPhone = "91" + cleanPhone;
+        }
+        const message = encodeURIComponent(generateEmailTemplate(credentials.name, credentials.loginId, credentials.email, credentials.password));
+        window.open(`https://wa.me/${cleanPhone}?text=${message}`, "_blank");
+    };
+
     const sendRejectionEmail = (email: string, name: string, reason: string) => {
         const subject = encodeURIComponent("Update on your LBS MCA Crash Course Registration");
         const body = encodeURIComponent(`Hi ${name},\n\nThank you for registering for the LBS MCA Crash Course. Unfortunately, we had to reject your recent application for the following reason:\n\n${reason}\n\nIf you believe this is a mistake or would like to appeal this decision, please reply directly to this email.\n\nBest regards,\nLBS MCA Team`);
@@ -120,65 +148,32 @@ LBS MCA Team`;
         if (!selectedReg) return;
         setProcessing(true);
         try {
-            const loginId = `LBS-${Math.floor(1000 + Math.random() * 9000)}`;
-            const tempPassword = selectedReg.phone;
-
-            const response = await fetch("/api/admin/create-user", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: selectedReg.email,
-                    password: tempPassword,
-                    displayName: selectedReg.name,
-                }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to create user");
-            }
-
-            const { uid } = await response.json();
-
-            const is_live = selectedReg.selectedPackage === "live_only" || selectedReg.selectedPackage === "both";
-            const is_record_class = selectedReg.selectedPackage === "recorded_only" || selectedReg.selectedPackage === "both";
-
-            await set(ref(db, `users/${uid}`), {
+            const result = await approveRegistrationAction(selectedReg.id, {
                 name: selectedReg.name,
                 email: selectedReg.email,
                 phone: selectedReg.phone,
                 whatsapp: selectedReg.whatsapp,
                 graduationYear: selectedReg.graduationYear,
-                role: "student",
-                status: "verified",
-                is_live,
-                is_record_class,
-                activeSessionId: "",
-                firstLogin: true,
-                loginId,
-                createdAt: Date.now(),
-            });
+                selectedPackage: selectedReg.selectedPackage,
+            }, user?.uid || "");
 
-            await set(ref(db, `loginIdEmails/${loginId}`), selectedReg.email);
+            if (!result.success) {
+                throw new Error(result.message);
+            }
 
-            await update(ref(db, `pendingRegistrations/${selectedReg.id}`), {
-                status: "approved",
-            });
+            toast.success(`User approved successfully!`);
 
-            syncStatusToGoogleSheet(selectedReg.email, "Verified");
-
-            toast.success(`User added successfully!`);
-
-            // Show credential overlay instead of opening mailto
+            // Show credential overlay
             setCredentials({
-                loginId,
+                loginId: result.loginId!,
                 email: selectedReg.email,
-                password: tempPassword,
+                password: result.tempPassword!,
                 name: selectedReg.name,
             });
             setShowDetail(false);
-            setSelectedReg(null);
             setShowCredentials(true);
+            // We keep selectedReg for WhatsApp since it has the number, 
+            // but we reset it in onOpenChange if needed or wait until creds closed.
         } catch (error: unknown) {
             toast.error(`Failed to create user: ${(error as Error).message}`);
         } finally {
@@ -477,24 +472,38 @@ LBS MCA Team`;
                                 </pre>
                             </div>
 
-                            <DialogFooter className="flex-col sm:flex-row gap-3">
+                            <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <Button
                                     onClick={handleCopyCredentials}
-                                    className="gradient-primary border-0 w-full sm:flex-1 h-11 rounded-xl shadow-lg shadow-blue-500/20"
+                                    className="gradient-primary border-0 w-full h-11 rounded-xl shadow-lg shadow-blue-500/20"
                                 >
                                     {copied ? (
                                         <><CheckCircle className="h-4 w-4 mr-2" /> Copied!</>
                                     ) : (
-                                        <><Copy className="h-4 w-4 mr-2" /> Copy Email Template</>
+                                        <><Copy className="h-4 w-4 mr-2" /> Copy Template</>
                                     )}
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={handleOpenMailClient}
-                                    className="w-full sm:w-auto h-11 rounded-xl px-6 border-border"
-                                >
-                                    <Mail className="h-4 w-4 mr-2" /> Send Email
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleOpenMailClient}
+                                        className="flex-1 h-11 rounded-xl border-border"
+                                        title="Send via Email"
+                                    >
+                                        <Mail className="h-4 w-4 mr-2" /> Email
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleSendWhatsApp}
+                                        className="flex-1 h-11 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300"
+                                        title="Send via WhatsApp"
+                                    >
+                                        <svg className="h-4 w-4 mr-2 fill-current" viewBox="0 0 24 24">
+                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                        </svg>
+                                        WhatsApp
+                                    </Button>
+                                </div>
                             </DialogFooter>
                         </div>
                     )}

@@ -1,29 +1,29 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
+import { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText } from "lucide-react";
-import { motion } from "framer-motion";
+import { FadeIn } from "@/components/ui/FadeIn";
+
+export const metadata: Metadata = {
+    title: "Terms of Service | LBS MCA Entrance Learning Platform",
+    description: "Read the Terms of Service for LBS MCA Entrance Learning Platform. Understand our policies on account registration, device usage, and content ownership for Kerala MCA coaching.",
+};
 
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-background py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <Link href="/">
+        <Link href="/" aria-label="Back to home page">
           <Button variant="ghost" className="mb-8 hover:bg-secondary">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Button>
         </Link>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <FadeIn>
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-12 w-12 rounded-2xl bg-(--primary)/10 flex items-center justify-center text-primary">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
               <FileText className="h-6 w-6" />
             </div>
             <h1 className="text-4xl font-bold text-foreground">Terms of Service</h1>
@@ -61,7 +61,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-foreground text-pretty tracking-tight">5. Content Ownership</h2>
+              <h2 className="text-2xl font-bold text-foreground">5. Content Ownership</h2>
               <p>
                 All materials provided on the platform, including video lectures, notes, quizzes, and mock tests, are the intellectual property of LBS MCA Platform. Recording, reproducing, or redistributing our content without prior written permission is strictly prohibited and may lead to account suspension and legal action.
               </p>
@@ -80,8 +80,19 @@ export default function TermsOfServicePage() {
                 We reserve the right to modify these terms at any time. We will notify users of any significant changes by posting the new terms on the site.
               </p>
             </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">8. Contact Us</h2>
+              <p>
+                For any queries regarding these terms, please contact:
+                <br />
+                <a href="mailto:support@lbscourse.cetmca.in" className="text-primary hover:underline font-medium">
+                    support@lbscourse.cetmca.in
+                </a>
+              </p>
+            </section>
           </div>
-        </motion.div>
+        </FadeIn>
       </div>
     </div>
   );

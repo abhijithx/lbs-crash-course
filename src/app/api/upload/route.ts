@@ -15,9 +15,17 @@ export async function POST(req: Request) {
     try {
         const formData = await req.formData();
         const file = formData.get("file") as File | null;
+        const rawSource = req.headers.get("x-upload-source");
+        const source = rawSource?.trim().toLowerCase();
 
-        if (!file) {
-            return NextResponse.json({ error: "No file provided" }, { status: 400 });
+        // 1. Basic Origin/Source Validation
+        if (source !== "registration-flow") {
+            console.warn(`[UPLOAD_SECURITY] Blocked unauthorized source: ${source}`);
+            return NextResponse.json({ error: "Forbidden: Security policy violation" }, { status: 403 });
+        }
+
+        if (!file || !(file instanceof File)) {
+            return NextResponse.json({ error: "No valid file provided" }, { status: 400 });
         }
 
         // 1. Validate File Size

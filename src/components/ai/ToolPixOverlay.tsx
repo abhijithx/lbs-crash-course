@@ -7,10 +7,12 @@ import { MessageSquare, X, Send, Loader2, Sparkles, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chatWithAI, ChatMessage, SYSTEM_PROMPT } from "@/lib/ai-service";
+import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import FormattedMessage from "@/components/ai/FormattedMessage";
 
 export default function ToolPixOverlay() {
+    const { user } = useAuth();
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -44,10 +46,11 @@ export default function ToolPixOverlay() {
         setIsLoading(true);
 
         try {
+            const idToken = user ? await user.getIdToken() : undefined;
             const aiResponse = await chatWithAI([
                 { role: "system", content: SYSTEM_PROMPT },
                 ...updatedMessages
-            ]);
+            ], idToken);
             setMessages(prev => [...prev, { role: "assistant", content: aiResponse }]);
         } catch {
             setMessages(prev => [...prev, {

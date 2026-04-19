@@ -109,6 +109,19 @@ let auth: Auth;
 let db: Database;
 let analytics: Analytics | null = null;
 
+// Initialize placeholder services to avoid crashes during static builds or misconfigured environments.
+const createPlaceholderProxy = (moduleName: string) => {
+    return new Proxy({} as any, {
+        get: (_, prop) => {
+            if (prop === "moduleName") return moduleName;
+            return () => {
+                console.warn(`Firebase [${moduleName}] is not initialized. Property [${String(prop)}] was accessed.`);
+                return null;
+            };
+        },
+    });
+};
+
 if (hasRequiredCoreConfig) {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     auth = getAuth(app);
@@ -213,12 +226,11 @@ if (hasRequiredCoreConfig) {
         emitHealth();
     }
 } else {
-    // Create a dummy/placeholder when Firebase is not configured
-    // This prevents build errors during static generation
-    console.warn("Firebase is not configured. Set environment variables in .env.local");
-    app = {} as FirebaseApp;
-    auth = {} as Auth;
-    db = {} as Database;
+    console.warn("Firebase is not configured. Proxied placeholders will be used.");
+    app = createPlaceholderProxy("App");
+    auth = createPlaceholderProxy("Auth");
+    db = createPlaceholderProxy("Database");
+    
     firebaseStartupHealth = {
         ...firebaseStartupHealth,
         modules: {
@@ -230,6 +242,8 @@ if (hasRequiredCoreConfig) {
     };
     emitHealth();
 }
+
+
 
 const hasValidConfig = hasRequiredCoreConfig;
 

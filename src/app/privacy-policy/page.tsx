@@ -1,27 +1,27 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
+import { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield } from "lucide-react";
-import { motion } from "framer-motion";
+import { FadeIn } from "@/components/ui/FadeIn";
+
+export const metadata: Metadata = {
+    title: "Privacy Policy | LBS MCA Entrance Learning Platform",
+    description: "Learn how we protect your information at LBS MCA Entrance Learning Platform. Our privacy policy details data collection, usage, and security measures for Kerala MCA aspirants.",
+};
 
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-background py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <Link href="/">
+        <Link href="/" aria-label="Back to home page">
           <Button variant="ghost" className="mb-8 hover:bg-secondary">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Button>
         </Link>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <FadeIn>
           <div className="flex items-center gap-3 mb-6">
             <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
               <Shield className="h-6 w-6" />
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-foreground text-pretty tracking-tight">5. Third-Party Services</h2>
+              <h2 className="text-2xl font-bold text-foreground">5. Third-Party Services</h2>
               <p>
                 We use third-party services like Firebase, Cloudinary, and OneSignal to provide our platform&apos;s functionality. These services have their own privacy policies.
               </p>
@@ -83,11 +83,13 @@ export default function PrivacyPolicyPage() {
               <p>
                 If you have any questions about this Privacy Policy, please contact us at:
                 <br />
-                Email: support@lbscourse.cetmca.in
+                <a href="mailto:support@lbscourse.cetmca.in" className="text-primary hover:underline font-medium">
+                    support@lbscourse.cetmca.in
+                </a>
               </p>
             </section>
           </div>
-        </motion.div>
+        </FadeIn>
       </div>
     </div>
   );

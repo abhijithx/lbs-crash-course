@@ -5,6 +5,9 @@ export const uploadImageToCloudinary = async (file: File): Promise<string> => {
     try {
         const response = await fetch('/api/upload', {
             method: "POST",
+            headers: {
+                "x-upload-source": "registration-flow",
+            },
             body: formData,
         });
 
