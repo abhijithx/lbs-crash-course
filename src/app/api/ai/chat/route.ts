@@ -29,7 +29,7 @@ async function callGeminiAPI(prompt: string, apiKeys: string[]): Promise<string 
         console.log(`[Gemini] Trying key ${i + 1}`);
         try {
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -247,6 +247,16 @@ export async function POST(req: NextRequest) {
         }
 
         if (!text) {
+            console.error("[AI System] CRITICAL: All AI providers failed. Returning fallback message.");
+            const providers = {
+                groq: GROQ_API_KEYS.length,
+                nvidia: NVIDIA_API_KEYS.length,
+                github: !!GITHUB_TOKEN,
+                gemini: GEMINI_API_KEYS.length,
+                pico: !!PICO_API_URL
+            };
+            console.error("[AI System] Provider Status:", JSON.stringify(providers));
+            
             const fallbackResponse = "I apologize, but AI services are currently unavailable. For immediate assistance with your LBS MCA preparation, please:\n\n1. Review your recorded classes in the dashboard\n2. Attempt practice quizzes to identify weak areas\n3. Check announcements for class schedules\n\nI will be back shortly to assist you!";
             return NextResponse.json({ text: fallbackResponse });
         }
