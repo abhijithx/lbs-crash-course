@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Loader2, Sparkles, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { chatWithAI, ChatMessage, SYSTEM_PROMPT } from "@/lib/ai-service";
+import { chatWithAI, ChatMessage, SYSTEM_PROMPT, GUEST_SYSTEM_PROMPT } from "@/lib/ai-service";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import FormattedMessage from "@/components/ai/FormattedMessage";
@@ -47,11 +47,26 @@ export default function ToolPixOverlay() {
 
         try {
             const idToken = user ? await user.getIdToken() : undefined;
-            const aiResponse = await chatWithAI([
-                { role: "system", content: SYSTEM_PROMPT },
+            const activePrompt = user ? SYSTEM_PROMPT : GUEST_SYSTEM_PROMPT;
+            const generator = chatWithAI([
+                { role: "system", content: activePrompt },
                 ...updatedMessages
             ], idToken);
-            setMessages(prev => [...prev, { role: "assistant", content: aiResponse }]);
+
+            // Add a placeholder message for the assistant
+            setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+
+            for await (const chunk of generator) {
+                setMessages(prev => {
+                    const last = prev[prev.length - 1];
+                    if (last && last.role === "assistant") {
+                        const newMessages = [...prev];
+                        newMessages[prev.length - 1] = { ...last, content: chunk };
+                        return newMessages;
+                    }
+                    return prev;
+                });
+            }
         } catch {
             setMessages(prev => [...prev, {
                 role: "assistant",
@@ -116,21 +131,27 @@ export default function ToolPixOverlay() {
                                 <div
                                     key={idx}
                                     className={cn(
-                                        "max-w-[85%] p-3 rounded-[1.2rem] text-[13px] leading-relaxed shadow-sm",
+                                        "max-w-[85%] text-[13px] leading-relaxed",
                                         msg.role === "user"
-                                            ? "ml-auto rounded-tr-none bg-primary text-white shadow-md shadow-primary/20"
-                                            : "rounded-tl-none border border-border bg-muted/60 text-foreground backdrop-blur-sm"
+                                            ? "ml-auto p-3 rounded-[1.2rem] rounded-tr-none bg-primary text-white shadow-md shadow-primary/20"
+                                            : "py-2 px-0 text-foreground"
                                     )}
                                 >
                                     <FormattedMessage content={msg.content} role={msg.role === "user" ? "user" : "assistant"} />
                                 </div>
                             ))}
                             {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="flex min-w-15 items-center justify-center rounded-[1.2rem] rounded-tl-none border border-border bg-muted p-3 shadow-sm">
-                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                                    </div>
-                                </div>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="flex justify-start py-2"
+                                >
+                                    <span className="inline-flex gap-1" aria-hidden>
+                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.18s]" />
+                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.09s]" />
+                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70" />
+                                    </span>
+                                </motion.div>
                             )}
                         </div>
 

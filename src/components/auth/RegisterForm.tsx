@@ -64,7 +64,6 @@ export function RegisterForm() {
         transactionId: "",
     });
     const [screenshot, setScreenshot] = useState<File | null>(null);
-    const [fileName, setFileName] = useState<string | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -80,7 +79,6 @@ export function RegisterForm() {
         const file = e.target.files?.[0];
         if (file) {
             setScreenshot(file);
-            setFileName(file.name);
             const url = URL.createObjectURL(file);
             setPreviewUrl(url);
         }

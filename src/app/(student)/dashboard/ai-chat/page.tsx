@@ -25,12 +25,6 @@ import {
 
 const MESSAGE_FEEDBACK_STORAGE_KEY = "toolpix_message_feedback";
 const STUDY_NOTES_STORAGE_KEY = "toolpix_study_notes";
-const STARTER_PROMPTS: string[] = [
-    "Give me a 30-day LBS MCA study roadmap",
-    "What are the most repeated topics in C Programming?",
-    "Explain the LBS MCA marking scheme and strategy",
-    "Predict my rank based on my mock scores"
-];
 const STUDY_TOOL_PROMPTS: string[] = [
     "Create a 10-question practice quiz on Data Structures",
     "Summarize my weak areas in Mathematics",
@@ -436,21 +430,41 @@ export default function DashboardAIChatPage() {
         const userMsg: ChatMessage = { role: "user", content };
         const updatedMessages = [...messages, userMsg];
 
-        // Optimistic UI update
-        const updatedSessions = sessions.map(s =>
+        // Optimistic UI update for user message
+        let currentSessions = sessions.map(s =>
             s.id === activeSessionId ? { ...s, messages: updatedMessages, updatedAt: Date.now() } : s
         );
-
-        setSessions(updatedSessions);
+        setSessions(currentSessions);
         setInput("");
         setIsLoading(true);
 
         try {
             const idToken = user ? await user.getIdToken() : undefined;
-            const aiResponse = await chatWithAI(updatedMessages, idToken);
-            const finalMessages: ChatMessage[] = [...updatedMessages, { role: "assistant", content: aiResponse }];
+            const generator = chatWithAI(updatedMessages, idToken);
 
-            // Update storage and state
+            // Add placeholder for assistant starting to type
+            const messagesWithPlaceholder: ChatMessage[] = [...updatedMessages, { role: "assistant", content: "" }];
+            currentSessions = sessions.map(s =>
+                s.id === activeSessionId ? { ...s, messages: messagesWithPlaceholder, updatedAt: Date.now() } : s
+            );
+            setSessions(currentSessions);
+
+            let lastFullText = "";
+            for await (const chunk of generator) {
+                lastFullText = chunk;
+                setSessions(prev => prev.map(s =>
+                    s.id === activeSessionId 
+                        ? { 
+                            ...s, 
+                            messages: [...updatedMessages, { role: "assistant", content: chunk }],
+                            updatedAt: Date.now() 
+                        } 
+                        : s
+                ));
+            }
+
+            // Final persist to local history
+            const finalMessages: ChatMessage[] = [...updatedMessages, { role: "assistant", content: lastFullText }];
             updateSession(activeSessionId, finalMessages);
             setSessions(loadSessions());
         } catch {
@@ -463,7 +477,7 @@ export default function DashboardAIChatPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeSessionId, isLoading, messages, sessions]);
+    }, [activeSessionId, isLoading, messages, sessions, user]);
 
     const handleSend = async () => {
         await sendMessage(input);

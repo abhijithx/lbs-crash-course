@@ -5,6 +5,8 @@ import "katex/dist/katex.min.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToolPixOverlay from "@/components/ai/ToolPixOverlay";
 import FirebaseHealthPanel from "@/components/dev/FirebaseHealthPanel";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
@@ -257,6 +259,8 @@ export default function RootLayout({
           {children}
           <ToolPixOverlay />
           <FirebaseHealthPanel />
+          <Analytics />
+          <SpeedInsights />
           <Toaster
             position="top-right"
             richColors

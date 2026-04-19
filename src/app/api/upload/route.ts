@@ -13,6 +13,11 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: Request) {
     try {
+        const contentType = req.headers.get("content-type") || "";
+        if (!contentType.includes("multipart/form-data")) {
+            return NextResponse.json({ error: "Invalid Content-Type. Expected multipart/form-data" }, { status: 400 });
+        }
+
         const formData = await req.formData();
         const file = formData.get("file") as File | null;
         const rawSource = req.headers.get("x-upload-source");
@@ -20,8 +25,9 @@ export async function POST(req: Request) {
 
         // 1. Basic Origin/Source Validation
         if (source !== "registration-flow") {
-            console.warn(`[UPLOAD_SECURITY] Blocked unauthorized source: ${source}`);
-            return NextResponse.json({ error: "Forbidden: Security policy violation" }, { status: 403 });
+            const clientIp = req.headers.get("x-forwarded-for") || "unknown";
+            console.error(`[SEC_CRITICAL] Unauthorized Upload Attempt: Source=${source}, IP=${clientIp}`);
+            return NextResponse.json({ error: "Access Denied: Invalid Security Context" }, { status: 403 });
         }
 
         if (!file || !(file instanceof File)) {
@@ -68,6 +74,11 @@ export async function POST(req: Request) {
         });
 
     } catch (error: unknown) {
+        if (error instanceof TypeError) {
+            console.warn("[Upload API] Malformed or invalid form data:", error.message);
+            return NextResponse.json({ error: "Invalid form data or Content-Type" }, { status: 400 });
+        }
+        
         console.error("Backend Upload Error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
