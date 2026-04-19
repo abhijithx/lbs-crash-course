@@ -11,6 +11,13 @@ const NVIDIA_API_KEYS = getApiKeys("NVIDIA_API_KEYS");
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const PICO_API_URL = process.env.AI_API_URL || "";
 
+// Add helpful logs for Vercel debugging
+if (GEMINI_API_KEYS.length === 0) console.warn("[AI System] Notice: GEMINI_API_KEYS is not set.");
+if (GROQ_API_KEYS.length === 0) console.warn("[AI System] Notice: GROQ_API_KEYS is not set.");
+if (NVIDIA_API_KEYS.length === 0) console.warn("[AI System] Notice: NVIDIA_API_KEYS is not set.");
+if (!GITHUB_TOKEN) console.warn("[AI System] Notice: GITHUB_TOKEN is not set.");
+if (!PICO_API_URL) console.warn("[AI System] Notice: AI_API_URL is not set.");
+
 // Standard system prompt fallback if one isn't provided in the request
 const DEFAULT_SYSTEM_PROMPT = "You are an expert tutor for the LBS MCA Entrance Exam in Kerala. Answer student queries accurately and concisely. Only answer topics related to Mathematics, Computer Science, Logical Reasoning, and General Awareness for the MCA entrance. If a user asks something unrelated, politely steer them back to their studies. Keep your responses brief and focused.";
 
@@ -232,11 +239,6 @@ export async function POST(req: NextRequest) {
         // 4. Gemini (Robust Fallback)
         if (!text && GEMINI_API_KEYS.length > 0) {
             text = await callGeminiAPI(finalPrompt, GEMINI_API_KEYS);
-        }
-
-        // 5. PicoApps (Ultimate Static Fallback)
-        if (!text && PICO_API_URL) {
-            text = await callPicoAPI(finalPrompt, PICO_API_URL);
         }
 
         // 5. PicoApps (Ultimate Static Fallback)

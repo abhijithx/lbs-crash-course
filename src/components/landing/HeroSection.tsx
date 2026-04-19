@@ -36,6 +36,7 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
                     width={700}
                     height={1000}
                     priority
+                    sizes="(max-width: 768px) 80vw, 500px"
                     className="w-full h-auto drop-shadow-[0_20px_40px_rgba(13,148,136,0.2)] select-none pointer-events-none"
                 />
             </motion.div>
