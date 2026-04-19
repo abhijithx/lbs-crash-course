@@ -11,6 +11,13 @@ const NVIDIA_API_KEYS = getApiKeys("NVIDIA_API_KEYS");
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const PICO_API_URL = process.env.AI_API_URL || "";
 
+// Add helpful logs for Vercel debugging
+if (GEMINI_API_KEYS.length === 0) console.warn("[AI System] Notice: GEMINI_API_KEYS is not set.");
+if (GROQ_API_KEYS.length === 0) console.warn("[AI System] Notice: GROQ_API_KEYS is not set.");
+if (NVIDIA_API_KEYS.length === 0) console.warn("[AI System] Notice: NVIDIA_API_KEYS is not set.");
+if (!GITHUB_TOKEN) console.warn("[AI System] Notice: GITHUB_TOKEN is not set.");
+if (!PICO_API_URL) console.warn("[AI System] Notice: AI_API_URL is not set.");
+
 // Standard system prompt fallback if one isn't provided in the request
 const DEFAULT_SYSTEM_PROMPT = "You are an expert tutor for the LBS MCA Entrance Exam in Kerala. Answer student queries accurately and concisely. Only answer topics related to Mathematics, Computer Science, Logical Reasoning, and General Awareness for the MCA entrance. If a user asks something unrelated, politely steer them back to their studies. Keep your responses brief and focused.";
 
@@ -22,7 +29,7 @@ async function callGeminiAPI(prompt: string, apiKeys: string[]): Promise<string 
         console.log(`[Gemini] Trying key ${i + 1}`);
         try {
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -239,12 +246,17 @@ export async function POST(req: NextRequest) {
             text = await callPicoAPI(finalPrompt, PICO_API_URL);
         }
 
-        // 5. PicoApps (Ultimate Static Fallback)
-        if (!text && PICO_API_URL) {
-            text = await callPicoAPI(finalPrompt, PICO_API_URL);
-        }
-
         if (!text) {
+            console.error("[AI System] CRITICAL: All AI providers failed. Returning fallback message.");
+            const providers = {
+                groq: GROQ_API_KEYS.length,
+                nvidia: NVIDIA_API_KEYS.length,
+                github: !!GITHUB_TOKEN,
+                gemini: GEMINI_API_KEYS.length,
+                pico: !!PICO_API_URL
+            };
+            console.error("[AI System] Provider Status:", JSON.stringify(providers));
+            
             const fallbackResponse = "I apologize, but AI services are currently unavailable. For immediate assistance with your LBS MCA preparation, please:\n\n1. Review your recorded classes in the dashboard\n2. Attempt practice quizzes to identify weak areas\n3. Check announcements for class schedules\n\nI will be back shortly to assist you!";
             return NextResponse.json({ text: fallbackResponse });
         }

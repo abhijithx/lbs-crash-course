@@ -52,4 +52,7 @@ CLAUDE.md
 .cursorrules
 # Firebase/Google Cloud Secrets
 lbs-mca-cet-firebase-adminsdk-*.json
+service-account-*.json
+google-cloud-key*.json
 *.json.key
+secrets/*.json
