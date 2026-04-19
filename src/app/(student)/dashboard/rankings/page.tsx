@@ -179,7 +179,7 @@ export default function RankingsPage() {
                             return (
                                 <div
                                     key={entry.userId}
-                                    className={`flex items-center gap-4 p-4 transition-colors ${isMe ? "bg-primary/15 font-bold" : styles.bg} ${entry.rank <= 5 ? "bg-(--primary)/5" : ""}`}
+                                    className={`flex items-center gap-4 p-4 transition-colors ${isMe ? "bg-primary/15 font-bold" : styles.bg} ${entry.rank <= 5 ? "bg-primary/5" : ""}`}
                                 >
                                     <div className="flex h-10 w-10 items-center justify-center shrink-0">
                                         {styles.icon}
