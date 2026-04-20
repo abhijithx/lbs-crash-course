@@ -19,7 +19,7 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
             initial={{ opacity: 0.01 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.1 }}
-            className={`relative w-full ${isMobile ? "max-w-[280px]" : "max-w-105 lg:max-w-none"} aspect-square lg:aspect-auto mx-auto`}
+            className={`relative w-full ${isMobile ? "max-w-70" : "max-w-105 lg:max-w-none"} aspect-square lg:aspect-auto mx-auto`}
         >
             {/* Decorative Aura */}
             <div className={`absolute inset-0 bg-primary/5 rounded-full blur-[60px] ${isMobile ? "scale-75" : "scale-100"}`}></div>
@@ -96,7 +96,7 @@ export default function HeroSection() {
                         </h1>
 
                         {/* Mobile Mascot (Placed beneath title only on mobile) */}
-                        <div className="lg:hidden w-full max-w-[280px] mb-6 relative">
+                        <div className="lg:hidden w-full max-w-70 mb-6 relative">
                             <MascotWithCards isMobile={true} />
                         </div>
 
