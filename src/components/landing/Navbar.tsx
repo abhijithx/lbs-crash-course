@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, ArrowRight, Sparkles, Home, Info, PhoneCall } from "lucide-react";
+import { Menu, X, ArrowRight, Sparkles, Home, Info, PhoneCall, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NavbarProps {
@@ -41,6 +41,7 @@ export default function Navbar({ user, userData, isAdmin, dashboardLink }: Navba
                 <div className="flex items-center gap-8">
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium">
                         <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
+                        <Link href="/blog" className="text-white/80 hover:text-white transition-colors">Blog</Link>
                         <Link href="#features" className="text-white/80 hover:text-white transition-colors">About</Link>
                         <Link href="#contact" className="text-white/80 hover:text-white transition-colors">Contact</Link>
                     </div>
@@ -118,6 +119,12 @@ export default function Navbar({ user, userData, isAdmin, dashboardLink }: Navba
                                         <Home className="h-5 w-5" />
                                     </div>
                                     Home
+                                </Link>
+                                <Link href="/blog" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-base font-medium group text-white/70 hover:text-white transition-colors">
+                                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                                        <BookOpen className="h-5 w-5" />
+                                    </div>
+                                    Blog
                                 </Link>
                                 <Link href="#features" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-base font-medium group text-white/70 hover:text-white transition-colors">
                                     <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">

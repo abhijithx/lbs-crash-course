@@ -13,21 +13,21 @@ import RedirectManager from "../components/landing/RedirectManager";
 import { NavbarWrapper, CTAWrapper } from "../components/landing/ClientWrappers";
 
 export const metadata: Metadata = {
-    title: "LBS MCA Entrance 2025 - Best Online Coaching for Kerala & South India",
-    description: "Join the official LBS MCA Entrance 2025 Crash Course. Expert training for Kerala MCA aspirants with live classes, mock tests, and rank-boosting study materials. Serving students across Kerala and Tamil Nadu.",
+    title: "LBS MCA Entrance 2026 - Best Online Coaching for Kerala & South India",
+    description: "Join the official LBS MCA Entrance 2026 Crash Course. Expert training for Kerala MCA aspirants with live classes, mock tests, and rank-boosting study materials. Serving students across Kerala and Tamil Nadu.",
 };
 
 const courseSchema = {
     "@context": "https://schema.org",
     "@type": "Course",
-    "name": "LBS MCA Entrance 2025 Official Crash Course",
-    "description": "Premium online preparation course for Kerala LBS MCA Entrance 2025. Expert mentorship for students from Kerala, Tamil Nadu, and beyond. Includes live sessions, recorded library, and national ranking mock tests.",
+    "name": "LBS MCA Entrance 2026 Official Crash Course",
+    "description": "Premium online preparation course for Kerala LBS MCA Entrance 2026. Expert mentorship for students from Kerala, Tamil Nadu, and beyond. Includes live sessions, recorded library, and national ranking mock tests.",
     "provider": {
         "@type": "Organization",
         "name": "Infronixis Technologies",
         "sameAs": "https://lbscourse.cetmca.in"
     },
-    "courseCode": "LBS-MCA-2025",
+    "courseCode": "LBS-MCA-2026",
     "hasCourseInstance": {
         "@type": "CourseInstance",
         "courseMode": "online",
@@ -114,6 +114,9 @@ export default function LandingPage() {
                         <span className="text-sm font-semibold">LBS MCA Entrance Learning Platform</span>
                     </div>
                     <div className="flex items-center gap-6 text-sm">
+                        <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+                            Blog
+                        </Link>
                         <Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
                             Privacy Policy
                         </Link>

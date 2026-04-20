@@ -7,14 +7,14 @@ import { FadeIn } from "@/components/ui/FadeIn";
 import { ContactForm } from "@/components/contact/ContactForm";
 
 export const metadata: Metadata = {
-    title: "Contact Us | Official LBS MCA Entrance 2025 Support",
-    description: "Questions about your LBS MCA 2025 registration? Connect with the official Infronixis support team. We're here to help Kerala and South India MCA aspirants succeed.",
+    title: "Contact Us | Official LBS MCA Entrance 2026 Support",
+    description: "Questions about your LBS MCA 2026 registration? Connect with the official Infronixis support team. We're here to help Kerala and South India MCA aspirants succeed.",
 };
 
 const contactSchema = {
     "@context": "https://schema.org",
     "@type": "ContactPage",
-    "name": "LBS MCA 2025 Help & Support",
+    "name": "LBS MCA 2026 Help & Support",
     "description": "Direct contact channels for LBS MCA Entrance coaching, mock tests, and billing support.",
     "url": "https://lbscourse.cetmca.in/contact",
     "mainEntity": {

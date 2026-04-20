@@ -4,8 +4,8 @@ import { Loader2 } from "lucide-react";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export const metadata: Metadata = {
-    title: "Student Registration | LBS MCA Entrance Crash Course 2025",
-    description: "Register for the LBS MCA Entrance Crash Course 2025. Secure your spot for live classes, interactive quizzes, and comprehensive mock tests for Kerala MCA preparation.",
+    title: "Student Registration | LBS MCA Entrance Crash Course 2026",
+    description: "Register for the LBS MCA Entrance Crash Course 2026. Secure your spot for live classes, interactive quizzes, and comprehensive mock tests for Kerala MCA preparation.",
 };
 
 export default function RegisterPage() {

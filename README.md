@@ -115,7 +115,7 @@ Approve & Add User Flow:
 2. Show confirmation overlay: "Confirm adding this user?"
 3. On confirmation:
    - Generate credentials:
-     * Login ID: auto-generated unique ID (e.g., LBS2025001)
+     * Login ID: auto-generated unique ID (e.g., LBS2026001)
      * Password: User's phone number
    - Create user in Firebase Authentication
    - Add user to Firebase Realtime Database with:

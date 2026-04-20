@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, Sparkles } from "lucide-react";
+import { ArrowRight, Zap, Sparkles, Play } from "lucide-react";
 
 const stats = [
     { value: "50+", label: "Videos" },
@@ -89,9 +89,9 @@ export default function HeroSection() {
                         </div>
 
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-foreground mb-6 leading-[1.1]">
-                            Master the<br />
+                            The Official<br />
                             <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-400 via-primary to-emerald-600">
-                                LBS MCA Entrance
+                                LBS MCA Prep 2026
                             </span>
                         </h1>
 
@@ -101,7 +101,7 @@ export default function HeroSection() {
                         </div>
 
                         <p className="max-w-xl text-base sm:text-lg lg:text-xl text-muted-foreground mb-10 leading-relaxed font-medium">
-                            The most professional digital learning ecosystem built for LBS MCA aspirants. Join the elite ranker's community with <span className="text-foreground font-bold">Expert Mentorship</span> and <span className="text-foreground font-bold">Mock Exams.</span>
+                            Join the premier digital learning ecosystem for Kerala LBS MCA aspirants. Start your journey with <span className="text-foreground font-bold">Expert Mentorship</span>, <span className="text-foreground font-bold">Comprehensive Mock Exams</span>, and the official roadmap curated by the team at <span className="text-primary font-bold">ASCA</span>.
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
@@ -111,11 +111,14 @@ export default function HeroSection() {
                                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
-                            <Link href="#features" className="w-full sm:w-auto">
-                                <Button variant="outline" size="lg" className="w-full bg-card/50 rounded-xl px-8 h-12 text-base font-semibold transition-all duration-300">
-                                    Learn More
+                            <a href="https://youtu.be/NEeRp3s9eoA" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                                <Button variant="outline" size="lg" className="w-full bg-card/50 rounded-xl px-8 h-12 text-base font-semibold group flex items-center justify-center gap-2 border-primary/20 hover:border-primary/50 transition-all duration-300">
+                                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                        <Play className="h-3.5 w-3.5 fill-primary text-primary" />
+                                    </div>
+                                    Watch Intro
                                 </Button>
-                            </Link>
+                            </a>
                         </div>
 
                         {/* Social Proof Mini */}
