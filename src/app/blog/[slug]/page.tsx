@@ -8,6 +8,8 @@ import { blogPosts } from "@/lib/blog-data";
 import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/ui/FadeIn";
 
+import JsonLd, { schemas } from "@/components/seo/JsonLd";
+
 type Props = {
     params: Promise<{ slug: string }>;
 };
@@ -46,39 +48,9 @@ export default async function BlogPostPage({ params }: Props) {
 
     const baseUrl = "https://lbscourse.cetmca.in";
 
-    const articleSchema = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": post.title,
-        "description": post.excerpt,
-        "datePublished": new Date(post.date).toISOString(),
-        "author": {
-            "@type": "Person",
-            "name": "ASCA",
-            "url": `${baseUrl}/blog`
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "LBS MCA Entrance Platform",
-            "logo": {
-                "@type": "ImageObject",
-                "url": `${baseUrl}/icon.png`
-            }
-        },
-        "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": `${baseUrl}/blog/${post.slug}`
-        },
-        "keywords": post.keywords.join(", ")
-    };
-
     return (
         <div className="min-h-screen bg-background relative selection:bg-primary/20">
-            <Script id="article-schema" type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(articleSchema)
-                }}
-            />
+            <JsonLd id="article-schema" data={schemas.article(baseUrl, post)} />
 
             {/* Reading Progress Indicator - Top */}
             <div className="fixed top-0 left-0 w-full h-1 z-50 bg-secondary">
@@ -97,11 +69,11 @@ export default async function BlogPostPage({ params }: Props) {
                             <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-primary font-semibold uppercase tracking-wider text-[10px]">
                                 {post.category}
                             </span>
-                            <span className="flex items-center gap-1">
+                            <span className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
                                 {post.date}
                             </span>
-                            <span className="flex items-center gap-1">
+                            <span className="flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
                                 5 min read
                             </span>
@@ -118,7 +90,7 @@ export default async function BlogPostPage({ params }: Props) {
                                 </div>
                                 <div>
                                     <div className="text-sm font-bold text-foreground">ASCA</div>
-                                    <div className="text-xs text-muted-foreground text-teal-600 font-medium">Platform Expert</div>
+                                    <div className="text-xs text-teal-600 font-medium">Platform Expert</div>
                                 </div>
                             </div>
                             <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/5">
@@ -174,7 +146,10 @@ export default async function BlogPostPage({ params }: Props) {
                         const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
                         const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
                         const scrolled = (winScroll / height) * 100;
-                        document.getElementById('reading-bar').style.width = scrolled + '%';
+                        const bar = document.getElementById('reading-bar');
+                        if (bar) {
+                            bar.style.width = scrolled + '%';
+                        }
                     });
                 `}
             </Script>

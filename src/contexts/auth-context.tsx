@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [clearStoredSessionId]);
 
     // Get OneSignal ID
-    const getOneSignalId = async () => {
+    const getOneSignalId = async (): Promise<string | null> => {
         try {
             interface OneSignalLike {
                 User?: { PushSubscription?: { id?: Promise<string> } };
@@ -90,10 +90,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const w = window as unknown as { OneSignal?: OneSignalLike };
             if (typeof window !== 'undefined' && w.OneSignal) {
                 const OneSignal = w.OneSignal;
-                // Defer until OneSignal is loaded if needed, though OneSignal.User should be available if initialized
                 if (OneSignal?.User?.PushSubscription?.id) {
-                    const id = await OneSignal.User.PushSubscription.id!;
-                    return id;
+                    const id = await OneSignal.User.PushSubscription.id;
+                    return id || null;
                 }
             }
         } catch (error) {

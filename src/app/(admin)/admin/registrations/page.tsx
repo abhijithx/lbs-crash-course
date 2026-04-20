@@ -47,7 +47,7 @@ async function syncStatusToGoogleSheet(email: string, status: "Verified" | "Reje
             const errorText = await response.text().catch(() => "Unknown error");
             console.error("Sheet sync failed:", errorText);
         } else {
-            console.log(`Sheet sync successful for ${email}: ${status}`);
+            // Removed diagnostic log
         }
     } catch (e) {
         console.error("Sheet sync network/system error:", e);

@@ -49,11 +49,11 @@ export default function FeaturesGrid() {
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center mask-[linear-gradient(180deg,rgba(255,255,255,0),white,rgba(255,255,255,0))] opacity-[0.02] pointer-events-none"></div>
 
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
-                <div className="text-center mb-20">
-                    <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
-                        Complete <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-accent">LBS MCA Preparation</span>
+                <div className="text-center mb-20 animate-fade-in-up">
+                    <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
+                        Complete <span className="text-transparent bg-clip-text bg-linear-to-br from-primary to-accent">LBS MCA Preparation</span>
                     </h2>
-                    <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
+                    <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
                         Everything you need to crack LBS MCA Entrance: live classes, recorded lectures, mock tests, previous papers, and rank tracking.
                     </p>
                 </div>
@@ -62,18 +62,18 @@ export default function FeaturesGrid() {
                     {features.map((feature, index) => (
                         <div
                             key={feature.title}
-                            className="group relative rounded-3xl border border-border bg-card p-8 h-full shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300 hover:border-primary/30"
+                            className={`group relative rounded-3xl border border-border bg-card p-8 h-full shadow-lg hover:shadow-2xl hover:shadow-primary/5 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:-translate-y-1 stagger-${index + 1}`}
                         >
                             {/* Subtle top glow on hover */}
-                            <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                            <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                             <div
-                                className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br ${feature.gradient} mb-6 shadow-lg ring-1 ring-white/10`}
+                                className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br ${feature.gradient} mb-7 shadow-lg ring-1 ring-white/20`}
                             >
                                 <feature.icon className="h-7 w-7 text-white" />
                             </div>
-                            <h3 className="text-xl font-bold text-foreground mb-3 tracking-wide">{feature.title}</h3>
-                            <p className="text-base text-muted-foreground leading-relaxed font-light">
+                            <h3 className="text-2xl font-black text-foreground mb-4 tracking-tight">{feature.title}</h3>
+                            <p className="text-base text-muted-foreground leading-relaxed font-medium">
                                 {feature.description}
                             </p>
                         </div>

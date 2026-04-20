@@ -10,6 +10,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToolPixOverlay from "@/components/ai/ToolPixOverlay";
 import FirebaseHealthPanel from "@/components/dev/FirebaseHealthPanel";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
+import JsonLd, { schemas } from "@/components/seo/JsonLd";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -152,127 +153,26 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* Structured Data / Schemas */}
-        <Script id="local-business-schema" type="application/ld+json" strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "EducationalOrganization",
-              "name": "LBS MCA Entrance Preparation Center by Infronixis",
-              "image": `${baseUrl}/og-image.png`,
-              "@id": baseUrl,
-              "url": baseUrl,
-              "telephone": "+917012823414",
-              "address": {
-                "@type": "PostalAddress",
-                "streetAddress": "Kannur",
-                "addressLocality": "Kannur",
-                "addressRegion": "Kerala",
-                "postalCode": "670001",
-                "addressCountry": "IN"
-              },
-              "areaServed": [
-                { "@type": "State", "name": "Kerala" },
-                { "@type": "State", "name": "Tamil Nadu" },
-                { "@type": "Country", "name": "India" }
-              ],
-              "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": 11.8745,
-                "longitude": 75.3704
-              },
-              "openingHoursSpecification": {
-                "@type": "OpeningHoursSpecification",
-                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                "opens": "00:00",
-                "closes": "23:59"
-              },
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.9",
-                "reviewCount": "1280",
-                "bestRating": "5",
-                "worstRating": "1"
-              }
-            })
-          }}
-        />
-        <Script id="org-schema" type="application/ld+json" strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "LBS MCA",
-              "alternateName": "LBS Centre for Science and Technology",
-              "url": baseUrl,
-              "description": "Premier online learning platform for LBS MCA Entrance Examination preparation.",
-              "logo": `${baseUrl}/icon.png`,
-              "brand": {
-                "@type": "Brand",
-                "name": "LBS MCA Entrance"
-              },
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "telephone": "+917012823414",
-                "contactType": "customer service",
-                "email": "cetmca2025@gmail.com",
-                "availableLanguage": ["English", "Malayalam"]
-              }
-            })
-          }}
-        />
-        <Script id="website-schema" type="application/ld+json" strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "LBS MCA Entrance Learning Platform",
-              "url": baseUrl,
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": `${baseUrl}/search?q={search_term_string}`,
-                "query-input": "required name=search_term_string"
-              }
-            })
-          }}
-        />
-        <Script id="breadcrumb-schema" type="application/ld+json" strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "BreadcrumbList",
-              "itemListElement": [
-                { "@type": "ListItem", "position": 1, "name": "Home", "item": `${baseUrl}/` },
-                { "@type": "ListItem", "position": 2, "name": "Privacy Policy", "item": `${baseUrl}/privacy-policy` },
-                { "@type": "ListItem", "position": 3, "name": "Terms of Service", "item": `${baseUrl}/terms-of-service` },
-                { "@type": "ListItem", "position": 4, "name": "Contact Us", "item": `${baseUrl}/contact` }
-              ]
-            })
-          }}
-        />
-        <Script id="video-schema" type="application/ld+json" strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "VideoObject",
-              "name": "LBS MCA Entrance 2026 Course Introduction",
-              "description": "Watch the official introduction to the LBS MCA Entrance 2026 Crash Course preparation platform for Kerala MCA aspirants.",
-              "thumbnailUrl": [
+        <JsonLd id="local-business-schema" data={schemas.educationalOrganization(baseUrl)} />
+        <JsonLd id="org-schema" data={schemas.organization(baseUrl)} />
+        <JsonLd id="website-schema" data={schemas.webSite(baseUrl)} />
+        <JsonLd id="breadcrumb-schema" data={schemas.breadcrumb(baseUrl, [
+            { name: "Home", path: "/" },
+            { name: "Privacy Policy", path: "/privacy-policy" },
+            { name: "Terms of Service", path: "/terms-of-service" },
+            { name: "Contact Us", path: "/contact" }
+        ])} />
+        <JsonLd id="video-schema" data={schemas.video(baseUrl, {
+            name: "LBS MCA Entrance 2026 Course Introduction",
+            description: "Watch the official introduction to the LBS MCA Entrance 2026 Crash Course preparation platform for Kerala MCA aspirants.",
+            thumbnailUrl: [
                 "https://img.youtube.com/vi/NEeRp3s9eoA/maxresdefault.jpg",
                 "https://img.youtube.com/vi/NEeRp3s9eoA/hqdefault.jpg"
-              ],
-              "uploadDate": "2026-04-20T08:00:00+05:30",
-              "contentUrl": "https://youtu.be/NEeRp3s9eoA",
-              "embedUrl": "https://www.youtube.com/embed/NEeRp3s9eoA",
-              "interactionStatistic": {
-                "@type": "InteractionCounter",
-                "interactionType": { "@type": "WatchAction" },
-                "userInteractionCount": 1200
-              },
-              "regionsAllowed": "IN"
-            })
-          }}
-        />
+            ],
+            uploadDate: "2026-04-20T08:00:00+05:30",
+            contentUrl: "https://youtu.be/NEeRp3s9eoA",
+            embedUrl: "https://www.youtube.com/embed/NEeRp3s9eoA"
+        })} />
 
         {/* Third-party Scripts */}
         <Script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" strategy="afterInteractive" />

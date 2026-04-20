@@ -11,63 +11,11 @@ import ExamInfo from "../components/landing/ExamInfo";
 import ContactSection from "../components/landing/ContactSection";
 import RedirectManager from "../components/landing/RedirectManager";
 import { NavbarWrapper, CTAWrapper } from "../components/landing/ClientWrappers";
+import JsonLd, { schemas } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
     title: "LBS MCA Entrance 2026 - Best Online Coaching for Kerala & South India",
     description: "Join the official LBS MCA Entrance 2026 Crash Course. Expert training for Kerala MCA aspirants with live classes, mock tests, and rank-boosting study materials. Serving students across Kerala and Tamil Nadu.",
-};
-
-const courseSchema = {
-    "@context": "https://schema.org",
-    "@type": "Course",
-    "name": "LBS MCA Entrance 2026 Official Crash Course",
-    "description": "Premium online preparation course for Kerala LBS MCA Entrance 2026. Expert mentorship for students from Kerala, Tamil Nadu, and beyond. Includes live sessions, recorded library, and national ranking mock tests.",
-    "provider": {
-        "@type": "Organization",
-        "name": "Infronixis Technologies",
-        "sameAs": "https://lbscourse.cetmca.in"
-    },
-    "courseCode": "LBS-MCA-2026",
-    "hasCourseInstance": {
-        "@type": "CourseInstance",
-        "courseMode": "online",
-        "courseWorkload": "PT10H",
-        "instructor": {
-            "@type": "Person",
-            "name": "Expert MCA Mentors"
-        }
-    }
-};
-
-const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-        {
-            "@type": "Question",
-            "name": "What is included in the LBS MCA Entrance Crash Course?",
-            "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "The course includes live interactive classes, recorded and sorted video lectures, weekly subject-wise quizzes, full-length mock tests with national ranking, and push notifications for class alerts."
-            }
-        },
-        {
-            "@type": "Question",
-            "name": "Can I access recorded classes if I miss the live session?",
-            "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes, all live sessions are recorded and made available in our library for students to re-watch at any time."
-            }
-        },
-        {
-            "@type": "Question",
-            "name": "Does the platform provide mock tests for LBS MCA?",
-            "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Absolutely. We provide comprehensive mock tests that simulate the actual LBS MCA Exam pattern, including rank tracking to help you gauge your performance."
-            }
-        }
-    ]
 };
 
 export default function LandingPage() {
@@ -76,19 +24,26 @@ export default function LandingPage() {
     const recordOnlyEnabled = process.env.NEXT_PUBLIC_RECORD_ONLY === "true";
     const bothEnabled = process.env.NEXT_PUBLIC_BOTH_PACKAGE === "true";
 
+    const baseUrl = "https://lbscourse.cetmca.in";
+
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background text-foreground">
             <RedirectManager />
-            <Script id="course-schema" type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(courseSchema)
-                }}
-            />
-            <Script id="faq-schema" type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(faqSchema)
-                }}
-            />
+            <JsonLd id="course-schema" data={schemas.course(baseUrl)} />
+            <JsonLd id="faq-schema" data={schemas.faq([
+                {
+                    question: "What is included in the LBS MCA Entrance Crash Course?",
+                    answer: "The course includes live interactive classes, recorded and sorted video lectures, weekly subject-wise quizzes, full-length mock tests with national ranking, and push notifications for class alerts."
+                },
+                {
+                    question: "Can I access recorded classes if I miss the live session?",
+                    answer: "Yes, all live sessions are recorded and made available in our library for students to re-watch at any time."
+                },
+                {
+                    question: "Does the platform provide mock tests for LBS MCA?",
+                    answer: "Absolutely. We provide comprehensive mock tests that simulate the actual LBS MCA Exam pattern, including rank tracking to help you gauge your performance."
+                }
+            ])} />
             
             {/* Navbar is a client component that handles auth-dependent UI */}
             <NavbarWrapper />
