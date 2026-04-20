@@ -58,7 +58,7 @@ export default function StudentDashboardLayout({
     if (!userData) return <PageLoader />;
 
     return (
-        <div className="flex h-screen overflow-hidden bg-background">
+        <div className="flex h-dvh overflow-hidden bg-background">
             {/* Mobile overlay */}
             {sidebarOpen && (
                 <div

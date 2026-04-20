@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
           </div>
 
           <div className="prose prose-slate max-w-none text-muted-foreground space-y-6">
-            <p>Last updated: March 2025</p>
+            <p>Last updated: April 2026</p>
 
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">1. Introduction</h2>

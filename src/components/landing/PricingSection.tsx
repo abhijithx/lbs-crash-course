@@ -52,11 +52,11 @@ export default function PricingSection({ liveOnlyEnabled, recordOnlyEnabled, bot
     return (
         <section className="relative py-24 sm:py-32  border-t border-border">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
-                <div className="text-center mb-20">
-                    <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
-                        Choose Your <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-accent">Package</span>
+                <div className="text-center mb-20 animate-fade-in-up">
+                    <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
+                        Choose Your <span className="text-transparent bg-clip-text bg-linear-to-br from-primary to-accent">Package</span>
                     </h2>
-                    <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
+                    <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
                         Select the plan that fits your learning style
                     </p>
                 </div>
@@ -75,15 +75,15 @@ export default function PricingSection({ liveOnlyEnabled, recordOnlyEnabled, bot
                             >
                                 {pkg.highlighted && (
                                     <>
-                                        <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
-                                        <div className="absolute top-0 right-8 bg-linear-to-b from-primary to-teal-800 rounded-b-xl px-3 py-1.5 text-xs font-bold text-primary-foreground tracking-widest uppercase shadow-lg">
+                                        <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent pointer-events-none" />
+                                        <div className="absolute top-0 right-8 bg-linear-to-br from-primary to-teal-800 rounded-b-xl px-3 py-1.5 text-[10px] font-black text-primary-foreground tracking-widest uppercase shadow-lg z-10">
                                             Most Popular
                                         </div>
                                     </>
                                 )}
-                                <h3 className={`text-2xl font-bold ${pkg.highlighted ? "text-foreground" : "text-foreground/90"}`}>{pkg.name}</h3>
-                                <div className="text-xl font-medium text-primary mt-2 mb-4">{pkg.price}</div>
-                                <p className="text-base text-muted-foreground font-light leading-relaxed flex-1">{pkg.description}</p>
+                                <h3 className={`text-2xl font-black ${pkg.highlighted ? "text-foreground" : "text-foreground/90"} tracking-tight`}>{pkg.name}</h3>
+                                <div className="text-3xl font-black text-primary mt-3 mb-4 tracking-tighter">{pkg.price}</div>
+                                <p className="text-base text-muted-foreground font-medium leading-relaxed flex-1">{pkg.description}</p>
 
                                 <div className="h-px w-full bg-linear-to-r from-transparent via-white/10 to-transparent my-6"></div>
 
@@ -100,7 +100,7 @@ export default function PricingSection({ liveOnlyEnabled, recordOnlyEnabled, bot
                                     className="mt-auto block"
                                 >
                                     <Button
-                                        className={`w-full rounded-xl h-12 text-base font-bold shadow-none transition-all duration-300 ${pkg.highlighted ? "bg-linear-to-r from-primary to-accent hover:from-accent hover:to-primary text-white border-0 shadow-lg shadow-primary/30" : "bg-transparent border border-border text-foreground hover:bg-secondary"}`}
+                                        className={`w-full rounded-xl h-12 text-base font-bold shadow-none transition-all duration-300 ${pkg.highlighted ? "bg-linear-to-br from-primary to-accent hover:shadow-lg hover:shadow-primary/25 text-white border-0" : "bg-transparent border border-border text-foreground hover:bg-secondary hover:border-primary/50"}`}
                                         variant={pkg.highlighted ? "default" : "outline"}
                                     >
                                         Register Now

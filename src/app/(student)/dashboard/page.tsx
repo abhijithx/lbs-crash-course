@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild, limitToLast } from "firebase/database";
 import { db } from "@/lib/firebase";
-import type { LiveClass, Announcement, RankData } from "@/lib/types";
+import type { LiveClass, Announcement, RankData, RankEntry } from "@/lib/types";
 import {
     Video,
     MonitorPlay,
@@ -27,8 +27,8 @@ import { Button } from "@/components/ui/button";
 function LeaderboardSummary() {
     const { userData } = useAuth();
     const [data, setData] = useState<{
-        rankings: any;
-        mockRankings: any;
+        rankings: Record<string, RankData>;
+        mockRankings: Record<string, RankData>;
         quizIds: Set<string>;
         mockTestIds: Set<string>;
     }>({ rankings: {}, mockRankings: {}, quizIds: new Set(), mockTestIds: new Set() });
@@ -62,22 +62,22 @@ function LeaderboardSummary() {
         const allValidRankings: (RankData & { sourceType: 'quiz' | 'mock' })[] = [];
 
         // Add valid quiz rankings
-        Object.entries(data.rankings).forEach(([id, val]: [string, any]) => {
+        Object.entries(data.rankings).forEach(([id, val]) => {
             if (data.quizIds.has(id)) {
                 allValidRankings.push({ ...val, quizId: id, sourceType: 'quiz' });
             }
         });
 
         // Add valid mock test rankings
-        Object.entries(data.mockRankings).forEach(([id, val]: [string, any]) => {
+        Object.entries(data.mockRankings).forEach(([id, val]) => {
             if (data.mockTestIds.has(id)) {
-                allValidRankings.push({ ...val, quizId: id, sourceType: 'mock' });
+                allValidRankings.push({ ...val, mockTestId: id, sourceType: 'mock' });
             }
         });
 
         // Sort by generation time (latest first)
         return allValidRankings.sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0))[0] || null;
-    }, [data]);
+    }, [data.rankings, data.mockRankings, data.quizIds, data.mockTestIds]);
 
     if (loading || !latestRanking) return null;
 
@@ -86,7 +86,7 @@ function LeaderboardSummary() {
     const isMock = latestRanking.sourceType === 'mock';
 
     return (
-        <Card className="overflow-hidden border-0 shadow-lg bg-linear-to-br from-[#254852] to-[#4b6f76] text-white">
+        <Card className="overflow-hidden border-0 shadow-lg bg-linear-to-br from-primary to-accent text-white">
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-yellow-400" />
@@ -103,7 +103,7 @@ function LeaderboardSummary() {
                 <div className="space-y-3">
                     {top3.map((entry, i: number) => (
                         <div key={entry.userId} className="flex items-center gap-3 bg-white/10 rounded-lg p-2 border border-white/10">
-                            <div className="h-6 w-6 rounded-full bg-yellow-400 text-[#254852] flex items-center justify-center text-xs font-bold">
+                            <div className="h-6 w-6 rounded-full bg-yellow-400 text-slate-800 flex items-center justify-center text-xs font-bold">
                                 {i + 1}
                             </div>
                             <span className="text-sm truncate flex-1">{entry.userName}</span>

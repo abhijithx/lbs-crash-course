@@ -7,31 +7,11 @@ import { FadeIn } from "@/components/ui/FadeIn";
 import { ContactForm } from "@/components/contact/ContactForm";
 
 export const metadata: Metadata = {
-    title: "Contact Us | Official LBS MCA Entrance 2025 Support",
-    description: "Questions about your LBS MCA 2025 registration? Connect with the official Infronixis support team. We're here to help Kerala and South India MCA aspirants succeed.",
+    title: "Contact Us | Official LBS MCA Entrance 2026 Support",
+    description: "Questions about your LBS MCA 2026 registration? Connect with the official Infronixis support team. We're here to help Kerala and South India MCA aspirants succeed.",
 };
 
-const contactSchema = {
-    "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "name": "LBS MCA 2025 Help & Support",
-    "description": "Direct contact channels for LBS MCA Entrance coaching, mock tests, and billing support.",
-    "url": "https://lbscourse.cetmca.in/contact",
-    "mainEntity": {
-        "@type": "EducationalOrganization",
-        "name": "LBS MCA Entrance Platform",
-        "telephone": "+917012823414",
-        "email": "cetmca2025@gmail.com",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Kannur",
-            "addressLocality": "Kannur",
-            "addressRegion": "Kerala",
-            "postalCode": "670001",
-            "addressCountry": "IN"
-        }
-    }
-};
+import JsonLd, { schemas } from "@/components/seo/JsonLd";
 
 export default function ContactPage() {
   const contactItems = [
@@ -73,11 +53,7 @@ export default function ContactPage() {
         <div className="absolute bottom-0 left-0 w-125 h-125 bg-teal-500/5 blur-[120px] rounded-full" />
       </div>
 
-      <Script id="contact-schema" type="application/ld+json"
-          dangerouslySetInnerHTML={{
-              __html: JSON.stringify(contactSchema)
-          }}
-      />
+      <JsonLd id="contact-schema" data={schemas.contactPage("https://lbscourse.cetmca.in")} />
       <div className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="max-w-5xl mx-auto">
           <Link href="/" aria-label="Back to home page">

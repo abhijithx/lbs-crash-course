@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Enroll in LBS MCA Preparation 2025 | Registration Page",
+  title: "Enroll in LBS MCA Preparation 2026 | Registration Page",
   description: "Join the most comprehensive Kerala LBS MCA Entrance Crash Course. Select your package and start your journey with live interactive classes and rank-boosting mock tests.",
   keywords: ["LBS MCA Registration", "Enroll MCA Coaching", "Kerala MCA entrance enroll", "MCA training sign up"],
   alternates: { canonical: "/register" },

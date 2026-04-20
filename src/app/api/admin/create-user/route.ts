@@ -27,8 +27,8 @@ export async function POST(request: Request) {
                 uid: existingUser.uid,
                 message: "User account already exists." 
             }, { status: 200 });
-        } catch (error: any) {
-            if (error.code === 'auth/user-not-found') {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/user-not-found') {
                 const userRecord = await adminAuth.createUser({
                     email,
                     password,

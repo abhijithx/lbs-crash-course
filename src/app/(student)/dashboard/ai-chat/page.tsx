@@ -25,12 +25,6 @@ import {
 
 const MESSAGE_FEEDBACK_STORAGE_KEY = "toolpix_message_feedback";
 const STUDY_NOTES_STORAGE_KEY = "toolpix_study_notes";
-const STUDY_TOOL_PROMPTS: string[] = [
-    "Create a 10-question practice quiz on Data Structures",
-    "Summarize my weak areas in Mathematics",
-    "Explain the concept of Pointers in C with examples",
-    "Suggest a revision plan for the next 7 days"
-];
 
 type MessageFeedback = "up" | "down";
 type SessionFeedback = Record<string, MessageFeedback>;
@@ -495,7 +489,7 @@ export default function DashboardAIChatPage() {
     }
 
     return (
-        <div className="chatgpt-shell flex h-full min-h-0 w-full flex-col overflow-hidden bg-background text-foreground font-sans animate-fade-in">
+        <div className="chatgpt-shell flex h-dvh min-h-0 w-full flex-col overflow-hidden bg-background text-foreground font-sans animate-fade-in relative">
             {/* Top Navigation */}
             <header className="z-30 flex shrink-0 items-center justify-between bg-background/95 px-4 py-2 backdrop-blur-xl sm:px-6 sm:py-3">
                 <div className="flex items-center gap-3">
@@ -761,21 +755,8 @@ export default function DashboardAIChatPage() {
 
                         {/* Input Area */}
                         {hasVisibleMessages && (
-                            <div className="chat-composer-wrap relative z-10 shrink-0 bg-background px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 sm:px-6 sm:pt-4">
+                            <div className="chat-composer-wrap relative z-10 shrink-0 bg-background px-4 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 sm:px-6 sm:pt-4">
                                 <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-background to-transparent" />
-                                <div className="mx-auto mb-3 flex max-w-3xl flex-wrap gap-2">
-                                    {STUDY_TOOL_PROMPTS.map((prompt) => (
-                                        <button
-                                            key={prompt}
-                                            type="button"
-                                            onClick={() => sendMessage(prompt)}
-                                            disabled={isLoading}
-                                            className="rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:border-primary/35 hover:bg-primary/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-                                        >
-                                            {prompt}
-                                        </button>
-                                    ))}
-                                </div>
                                 <form
                                     onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                                     className="chat-composer mx-auto max-w-3xl relative"

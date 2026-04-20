@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, Sparkles } from "lucide-react";
+import { ArrowRight, Zap, Sparkles, Play } from "lucide-react";
 
 const stats = [
     { value: "50+", label: "Videos" },
@@ -19,7 +19,7 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
             initial={{ opacity: 0.01 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.1 }}
-            className={`relative w-full ${isMobile ? "max-w-50" : "max-w-105 lg:max-w-none"} aspect-square lg:aspect-auto`}
+            className={`relative w-full ${isMobile ? "max-w-70" : "max-w-105 lg:max-w-none"} aspect-square lg:aspect-auto mx-auto`}
         >
             {/* Decorative Aura */}
             <div className={`absolute inset-0 bg-primary/5 rounded-full blur-[60px] ${isMobile ? "scale-75" : "scale-100"}`}></div>
@@ -45,18 +45,18 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
             <motion.div
                 animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className={`absolute ${isMobile ? "-left-4 top-1/4 p-2 rounded-xl gap-0.5" : "-left-8 top-1/2 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
+                className={`absolute ${isMobile ? "left-0 top-1/4 p-2 rounded-xl gap-0.5" : "-left-8 top-1/2 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
             >
-                <span className={`${isMobile ? "text-lg" : "text-2xl"} font-black text-primary`}>50+</span>
+                <span className={`${isMobile ? "text-base" : "text-2xl"} font-black text-primary`}>50+</span>
                 <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap`}>Mock Exams</span>
             </motion.div>
 
             <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className={`absolute ${isMobile ? "-right-2 bottom-12 p-2 rounded-xl gap-0.5" : "-right-4 bottom-20 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
+                className={`absolute ${isMobile ? "right-0 bottom-12 p-2 rounded-xl gap-0.5" : "-right-4 bottom-20 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
             >
-                <span className={`${isMobile ? "text-lg" : "text-2xl"} font-black text-emerald-500`}>98%</span>
+                <span className={`${isMobile ? "text-base" : "text-2xl"} font-black text-emerald-500`}>98%</span>
                 <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap`}>Success Rate</span>
             </motion.div>
         </motion.div>
@@ -65,7 +65,7 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
 
 export default function HeroSection() {
     return (
-        <section className="relative min-h-screen lg:min-h-[90vh] flex items-center overflow-hidden pt-12 pb-16 lg:pt-24 lg:pb-0 font-sans">
+        <section className="relative min-h-screen lg:min-h-[90vh] flex items-center overflow-hidden pt-8 pb-12 lg:pt-24 lg:pb-0 font-sans">
             {/* Background Effects */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 {/* Simplified Static Gradient Layer */}
@@ -83,39 +83,42 @@ export default function HeroSection() {
                         initial="visible"
                         className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left"
                     >
-                        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary uppercase tracking-wider mb-8 shadow-sm">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary uppercase tracking-wider mb-6 shadow-sm">
                             <Zap className="h-3.5 w-3.5 fill-primary" aria-hidden="true" />
                             Premium MCA Entrance Prep 2026
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-foreground mb-6 leading-[1.1]">
-                            Master the<br />
-                            <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-400 via-primary to-emerald-600">
-                                LBS MCA Entrance
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-foreground mb-4 leading-[1.1]">
+                            The Official<br />
+                            <span className="text-transparent bg-clip-text bg-linear-to-br from-teal-400 via-primary to-emerald-600">
+                                LBS MCA Prep 2026
                             </span>
                         </h1>
 
                         {/* Mobile Mascot (Placed beneath title only on mobile) */}
-                        <div className="lg:hidden w-full max-w-50 mb-4 relative">
+                        <div className="lg:hidden w-full max-w-70 mb-6 relative">
                             <MascotWithCards isMobile={true} />
                         </div>
 
                         <p className="max-w-xl text-base sm:text-lg lg:text-xl text-muted-foreground mb-10 leading-relaxed font-medium">
-                            The most professional digital learning ecosystem built for LBS MCA aspirants. Join the elite ranker's community with <span className="text-foreground font-bold">Expert Mentorship</span> and <span className="text-foreground font-bold">Mock Exams.</span>
+                            Join the premier digital learning ecosystem for Kerala LBS MCA aspirants. Start your journey with <span className="text-foreground font-bold">Expert Mentorship</span>, <span className="text-foreground font-bold">Comprehensive Mock Exams</span>, and the official roadmap curated by the team at <span className="text-primary font-bold">ASCA</span>.
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                             <Link href="/login" className="w-full sm:w-auto">
-                                <Button size="lg" className="w-full gradient-primary hover:shadow-lg hover:shadow-primary/25 rounded-xl px-8 h-12 text-base font-bold transition-all duration-300 group">
+                                <Button size="lg" className="w-full bg-linear-to-br from-primary to-emerald-600 hover:shadow-lg hover:shadow-primary/25 rounded-xl px-8 h-12 text-base font-bold transition-all duration-300 group border-0 text-white">
                                     Get Started Now
                                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
-                            <Link href="#features" className="w-full sm:w-auto">
-                                <Button variant="outline" size="lg" className="w-full bg-card/50 rounded-xl px-8 h-12 text-base font-semibold transition-all duration-300">
-                                    Learn More
+                            <a href="https://youtu.be/NEeRp3s9eoA" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                                <Button variant="outline" size="lg" className="w-full bg-card/50 rounded-xl px-8 h-12 text-base font-semibold group flex items-center justify-center gap-2 border-primary/20 hover:border-primary/50 transition-all duration-300">
+                                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                        <Play className="h-3.5 w-3.5 fill-primary text-primary" />
+                                    </div>
+                                    Watch Intro
                                 </Button>
-                            </Link>
+                            </a>
                         </div>
 
                         {/* Social Proof Mini */}

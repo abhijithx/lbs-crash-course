@@ -103,8 +103,8 @@ export function parseQuestionsFromJson(rawText: string): QuizQuestion[] {
 
     const records = Array.isArray(parsed)
         ? parsed
-        : (parsed as any).questions && Array.isArray((parsed as any).questions)
-            ? (parsed as any).questions
+        : (parsed && typeof parsed === "object" && "questions" in parsed && Array.isArray(parsed.questions))
+            ? (parsed as { questions: unknown[] }).questions
             : null;
 
     if (!records) {
@@ -115,7 +115,7 @@ export function parseQuestionsFromJson(rawText: string): QuizQuestion[] {
         throw new Error("The questions list is empty.");
     }
 
-    return records.map((record: any, index: number) => parseQuestionRecord(record, index));
+    return records.map((record: unknown, index: number) => parseQuestionRecord(record, index));
 }
 
 export function dedupeQuestions(questions: QuizQuestion[]) {

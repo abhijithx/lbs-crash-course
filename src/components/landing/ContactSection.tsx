@@ -15,11 +15,11 @@ export default function ContactSection() {
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div>
-                            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-6">
+                            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground mb-6">
                                 Have Questions? <br />
-                                <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-teal-500">Reach Out to Us</span>
+                                <span className="text-transparent bg-clip-text bg-linear-to-br from-primary to-teal-500">Reach Out to Us</span>
                             </h2>
-                            <p className="text-lg text-muted-foreground mb-10 font-light leading-relaxed">
+                            <p className="text-lg text-muted-foreground mb-10 font-medium leading-relaxed">
                                 Whether you have a query about the LBS MCA Entrance pattern, our coaching fee, or platform access, we are here to assist you 24/7.
                             </p>
 
@@ -56,13 +56,13 @@ export default function ContactSection() {
                             </div>
                         </div>
 
-                        <div className="relative">
+                        <div className="relative animate-fade-in-up">
                             <div className="absolute -inset-4 bg-linear-to-tr from-primary/10 to-teal-500/10 blur-xl rounded-[2.5rem] pointer-events-none opacity-50" />
-                            <div className="relative rounded-4xl border border-border bg-card p-8 sm:p-10 shadow-2xl overflow-hidden">
+                            <div className="relative rounded-4xl border border-border bg-card p-8 sm:p-10 shadow-2xl overflow-hidden transition-all duration-300 hover:border-primary/30">
                                 <div className="absolute top-0 right-0 h-32 w-32 bg-linear-to-br from-primary/10 to-transparent rounded-bl-[100px] pointer-events-none" />
 
-                                <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                    <Zap className="h-5 w-5 text-primary" />
+                                <h3 className="text-3xl font-black mb-8 flex items-center gap-2 tracking-tight">
+                                    <Zap className="h-6 w-6 text-primary fill-primary" />
                                     Quick Connect
                                 </h3>
 

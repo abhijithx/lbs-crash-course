@@ -91,7 +91,7 @@ export async function approveRegistrationAction(
         const is_live = regData.selectedPackage === "live_only" || regData.selectedPackage === "both";
         const is_record_class = regData.selectedPackage === "recorded_only" || regData.selectedPackage === "both";
 
-        const updates: any = {};
+        const updates: Record<string, unknown> = {};
         updates[`users/${uid}`] = {
             name: regData.name,
             email: regData.email,
