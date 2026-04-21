@@ -10,50 +10,13 @@ import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { LiveClass } from "@/lib/types";
-import { createMediaToken } from "@/lib/media";
+import { createMediaToken, extractYouTubeId } from "@/lib/media";
 import { Video, Calendar, Clock, ExternalLink, Play, AlertCircle, MonitorPlay, X, SkipBack, SkipForward, FileText, Pause, Maximize2, Minimize2, ArrowLeft, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { Dialog } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/;
-
-function extractYouTubeId(input: string) {
-    const value = input.trim();
-    if (!value) return "";
-    if (YOUTUBE_ID_REGEX.test(value)) return value;
-
-    const compactMatch = value.match(/([A-Za-z0-9_-]{11})(?:\b|$)/);
-    if (compactMatch?.[1] && YOUTUBE_ID_REGEX.test(compactMatch[1])) return compactMatch[1];
-
-    try {
-        const url = new URL(value);
-        const host = url.hostname.replace(/^www\./, "").toLowerCase();
-
-        if (host === "youtu.be") {
-            const id = url.pathname.split("/").filter(Boolean)[0] || "";
-            return YOUTUBE_ID_REGEX.test(id) ? id : "";
-        }
-
-        if (host === "youtube.com" || host === "m.youtube.com") {
-            if (url.pathname === "/watch") {
-                const v = url.searchParams.get("v") || "";
-                return YOUTUBE_ID_REGEX.test(v) ? v : "";
-            }
-
-            const parts = url.pathname.split("/").filter(Boolean);
-            if (["embed", "shorts", "live"].includes(parts[0] || "")) {
-                const id = parts[1] || "";
-                return YOUTUBE_ID_REGEX.test(id) ? id : "";
-            }
-        }
-    } catch {
-        // fall back below
-    }
-
-    const match = value.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/);
-    return match?.[1] || "";
-}
+// Shared extractYouTubeId moved to @/lib/media
 
 function toYoutubeDisplayUrl(input: string) {
     const id = extractYouTubeId(input);
@@ -352,7 +315,7 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
                         />
                     </div>
                     <div
-                        className="absolute inset-0 z-20"
+                        className={`absolute inset-0 z-20 ${!isFullscreen ? "pointer-events-none" : ""}`}
                         style={{ background: "transparent" }}
                         onContextMenu={(e) => e.preventDefault()}
                         onClick={() => { if (isFullscreen) showFsOverlay(); }}

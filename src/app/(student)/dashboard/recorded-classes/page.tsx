@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { createMediaToken } from "@/lib/media";
+import { createMediaToken, extractYouTubeId } from "@/lib/media";
 import { ref, onValue, query, orderByChild, get, update } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { RecordedClass } from "@/lib/types";
@@ -60,8 +60,7 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
         let active = true;
         const resolve = async () => {
             if (!open || !video) return;
-            const raw = video.youtubeUrl;
-            const id = raw.includes("http") ? (raw.split("v=")[1]?.split("&")[0] || raw.split("/").pop() || raw) : raw;
+            const id = extractYouTubeId(video.youtubeUrl);
             try {
                 const tokRes = await fetch("/api/media/token", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, kind: "yt" }) });
                 if (!tokRes.ok) throw new Error("token failed");
@@ -357,7 +356,7 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
                         />
                     </div>
                     <div
-                        className="absolute inset-0 z-20"
+                        className={`absolute inset-0 z-20 ${!isFullscreen ? "pointer-events-none" : ""}`}
                         style={{ background: "transparent" }}
                         onContextMenu={(e) => e.preventDefault()}
                         onClick={() => { if (isFullscreen) showFsOverlay(); }}
@@ -690,8 +689,7 @@ export default function RecordedClassesPage() {
                                             </div>
                                             <div className="rounded-2xl border border-border overflow-hidden bg-card/40 divide-y">
                                                 {items.map((cls) => {
-                                                    const raw = cls.youtubeUrl;
-                                                    const id = raw.includes("http") ? (raw.split("v=")[1]?.split("&")[0] || raw.split("/").pop() || raw) : raw;
+                                                    const id = extractYouTubeId(cls.youtubeUrl);
                                                     const thumb = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
                                                     const progress = videoProgressMap[cls.id];
                                                     const dur = progress?.duration || 0;

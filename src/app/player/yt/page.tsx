@@ -25,7 +25,7 @@ function YTProxyInner() {
   const playerRef = useRef<Player | null>(null);
 
   useEffect(() => {
-    if (!vid) return;
+    if (!vid || vid.length < 11) return;
     const ensure = () =>
       new Promise<unknown>((resolve, reject) => {
         const w = window as unknown as { YT?: unknown };
