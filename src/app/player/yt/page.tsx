@@ -48,7 +48,6 @@ function YTProxyInner() {
       if (!P) return;
       const Ctor = P as NewPlayer;
       playerRef.current = (new Ctor(containerRef.current, {
-        host,
         height: "100%",
         width: "100%",
         videoId: vid,
@@ -75,10 +74,10 @@ function YTProxyInner() {
             const duration = p?.getDuration?.() ?? 0;
             const rates = p?.getAvailablePlaybackRates?.() ?? [0.5, 1, 1.5, 2];
             const qualities = p?.getAvailableQualityLevels?.() ?? [];
-            window.parent?.postMessage({ type: "yt:ready", duration, rates, qualities }, window.location.origin);
+            window.parent?.postMessage({ type: "yt:ready", duration, rates, qualities }, "*");
           },
           onStateChange: (e: { data: number }) => {
-            window.parent?.postMessage({ type: "yt:state", state: e?.data }, window.location.origin);
+            window.parent?.postMessage({ type: "yt:state", state: e?.data }, "*");
           },
         },
       })) as Player;
@@ -88,12 +87,11 @@ function YTProxyInner() {
           const p = playerRef.current as Player;
           const current = p?.getCurrentTime?.() ?? 0;
           const duration = p?.getDuration?.() ?? 0;
-          window.parent?.postMessage({ type: "yt:time", current, duration }, window.location.origin);
+          window.parent?.postMessage({ type: "yt:time", current, duration }, "*");
         } catch {}
       }, 700);
 
       const onMsg = (e: MessageEvent) => {
-        if (e.origin !== window.location.origin) return;
         const d = e.data as { type?: string; name?: string; time?: number; rate?: number; quality?: string } | undefined;
         if (!d || d.type !== "cmd") return;
         try {

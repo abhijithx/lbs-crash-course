@@ -92,9 +92,8 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
     useEffect(() => {
         const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
         const handleMessage = (e: MessageEvent) => {
-            if (e.origin !== window.location.origin) return;
             const d = e.data as { type?: string; duration?: number; rates?: number[]; qualities?: string[]; current?: number; state?: number } | null;
-            if (!d || typeof d !== "object") return;
+            if (!d || typeof d !== "object" || !d.type?.startsWith("yt:")) return;
             if (d.type === "yt:ready") {
                 onReady();
                 if (typeof d.duration === "number" && Number.isFinite(d.duration)) {
@@ -171,34 +170,34 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
 
     const applyRate = (r: number) => {
         setRate(r);
-        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "rate", rate: r }, window.location.origin); } catch { }
+        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "rate", rate: r }, "*"); } catch { }
     };
 
     const applyQuality = (q: string) => {
         setQuality(q);
         if (q === "auto") return;
-        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "quality", quality: q }, window.location.origin); } catch { }
+        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "quality", quality: q }, "*"); } catch { }
     };
 
     const seekBy = (delta: number) => {
         const ct = currentTime ?? 0;
         const nt = Math.max(0, Math.min((duration || 0), ct + delta));
-        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "seek", time: nt }, window.location.origin); } catch { }
+        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "seek", time: nt }, "*"); } catch { }
         setCurrentTime(nt);
     };
 
     const seekTo = (t: number) => {
-        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "seek", time: t }, window.location.origin); } catch { }
+        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "seek", time: t }, "*"); } catch { }
         setCurrentTime(t);
     };
 
     const togglePlay = () => {
         if (isPaused) {
-            try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "play" }, window.location.origin); } catch { }
+            try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "play" }, "*"); } catch { }
             setIsPaused(false);
             setCoverVisible(false);
         } else {
-            try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "pause" }, window.location.origin); } catch { }
+            try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "pause" }, "*"); } catch { }
             setIsPaused(true);
             setCoverVisible(true);
         }
