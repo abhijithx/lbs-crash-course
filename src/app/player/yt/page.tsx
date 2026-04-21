@@ -22,6 +22,7 @@ function YTProxyInner() {
     destroy?: () => void;
     setPlaybackRate?: (r: number) => void;
     setPlaybackQuality?: (q: string) => void;
+    setVolume?: (v: number) => void;
   };
   const playerRef = useRef<Player | null>(null);
 
