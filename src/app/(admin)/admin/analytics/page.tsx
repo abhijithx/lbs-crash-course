@@ -74,52 +74,52 @@ export default function AdminAnalyticsPage() {
         <div className="space-y-6 animate-fade-in">
             <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <BarChart3 className="h-6 w-6 text-[var(--primary)]" />
+                    <BarChart3 className="h-6 w-6 text-primary" />
                     Analytics
                 </h1>
-                <p className="text-[var(--muted-foreground)] mt-1">Platform statistics and insights</p>
+                <p className="text-muted-foreground mt-1">Platform statistics and insights</p>
             </div>
 
             {/* Platform Health Summary */}
             <div className="grid sm:grid-cols-3 gap-4">
                 <Card className="relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-full blur-xl" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-blue-500/10 to-transparent rounded-full blur-xl" />
                     <CardContent className="p-5 relative">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-cyan-500">
                                 <Activity className="h-6 w-6 text-white" />
                             </div>
                             <div>
                                 <p className="text-3xl font-bold">{data.verifiedUsers}</p>
-                                <p className="text-xs text-[var(--muted-foreground)]">Active Students</p>
+                                <p className="text-xs text-muted-foreground">Active Students</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card className="relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full blur-xl" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-green-500/10 to-transparent rounded-full blur-xl" />
                     <CardContent className="p-5 relative">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-500">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-green-500 to-emerald-500">
                                 <Zap className="h-6 w-6 text-white" />
                             </div>
                             <div>
                                 <p className="text-3xl font-bold">{totalContent}</p>
-                                <p className="text-xs text-[var(--muted-foreground)]">Total Content Items</p>
+                                <p className="text-xs text-muted-foreground">Total Content Items</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card className="relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-violet-500/10 to-transparent rounded-full blur-xl" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-violet-500/10 to-transparent rounded-full blur-xl" />
                     <CardContent className="p-5 relative">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-violet-500 to-purple-500">
                                 <Target className="h-6 w-6 text-white" />
                             </div>
                             <div>
                                 <p className="text-3xl font-bold">{engagementRate}%</p>
-                                <p className="text-xs text-[var(--muted-foreground)]">Engagement Rate</p>
+                                <p className="text-xs text-muted-foreground">Engagement Rate</p>
                             </div>
                         </div>
                     </CardContent>
@@ -131,13 +131,13 @@ export default function AdminAnalyticsPage() {
                 <h2 className="text-lg font-semibold mb-4">Detailed Metrics</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                     {metrics.map((metric) => (
-                        <Card key={metric.label} className="hover:border-[var(--primary)]/20 transition-all duration-300">
+                        <Card key={metric.label} className="hover:border-(--primary)/20 transition-all duration-300">
                             <CardContent className="p-4">
-                                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${metric.color} mb-3`}>
+                                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br ${metric.color} mb-3`}>
                                     <metric.icon className="h-5 w-5 text-white" />
                                 </div>
                                 <p className="text-2xl font-bold">{metric.value}</p>
-                                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{metric.label}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{metric.label}</p>
                             </CardContent>
                         </Card>
                     ))}
@@ -148,7 +148,7 @@ export default function AdminAnalyticsPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-[var(--primary)]" />
+                        <BarChart3 className="h-4 w-4 text-primary" />
                         Content Distribution
                     </CardTitle>
                 </CardHeader>
@@ -162,10 +162,10 @@ export default function AdminAnalyticsPage() {
                         ].map((item) => (
                             <div key={item.label}>
                                 <div className="flex items-center justify-between text-sm mb-1.5">
-                                    <span className="text-[var(--muted-foreground)]">{item.label}</span>
+                                    <span className="text-muted-foreground">{item.label}</span>
                                     <span className="font-semibold">{item.value}</span>
                                 </div>
-                                <div className="h-2.5 rounded-full bg-[var(--muted)] overflow-hidden">
+                                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                                     <div
                                         className={`h-full rounded-full ${item.color} transition-all duration-700`}
                                         style={{ width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%` }}
