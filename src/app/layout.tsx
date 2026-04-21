@@ -211,7 +211,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <ToolPixOverlay />
-          <FirebaseHealthPanel />
+          {process.env.NODE_ENV === "development" && <FirebaseHealthPanel />}
           <Analytics />
           <SpeedInsights />
           <Toaster

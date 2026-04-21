@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
+import { adminAuth } from "@/lib/firebase-admin";
+
 // Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -22,9 +24,28 @@ export async function POST(req: Request) {
         const file = formData.get("file") as File | null;
         const rawSource = req.headers.get("x-upload-source");
         const source = rawSource?.trim().toLowerCase();
+        const authHeader = req.headers.get("Authorization");
 
-        // 1. Basic Origin/Source Validation
-        if (source !== "registration-flow") {
+        // 1. Security Logic
+        if (source === "registration-flow") {
+            // Allow unauthenticated for registration, but check source header
+            // (Note: In a more advanced setup, we'd add rate limiting here)
+        } else if (source === "profile-upgrade") {
+            // MUST be authenticated for profile upgrades
+            if (!authHeader?.startsWith("Bearer ") || !adminAuth) {
+                return NextResponse.json({ error: "Authentication Required" }, { status: 401 });
+            }
+
+            try {
+                const token = authHeader.split(" ")[1];
+                await adminAuth.verifyIdToken(token);
+                // Token is valid
+            } catch (err) {
+                console.error("[SEC_FAIL] Invalid Upload Token:", err);
+                return NextResponse.json({ error: "Invalid Session" }, { status: 401 });
+            }
+        } else {
+            // Block everything else
             const clientIp = req.headers.get("x-forwarded-for") || "unknown";
             console.error(`[SEC_CRITICAL] Unauthorized Upload Attempt: Source=${source}, IP=${clientIp}`);
             return NextResponse.json({ error: "Access Denied: Invalid Security Context" }, { status: 403 });

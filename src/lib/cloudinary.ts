@@ -1,13 +1,19 @@
-export const uploadImageToCloudinary = async (file: File): Promise<string> => {
+export const uploadImageToCloudinary = async (file: File, token?: string, source: string = "registration-flow"): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
+
+    const headers: Record<string, string> = {
+        "x-upload-source": source,
+    };
+
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
 
     try {
         const response = await fetch('/api/upload', {
             method: "POST",
-            headers: {
-                "x-upload-source": "registration-flow",
-            },
+            headers,
             body: formData,
         });
 

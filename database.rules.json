@@ -38,11 +38,11 @@
             }
         },
         "liveClasses": {
-            ".read": "auth != null",
+            ".read": "auth != null && (root.child('users').child(auth.uid).child('is_live').val() === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
             ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "recordedClasses": {
-            ".read": "auth != null",
+            ".read": "auth != null && (root.child('users').child(auth.uid).child('is_record_class').val() === true || root.child('users').child(auth.uid).child('role').val() === 'admin')",
             ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "syllabus": {
