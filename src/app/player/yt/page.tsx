@@ -63,21 +63,33 @@ function YTProxyInner() {
           origin: window.location.origin,
         },
         events: {
-          onReady: () => {
+          onReady: (event: { target: unknown }) => {
+            const p = event.target as Player;
+            playerRef.current = p; // Ensure ref is fully initialized
             try {
-              const p = playerRef.current as Player;
-              if (start > 0) p?.seekTo?.(start, true);
+              if (start > 0) p.seekTo?.(start, true);
               p.mute?.();
               p.playVideo?.();
             } catch {}
-            const p = playerRef.current as Player;
-            const duration = p?.getDuration?.() ?? 0;
-            const rates = p?.getAvailablePlaybackRates?.() ?? [0.5, 1, 1.5, 2];
-            const qualities = p?.getAvailableQualityLevels?.() ?? [];
+
+            let duration = 0;
+            let rates = [0.5, 1, 1.5, 2];
+            let qualities: string[] = [];
+
+            try { duration = p.getDuration?.() ?? 0; } catch {}
+            try { rates = p.getAvailablePlaybackRates?.() ?? rates; } catch {}
+            try { qualities = p.getAvailableQualityLevels?.() ?? qualities; } catch {}
+
             window.parent?.postMessage({ type: "yt:ready", duration, rates, qualities }, "*");
           },
           onStateChange: (e: { data: number }) => {
             window.parent?.postMessage({ type: "yt:state", state: e?.data }, "*");
+          },
+          onError: (e: { data: number; target: unknown }) => {
+            // Unwedge parent if YouTube rejects the video (invalid ID, embed disabled, etc.)
+            let duration = 0; let rates = [1]; let qualities: string[] = [];
+            try { const p = e.target as Player; duration = p.getDuration?.() ?? 0; } catch {}
+            window.parent?.postMessage({ type: "yt:ready", duration, rates, qualities }, "*");
           },
         },
       })) as Player;

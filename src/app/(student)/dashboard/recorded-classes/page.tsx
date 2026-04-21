@@ -132,9 +132,12 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
         document.addEventListener("fullscreenchange", onFs);
         window.addEventListener("message", handleMessage);
 
+        const failSafeTimer = window.setTimeout(() => setIsReady(true), 3000);
+
         return () => {
             document.removeEventListener("fullscreenchange", onFs);
             window.removeEventListener("message", handleMessage);
+            window.clearTimeout(failSafeTimer);
             if (hudTimerRef.current) { window.clearTimeout(hudTimerRef.current); hudTimerRef.current = null; }
             if (fsOverlayTimerRef.current) { window.clearTimeout(fsOverlayTimerRef.current); fsOverlayTimerRef.current = null; }
         };
