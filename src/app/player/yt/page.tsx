@@ -7,7 +7,7 @@ function YTProxyInner() {
   const sp = useSearchParams();
   const vid = sp.get("id") || "";
   const start = Number(sp.get("start") || 0);
-  const host = "https://www.youtube-nocookie.com";
+  const host = "https://www.youtube.com";
   const containerRef = useRef<HTMLDivElement | null>(null);
   type Player = {
     seekTo?: (t: number, allow?: boolean) => void;
@@ -61,6 +61,7 @@ function YTProxyInner() {
           playsinline: 1,
           modestbranding: 1,
           enablejsapi: 1,
+          origin: window.location.origin,
         },
         events: {
           onReady: () => {
