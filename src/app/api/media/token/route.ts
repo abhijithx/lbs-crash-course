@@ -14,17 +14,6 @@ export async function POST(req: NextRequest) {
     const secret = process.env.MEDIA_TOKEN_SECRET || (process.env.NODE_ENV !== "production" ? "dev-media-secret" : "");
     if (!secret) return NextResponse.json({ message: "Server not configured" }, { status: 500 });
 
-    // Authorization check
-    const adminSecret = process.env.ADMIN_API_SECRET;
-    const requestSecret = req.headers.get("x-admin-secret");
-
-    // For now, require the admin secret to issue tokens
-    if (!adminSecret || requestSecret !== adminSecret) {
-      // In a real production app with Firebase Admin properly set up, we would verify the user's ID token here.
-      // Since we are hardening, we'll block unauthorized external requests.
-      return NextResponse.json({ message: "Unauthorized: Missing administrative secret" }, { status: 401 });
-    }
-
     const body = await req.json().catch(() => null) as { id?: string; kind?: "yt" | "note" } | null;
     const id = (body?.id || "").trim();
     const kind = body?.kind || "yt";
