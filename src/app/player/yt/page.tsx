@@ -12,6 +12,7 @@ function YTProxyInner() {
   type Player = {
     seekTo?: (t: number, allow?: boolean) => void;
     mute?: () => void;
+    unMute?: () => void;
     playVideo?: () => void;
     pauseVideo?: () => void;
     getDuration?: () => number;
@@ -56,7 +57,7 @@ function YTProxyInner() {
           rel: 0,
           iv_load_policy: 3,
           disablekb: 1,
-          autoplay: 1,
+          autoplay: 0,
           playsinline: 1,
           modestbranding: 1,
           enablejsapi: 1,
@@ -68,8 +69,7 @@ function YTProxyInner() {
             playerRef.current = p; // Ensure ref is fully initialized
             try {
               if (start > 0) p.seekTo?.(start, true);
-              p.mute?.();
-              p.playVideo?.();
+              // Starting unmuted and unplayed for manual trigger
             } catch {}
 
             let duration = 0;
@@ -108,11 +108,19 @@ function YTProxyInner() {
         if (!d || d.type !== "cmd") return;
         try {
           const p = playerRef.current as Player;
-          if (d.name === "play") p?.playVideo?.();
-          else if (d.name === "pause") p?.pauseVideo?.();
-          else if (d.name === "seek") p?.seekTo?.(Number(d.time || 0), true);
-          else if (d.name === "rate") p?.setPlaybackRate?.(Number(d.rate || 1));
-          else if (d.name === "quality" && d.quality && d.quality !== "auto") {
+          if (d.name === "play") {
+            try { p?.unMute?.(); } catch {}
+            try { p?.setVolume?.(100); } catch {}
+            p?.playVideo?.();
+          } else if (d.name === "pause") {
+            p?.pauseVideo?.();
+          } else if (d.name === "unmute") {
+            p?.unMute?.();
+          } else if (d.name === "seek") {
+            p?.seekTo?.(Number(d.time || 0), true);
+          } else if (d.name === "rate") {
+            p?.setPlaybackRate?.(Number(d.rate || 1));
+          } else if (d.name === "quality" && d.quality && d.quality !== "auto") {
             p?.setPlaybackQuality?.(String(d.quality));
           }
         } catch {}
@@ -134,9 +142,39 @@ function YTProxyInner() {
     };
   }, [vid, start]);
 
+  // Anti-Piracy: Block common DevTools and Save/Print shortcuts
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+      
+      if (e.key === 'F12') { e.preventDefault(); return false; }
+      if (cmdOrCtrl) {
+        if (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P' || e.key === 'U') {
+          e.preventDefault();
+          return false;
+        }
+        if (e.shiftKey && (e.key === 'i' || e.key === 'j' || e.key === 'c' || e.key === 'I' || e.key === 'J' || e.key === 'C')) {
+          e.preventDefault();
+          return false;
+        }
+        if (e.altKey && (e.key === 'i' || e.key === 'j' || e.key === 'c' || e.key === 'I' || e.key === 'J' || e.key === 'C')) {
+          e.preventDefault();
+          return false;
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    window.addEventListener('contextmenu', (e) => e.preventDefault());
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, []);
+
   return (
     <div style={{ width: "100vw", height: "100vh", background: "black", position: "relative" }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
+      <div className="absolute inset-0 z-20" style={{ background: "transparent" }} onContextMenu={(e) => e.preventDefault()} />
     </div>
   );
 }

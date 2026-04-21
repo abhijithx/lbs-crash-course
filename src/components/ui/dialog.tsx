@@ -9,9 +9,10 @@ interface DialogProps {
     onOpenChange: (open: boolean) => void;
     children: React.ReactNode;
     className?: string;
+    hideClose?: boolean;
 }
 
-function Dialog({ open, onOpenChange, children, className }: DialogProps) {
+function Dialog({ open, onOpenChange, children, className, hideClose }: DialogProps) {
     // Lock body scroll when dialog is open
     React.useEffect(() => {
         if (open) {
@@ -47,13 +48,15 @@ function Dialog({ open, onOpenChange, children, className }: DialogProps) {
             {/* Content Container */}
             <div className="min-h-screen px-4 py-8 flex items-center justify-center">
                 <div className={cn("relative w-full max-w-lg", className)}>
-                    <button
-                        onClick={() => onOpenChange(false)}
-                        className="absolute right-4 top-4 z-50 rounded-full p-1.5 hover:bg-zinc-100 transition-colors cursor-pointer bg-white/50 backdrop-blur-sm"
-                        aria-label="Close dialog"
-                    >
-                        <X className="h-4 w-4 text-zinc-500" />
-                    </button>
+                    {!hideClose && (
+                        <button
+                            onClick={() => onOpenChange(false)}
+                            className="absolute right-4 top-4 z-50 rounded-full p-1.5 hover:bg-zinc-100 transition-colors cursor-pointer bg-white/50 backdrop-blur-sm"
+                            aria-label="Close dialog"
+                        >
+                            <X className="h-4 w-4 text-zinc-500" />
+                        </button>
+                    )}
                     {children}
                 </div>
             </div>
