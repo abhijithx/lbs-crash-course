@@ -96,7 +96,7 @@ export function RegisterForm() {
 
     const canContinueToPayment = () => {
         const { name, email, phone, whatsapp, graduationYear, selectedPackage } = formData;
-        
+
         if (!name || !email || !phone || !whatsapp || !graduationYear || !selectedPackage) {
             toast.error("Please fill in all required fields");
             return false;
@@ -132,7 +132,7 @@ export function RegisterForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.name || !formData.email || !formData.phone || !formData.whatsapp || !formData.graduationYear || !formData.selectedPackage) {
+        if (!formData.name || !formData.email || !formData.phone || !formData.whatsapp || !formData.graduationYear || !formData.selectedPackage || !formData.transactionId) {
             toast.error("Please fill in all required fields");
             return;
         }
@@ -162,16 +162,14 @@ export function RegisterForm() {
                     formPayload.append("whatsapp", formData.whatsapp);
                     formPayload.append("graduationYear", formData.graduationYear);
                     formPayload.append("selectedPackage", formData.selectedPackage);
-                    if (formData.transactionId) {
-                        formPayload.append("transactionId", formData.transactionId);
-                    }
+                    formPayload.append("transactionId", formData.transactionId);
                     formPayload.append("screenshotUrl", cloudinaryUrl);
 
                     const response = await fetch(APPS_SCRIPT_URL, {
                         method: "POST",
                         body: formPayload,
                     });
-                    
+
                     if (!response.ok) {
                         console.warn("Apps Script sync responded with error status:", response.status);
                     }
@@ -188,7 +186,7 @@ export function RegisterForm() {
                 whatsapp: formData.whatsapp,
                 graduationYear: formData.graduationYear,
                 selectedPackage: formData.selectedPackage,
-                transactionId: formData.transactionId || null,
+                transactionId: formData.transactionId,
                 screenshotUrl: cloudinaryUrl,
                 submittedAt: Date.now(),
                 status: "pending",
@@ -493,13 +491,15 @@ export function RegisterForm() {
 
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="transactionId">Transaction ID (Optional)</Label>
+                                            <Label htmlFor="transactionId">Transaction ID *</Label>
                                             <Input
                                                 id="transactionId"
                                                 name="transactionId"
                                                 placeholder="Enter payment transaction ID"
                                                 value={formData.transactionId}
                                                 onChange={handleInputChange}
+                                                required
+                                                aria-required="true"
                                             />
                                         </div>
                                         <div className="space-y-2">
