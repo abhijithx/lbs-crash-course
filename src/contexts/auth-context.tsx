@@ -107,6 +107,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             setUser(firebaseUser);
             if (firebaseUser) {
+                // Set cookie for middleware
+                const token = await firebaseUser.getIdToken();
+                document.cookie = `__session=${token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax; Secure`;
+
                 // Fetch user data from Realtime DB
                 const userRef = ref(db, `users/${firebaseUser.uid}`);
                 const snapshot = await get(userRef);
@@ -116,6 +120,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 }
             } else {
                 setUserData(null);
+                // Clear cookie
+                document.cookie = "__session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
             }
             setLoading(false);
         });

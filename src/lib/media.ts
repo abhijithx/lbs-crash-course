@@ -39,10 +39,15 @@ export function extractYouTubeId(input: string): string {
   return match?.[1] || "";
 }
 
-export async function createMediaToken(source: string, kind: MediaTokenKind) {
+export async function createMediaToken(source: string, kind: MediaTokenKind, fbToken?: string) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (fbToken) {
+    headers["Authorization"] = `Bearer ${fbToken}`;
+  }
+
   const response = await fetch("/api/media/token", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ id: source, kind }),
   });
 

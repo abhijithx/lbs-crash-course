@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-
-import { adminAuth } from "@/lib/firebase-admin";
+import { verifySession } from "@/lib/auth-utils";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -13,7 +12,7 @@ cloudinary.config({
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const contentType = req.headers.get("content-type") || "";
         if (!contentType.includes("multipart/form-data")) {
@@ -24,26 +23,15 @@ export async function POST(req: Request) {
         const file = formData.get("file") as File | null;
         const rawSource = req.headers.get("x-upload-source");
         const source = rawSource?.trim().toLowerCase();
-        const authHeader = req.headers.get("Authorization");
 
-        // 1. Security Logic
+        // 1. Unified Security Logic
         if (source === "registration-flow") {
             // Allow unauthenticated for registration, but check source header
             // (Note: In a more advanced setup, we'd add rate limiting here)
-        } else if (source === "profile-upgrade") {
-            // MUST be authenticated for profile upgrades
-            if (!authHeader?.startsWith("Bearer ") || !adminAuth) {
-                return NextResponse.json({ error: "Authentication Required" }, { status: 401 });
-            }
-
-            try {
-                const token = authHeader.split(" ")[1];
-                await adminAuth.verifyIdToken(token);
-                // Token is valid
-            } catch (err) {
-                console.error("[SEC_FAIL] Invalid Upload Token:", err);
-                return NextResponse.json({ error: "Invalid Session" }, { status: 401 });
-            }
+        } else if (source === "profile-upgrade" || source === "admin-action") {
+            // MUST be authenticated for profile upgrades or admin actions
+            const { error } = await verifySession(req);
+            if (error) return error;
         } else {
             // Block everything else
             const clientIp = req.headers.get("x-forwarded-for") || "unknown";

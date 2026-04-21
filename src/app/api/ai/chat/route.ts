@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
+import { verifySession } from "@/lib/auth-utils";
 
 // 1. Provider Configurations & Key Rotation
 const GEMINI_KEYS = (process.env.GEMINI_API_KEYS || "").split(",").filter(Boolean);
@@ -16,12 +17,12 @@ function getRandomKey(keys: string[]) {
 }
 
 // 2. Specialized Provider Handlers
-async function callGemini(prompt: string): Promise<string | null> {
+async function callGeminiStream(prompt: string): Promise<ReadableStream | null> {
     const key = getRandomKey(GEMINI_KEYS);
     if (!key) return null;
 
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${key}`;
         const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -32,15 +33,14 @@ async function callGemini(prompt: string): Promise<string | null> {
         });
 
         if (!response.ok) return null;
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        return response.body;
     } catch (e) {
-        console.error("[Gemini] Error:", e);
+        console.error("[Gemini] Streaming Error:", e);
         return null;
     }
 }
 
-async function callGroq(prompt: string): Promise<string | null> {
+async function callGroqStream(prompt: string): Promise<ReadableStream | null> {
     const key = getRandomKey(GROQ_KEYS);
     if (!key) return null;
 
@@ -54,20 +54,20 @@ async function callGroq(prompt: string): Promise<string | null> {
             body: JSON.stringify({
                 model: "llama-3.3-70b-specdec",
                 messages: [{ role: "user", content: prompt }],
-                temperature: 0.7
+                temperature: 0.7,
+                stream: true
             })
         });
 
         if (!response.ok) return null;
-        const data = await response.json();
-        return data.choices?.[0]?.message?.content || null;
+        return response.body;
     } catch (e) {
-        console.error("[Groq] Error:", e);
+        console.error("[Groq] Streaming Error:", e);
         return null;
     }
 }
 
-async function callNvidia(prompt: string): Promise<string | null> {
+async function callNvidiaStream(prompt: string): Promise<ReadableStream | null> {
     const key = getRandomKey(NVIDIA_KEYS);
     if (!key) return null;
 
@@ -81,15 +81,15 @@ async function callNvidia(prompt: string): Promise<string | null> {
             body: JSON.stringify({
                 model: "meta/llama-3.1-405b-instruct",
                 messages: [{ role: "user", content: prompt }],
-                temperature: 0.7
+                temperature: 0.7,
+                stream: true
             })
         });
 
         if (!response.ok) return null;
-        const data = await response.json();
-        return data.choices?.[0]?.message?.content || null;
+        return response.body;
     } catch (e) {
-        console.error("[NVIDIA] Error:", e);
+        console.error("[NVIDIA] Streaming Error:", e);
         return null;
     }
 }
@@ -113,52 +113,47 @@ async function callPicoAPI(prompt: string): Promise<string | null> {
     }
 }
 
-// 3. POST Handler with Sequential Fallback
+// 3. POST Handler with Sequential Fallback & Streaming
 export async function POST(req: NextRequest) {
     try {
         const { prompt: rawPrompt } = await req.json();
 
-        // Authentication Check
-        const authHeader = req.headers.get("Authorization");
-        const idToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
-        
-        let isAuthenticated = false;
-        if (idToken && adminAuth) {
-            try {
-                await adminAuth.verifyIdToken(idToken);
-                isAuthenticated = true;
-            } catch (e) {
-                console.warn("[AI Proxy] Invalid token session.");
-            }
-        }
+        // Unified Authentication Check
+        const { user, error } = await verifySession(req);
+        if (error) return error;
 
-        // Context Security
-        const isContextSensitive = typeof rawPrompt === 'string' && rawPrompt.includes("CONTEXT:");
-        if (isContextSensitive && !isAuthenticated) {
-            return NextResponse.json({ 
-                error: "Authentication required for personalized intelligence." 
-            }, { status: 401 });
-        }
-        
         const prompt = typeof rawPrompt === 'string' 
             ? rawPrompt.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim() 
             : "";
 
         const finalPrompt = prompt.includes("CONTEXT:") ? prompt : `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`;
         
-        // Final Proxy Execution Chain: Gemini -> Groq -> NVIDIA -> PicoApps
-        let text = await callGemini(finalPrompt);
-        if (!text) text = await callGroq(finalPrompt);
-        if (!text) text = await callNvidia(finalPrompt);
-        if (!text) text = await callPicoAPI(finalPrompt);
+        // Sequential Streaming Fallback Chain
+        let stream = await callGeminiStream(finalPrompt);
+        if (!stream) stream = await callGroqStream(finalPrompt);
+        if (!stream) stream = await callNvidiaStream(finalPrompt);
         
-        if (!text) {
+        // If all streaming providers fail, try PicoAPI (Direct JSON)
+        if (!stream) {
+            const text = await callPicoAPI(finalPrompt);
+            if (text) {
+                return NextResponse.json({ text });
+            }
+            
             console.error("[AI System] All providers failed in fallback chain.");
-            const fallbackResponse = "I apologize, but I'm currently experiencing high traffic. Please try again in a few moments or visit your dashboard for study materials.";
-            return NextResponse.json({ text: fallbackResponse });
+            return NextResponse.json({ 
+                error: "I apologize, but I'm currently experiencing high traffic. Please try again or visit your dashboard for study materials." 
+            }, { status: 503 });
         }
 
-        return NextResponse.json({ text: text });
+        // Return the stream with proper headers for SSE
+        return new Response(stream, {
+            headers: {
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+            },
+        });
 
     } catch (error) {
         console.error("AI Proxy Error:", error);

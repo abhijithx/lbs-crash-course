@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { createMediaToken, extractYouTubeId } from "@/lib/media";
 import { ref, onValue, query, orderByChild, get, update } from "firebase/database";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import type { RecordedClass } from "@/lib/types";
 import { MonitorPlay, Play, Pause, AlertCircle, Search, SkipBack, SkipForward, Maximize2, Minimize2, ArrowLeft, FileText, Loader2, Youtube, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -62,7 +62,15 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
             if (!open || !video) return;
             const id = extractYouTubeId(video.youtubeUrl);
             try {
-                const tokRes = await fetch("/api/media/token", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, kind: "yt" }) });
+                const fbToken = await user?.getIdToken();
+                const tokRes = await fetch("/api/media/token", { 
+                    method: "POST", 
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${fbToken}`
+                    }, 
+                    body: JSON.stringify({ id, kind: "yt" }) 
+                });
                 if (!tokRes.ok) throw new Error("token failed");
                 const tokJson = await tokRes.json().catch(() => ({}));
                 const token = tokJson?.token as string | undefined;
@@ -785,7 +793,8 @@ export default function RecordedClassesPage() {
                                                                             e.stopPropagation();
                                                                             try {
                                                                                 setOpeningNoteId(cls.id);
-                                                                                const token = await createMediaToken(cls.notesUrl || "", "note");
+                                                                                const fbToken = await user?.getIdToken();
+                                                                                const token = await createMediaToken(cls.notesUrl || "", "note", fbToken);
                                                                                 router.push(`/player/note?token=${encodeURIComponent(token)}`);
                                                                             } catch {
                                                                                 toast.error("Could not open notes content");
