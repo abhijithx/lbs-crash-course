@@ -154,7 +154,7 @@ LBS MCA Team`;
                 whatsapp: selectedReg.whatsapp,
                 graduationYear: selectedReg.graduationYear,
                 selectedPackage: selectedReg.selectedPackage,
-            }, user?.uid || "");
+            });
 
             if (!result.success) {
                 throw new Error(result.message);

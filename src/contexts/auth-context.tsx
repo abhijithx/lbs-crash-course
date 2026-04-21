@@ -110,18 +110,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // Set cookie for middleware
                 const token = await firebaseUser.getIdToken();
                 document.cookie = `__session=${token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax; Secure`;
-
-                // Fetch user data from Realtime DB
+                
+                // Fetch user data to get role for edge-side middleware check
                 const userRef = ref(db, `users/${firebaseUser.uid}`);
                 const snapshot = await get(userRef);
                 if (snapshot.exists()) {
                     const data = snapshot.val() as Partial<UserData>;
+                    const role = data.role || "student";
+                    document.cookie = `__role=${role}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax; Secure`;
                     setUserData({ ...data, uid: firebaseUser.uid, activeSessionId: data.activeSessionId ?? "" } as UserData);
                 }
             } else {
                 setUserData(null);
-                // Clear cookie
+                // Clear cookies
                 document.cookie = "__session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                document.cookie = "__role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
             }
             setLoading(false);
         });

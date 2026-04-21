@@ -22,10 +22,21 @@ export function middleware(request: NextRequest) {
   }
 
   // Admin section isolation check
-  if (pathname.startsWith('/admin') && session) {
-    // Note: Deep role verification requires a server-side API call or JWT decoding.
-    // At the Edge, we primarily check for session presence.
-    // Deep verification still happens on page load and in API routes.
+  if (pathname.startsWith('/admin')) {
+    if (!session) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
+
+    const role = request.cookies.get('__role')?.value;
+    if (role !== 'admin') {
+      console.warn(`[MIDDLEWARE_BLOCK] Non-admin attempt to ${pathname}`);
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();
