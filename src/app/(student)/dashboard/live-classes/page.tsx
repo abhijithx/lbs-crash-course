@@ -11,7 +11,7 @@ import { ref, onValue, query, orderByChild } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { LiveClass } from "@/lib/types";
 import { createMediaToken, extractYouTubeId } from "@/lib/media";
-import { Video, Calendar, Clock, ExternalLink, Play, AlertCircle, MonitorPlay, X, SkipBack, SkipForward, FileText, Pause, Maximize2, Minimize2, ArrowLeft, Loader2 } from "lucide-react";
+import { Video, Calendar, Clock, ExternalLink, Play, AlertCircle, MonitorPlay, X, SkipBack, SkipForward, FileText, Pause, Maximize2, Minimize2, ArrowLeft, Loader2, Youtube } from "lucide-react";
 import { format } from "date-fns";
 import { Dialog } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -34,13 +34,14 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
     const [duration, setDuration] = useState<number>(0);
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [resolvedId, setResolvedId] = useState<string>("");
-    const [isPaused, setIsPaused] = useState<boolean>(false);
+    const [isPaused, setIsPaused] = useState<boolean>(true);
     const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-    const [coverVisible, setCoverVisible] = useState<boolean>(false);
+    const [coverVisible, setCoverVisible] = useState<boolean>(true);
     const [hudMask, setHudMask] = useState<boolean>(false);
     const hudTimerRef = useRef<number | null>(null);
     const [fsOverlayVisible, setFsOverlayVisible] = useState<boolean>(false);
     const fsOverlayTimerRef = useRef<number | null>(null);
+
 
     const showFsOverlay = () => {
         setFsOverlayVisible(true);
@@ -93,7 +94,7 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
         setIsReady(true);
         setRate(1);
         setQuality("auto");
-        setIsPaused(false);
+        // Maintain paused state for manual trigger
     };
 
     useEffect(() => {
@@ -148,6 +149,40 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
             }
         };
     }, [duration]);
+    
+    // Anti-Piracy: Block common DevTools and Save/Print shortcuts
+    useEffect(() => {
+        if (!open) return;
+        const handleKey = (e: KeyboardEvent) => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+            
+            // F12
+            if (e.key === 'F12') { e.preventDefault(); return false; }
+            
+            if (cmdOrCtrl) {
+                // Cmd+S (Save), Cmd+P (Print), Cmd+U (View Source)
+                if (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P' || e.key === 'U') {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Cmd+Shift+I, J, C (Inspect/Console/Elements)
+                if (e.shiftKey && (e.key === 'i' || e.key === 'j' || e.key === 'c' || e.key === 'I' || e.key === 'J' || e.key === 'C')) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Cmd+Option+I, J, C (Mac Specific)
+                if (e.altKey && (e.key === 'i' || e.key === 'j' || e.key === 'c' || e.key === 'I' || e.key === 'J' || e.key === 'C')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [open]);
 
     const applyRate = (r: number) => {
         setRate(r);
@@ -174,7 +209,8 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
 
     const togglePlay = () => {
         if (isPaused) {
-            try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "play" }, window.location.origin); } catch { }
+            try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "unmute" }, "*"); } catch { }
+            try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "play" }, "*"); } catch { }
             setIsPaused(false);
             setCoverVisible(false);
         } else {
@@ -216,6 +252,7 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
         <Dialog
             open={open}
             onOpenChange={onOpenChange}
+            hideClose={true}
             className="max-w-5xl p-0 overflow-hidden border-none bg-black shadow-2xl"
         >
             <div className="flex flex-col h-full overflow-visible select-none" onContextMenu={(e) => e.preventDefault()}>
@@ -237,6 +274,13 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
                             </h3>
                             <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">{subject || ""} • Live Recording</p>
                         </div>
+                        <button
+                            onClick={() => onOpenChange(false)}
+                            className="absolute right-4 top-4 p-2 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                            aria-label="Close"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
                         <div className="flex items-center gap-3 mr-2 w-full sm:w-auto">
                             <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md text-white rounded-lg border border-white/10 px-2.5 py-1.5">
                                 <span className="uppercase text-[9px] tracking-widest text-zinc-300">Speed</span>
@@ -279,7 +323,11 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
                     </div>
                 </div>
 
-                <div ref={playerRootRef} className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden border-b border-white/5">
+                <div 
+                    ref={playerRootRef} 
+                    className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden border-b border-white/5"
+                    onContextMenu={(e) => e.preventDefault()}
+                >
                     <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.03] select-none flex items-center justify-center overflow-hidden">
                         <div className="grid grid-cols-3 gap-20 rotate-[-15deg] whitespace-nowrap text-white font-bold text-sm">
                             {Array.from({ length: 12 }).map((_, i) => (
@@ -315,7 +363,7 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
                         />
                     </div>
                     <div
-                        className={`absolute inset-0 z-20 ${!isFullscreen ? "pointer-events-none" : ""}`}
+                        className="absolute inset-0 z-20"
                         style={{ background: "transparent" }}
                         onContextMenu={(e) => e.preventDefault()}
                         onClick={() => { if (isFullscreen) showFsOverlay(); }}
