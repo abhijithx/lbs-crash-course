@@ -18,15 +18,28 @@ function useTabsContext() {
 }
 
 interface TabsProps {
-    value: string;
-    onValueChange: (value: string) => void;
+    value?: string;
+    defaultValue?: string;
+    onValueChange?: (value: string) => void;
     children: React.ReactNode;
     className?: string;
 }
 
-function Tabs({ value, onValueChange, children, className }: TabsProps) {
+function Tabs({ value: controlledValue, defaultValue, onValueChange: controlledOnValueChange, children, className }: TabsProps) {
+    const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue || "");
+    
+    const isControlled = controlledValue !== undefined;
+    const activeValue = isControlled ? controlledValue : uncontrolledValue;
+    
+    const onValueChange = React.useCallback((newValue: string) => {
+        if (!isControlled) {
+            setUncontrolledValue(newValue);
+        }
+        controlledOnValueChange?.(newValue);
+    }, [isControlled, controlledOnValueChange]);
+
     return (
-        <TabsContext.Provider value={{ activeValue: value, onValueChange }}>
+        <TabsContext.Provider value={{ activeValue, onValueChange }}>
             <div className={cn("w-full", className)}>
                 {children}
             </div>
@@ -41,7 +54,7 @@ interface TabsListProps {
 
 function TabsList({ children, className }: TabsListProps) {
     return (
-        <div className={cn("inline-flex items-center gap-1 rounded-xl bg-[var(--muted)] p-1", className)}>
+        <div className={cn("inline-flex items-center gap-1 rounded-xl bg-muted/50 p-1", className)}>
             {children}
         </div>
     );
@@ -62,11 +75,12 @@ function TabsTrigger({ value, children, className }: TabsTriggerProps) {
             className={cn(
                 "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all cursor-pointer",
                 isActive
-                    ? "bg-[var(--card)] text-[var(--foreground)] shadow-sm"
-                    : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 className
             )}
             onClick={() => onValueChange(value)}
+            data-state={isActive ? "active" : "inactive"}
         >
             {children}
         </button>

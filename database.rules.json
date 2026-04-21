@@ -90,11 +90,17 @@
             ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "rankings": {
-            ".read": "auth != null",
+            ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            "$quizId": {
+                ".read": "auth != null"
+            },
             ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "mockRankings": {
-            ".read": "auth != null",
+            ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            "$testId": {
+                ".read": "auth != null"
+            },
             ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         }
     }

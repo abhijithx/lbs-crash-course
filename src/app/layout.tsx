@@ -11,6 +11,7 @@ import ToolPixOverlay from "@/components/ai/ToolPixOverlay";
 import FirebaseHealthPanel from "@/components/dev/FirebaseHealthPanel";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import JsonLd, { schemas } from "@/components/seo/JsonLd";
+import { ONESIGNAL_APP_ID, ONESIGNAL_SAFARI_ID } from "@/lib/constants";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -128,7 +129,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const baseUrl = "https://lbscourse.cetmca.in";
-  const oneSignalId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "3936b2f0-0dd0-4912-b5a4-9e091640e947";
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -152,7 +152,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} aria-label="LBS MCA Entrance Platform Root">
         <JsonLd id="local-business-schema" data={schemas.educationalOrganization(baseUrl)} />
         <JsonLd id="org-schema" data={schemas.organization(baseUrl)} />
         <JsonLd id="website-schema" data={schemas.webSite(baseUrl)} />
@@ -183,9 +183,9 @@ export default function RootLayout({
               try {
                 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                   await OneSignal.init({
-                    appId: "${oneSignalId}",
-                    safari_web_id: "web.onesignal.auto.204803f7-478b-4564-9a97-0318e873c676",
-                    notifyButton: { enable: false }, // Removed bell icon
+                    appId: "${ONESIGNAL_APP_ID}",
+                    safari_web_id: "${ONESIGNAL_SAFARI_ID}",
+                    notifyButton: { enable: false },
                     allowLocalhostAsSecureOrigin: true
                   });
 

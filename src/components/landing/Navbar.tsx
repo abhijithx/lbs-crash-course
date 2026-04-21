@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, ArrowRight, Sparkles, Home, Info, PhoneCall, BookOpen } from "lucide-react";
+import { Menu, X, ArrowRight, Sparkles, Home, Info, PhoneCall, BookOpen, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { User } from "firebase/auth";
@@ -45,6 +45,10 @@ export default function Navbar({ user, userData, isAdmin, dashboardLink }: Navba
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium">
                         <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
                         <Link href="/blog" className="text-white/80 hover:text-white transition-colors">Blog</Link>
+                        <Link href="/download" className="text-white/80 hover:text-white flex items-center gap-1.5 transition-colors">
+                            <Smartphone className="h-4 w-4" />
+                            Download
+                        </Link>
                         <Link href="#features" className="text-white/80 hover:text-white transition-colors">About</Link>
                         <Link href="#contact" className="text-white/80 hover:text-white transition-colors">Contact</Link>
                     </div>
@@ -130,6 +134,12 @@ export default function Navbar({ user, userData, isAdmin, dashboardLink }: Navba
                                         <BookOpen className="h-5 w-5" />
                                     </div>
                                     Blog
+                                </Link>
+                                <Link href="/download" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-base font-bold group text-primary transition-colors">
+                                    <div className="p-2.5 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                        <Smartphone className="h-5 w-5" />
+                                    </div>
+                                    Download App
                                 </Link>
                                 <Link href="#features" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-base font-semibold group text-foreground/80 hover:text-primary transition-colors">
                                     <div className="p-2.5 rounded-xl bg-secondary group-hover:bg-primary/10 group-hover:text-primary transition-colors text-muted-foreground">
