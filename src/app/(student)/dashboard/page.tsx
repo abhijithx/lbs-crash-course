@@ -22,6 +22,7 @@ import {
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Add this component before the main DashboardPage
 function LeaderboardSummary() {
@@ -79,7 +80,29 @@ function LeaderboardSummary() {
         return allValidRankings.sort((a, b) => (b.generatedAt || 0) - (a.generatedAt || 0))[0] || null;
     }, [data.rankings, data.mockRankings, data.quizIds, data.mockTestIds]);
 
-    if (loading || !latestRanking) return null;
+    if (loading) {
+        return (
+            <Card className="overflow-hidden border-0 shadow-lg bg-linear-to-br from-primary to-accent text-white">
+                <CardHeader className="pb-2">
+                    <Skeleton className="h-6 w-32 bg-white/20" />
+                    <Skeleton className="h-3 w-48 bg-white/10 mt-1" />
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex items-center gap-3 bg-white/10 rounded-lg p-2">
+                                <Skeleton className="h-6 w-6 rounded-full bg-white/20" />
+                                <Skeleton className="h-4 flex-1 bg-white/10" />
+                                <Skeleton className="h-4 w-12 bg-white/20" />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!latestRanking) return null;
 
     const myEntry = latestRanking.entries.find((e) => e.userId === userData?.uid);
     const top3 = latestRanking.entries.slice(0, 3);
@@ -306,7 +329,7 @@ export default function StudentDashboard() {
                             {upcomingClasses.length === 0 ? (
                                 <div className="text-center py-8">
                                     <Video className="h-8 w-8 mx-auto mb-2 text-muted-foreground opacity-50" />
-                                    <p className="text-sm text-muted-foreground">No upcoming classes</p>
+                                    <p className="text-sm text-muted-foreground italic">No upcoming sessions today</p>
                                 </div>
                             ) : (
                                 <div className="space-y-3">

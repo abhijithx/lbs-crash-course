@@ -8,6 +8,8 @@ import { blogPosts } from "@/lib/blog-data";
 import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/ui/FadeIn";
 
+import { sanitizeHtml } from "@/lib/sanitizer";
+
 import JsonLd, { schemas } from "@/components/seo/JsonLd";
 
 type Props = {
@@ -108,7 +110,7 @@ export default async function BlogPostPage({ params }: Props) {
                         prose-li:text-muted-foreground prose-li:font-light
                         prose-strong:text-foreground prose-strong:font-bold
                         prose-img:rounded-3xl prose-img:shadow-2xl"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
                     />
                 </FadeIn>
 

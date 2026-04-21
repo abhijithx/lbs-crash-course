@@ -82,8 +82,9 @@ export default function DashboardAIChatPage() {
     const [feedbackBySession, setFeedbackBySession] = useState<FeedbackBySession>({});
     const [studyNotes, setStudyNotes] = useState<StudyNote[]>([]);
     const [copiedMessageKey, setCopiedMessageKey] = useState<string | null>(null);
-    const scrollRef = useRef<HTMLDivElement>(null);
     const copyResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     const requestSidebarOpen = () => {
         window.dispatchEvent(new Event("student-sidebar:open"));
@@ -146,6 +147,16 @@ export default function DashboardAIChatPage() {
             }
         };
     }, []);
+
+    // Auto-focus input on mount and session change
+    useEffect(() => {
+        if (!initializing) {
+            const timeout = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timeout);
+        }
+    }, [initializing, activeSessionId]);
 
     // Initialize Sessions
     useEffect(() => {
@@ -447,12 +458,12 @@ export default function DashboardAIChatPage() {
             for await (const chunk of generator) {
                 lastFullText = chunk;
                 setSessions(prev => prev.map(s =>
-                    s.id === activeSessionId 
-                        ? { 
-                            ...s, 
+                    s.id === activeSessionId
+                        ? {
+                            ...s,
                             messages: [...updatedMessages, { role: "assistant", content: chunk }],
-                            updatedAt: Date.now() 
-                        } 
+                            updatedAt: Date.now()
+                        }
                         : s
                 ));
             }
@@ -502,9 +513,6 @@ export default function DashboardAIChatPage() {
                     >
                         <Menu className="h-4 w-4" />
                     </Button>
-                    <div>
-                        <h1 className="text-lg font-semibold tracking-tight text-foreground">AI Assistant</h1>
-                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -594,6 +602,7 @@ export default function DashboardAIChatPage() {
                                     >
                                         <div className="relative group">
                                             <Input
+                                                ref={inputRef}
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 placeholder="Ask anything"
@@ -627,105 +636,108 @@ export default function DashboardAIChatPage() {
                                             const reaction = messageKey ? activeSessionFeedback[messageKey] : undefined;
 
                                             return (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 15, scale: 0.99 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                key={`${activeSessionId}-${idx}`}
-                                                className={cn(
-                                                    "group/msg flex w-full",
-                                                    msg.role === "user" ? "justify-end" : "justify-start"
-                                                )}
-                                            >
-                                                <div className={cn(
-                                                    "chat-bubble group/bubble relative rounded-2xl p-4 text-[15px] leading-normal transition-all duration-300",
-                                                    msg.role === "user"
-                                                        ? "chat-bubble-user rounded-2xl rounded-tr-md bg-muted px-3 py-2 text-sm text-foreground shadow-sm"
-                                                        : "chat-bubble-assistant rounded-tl-md border-0 bg-transparent p-0 text-foreground shadow-none"
-                                                )}>
-                                                    <FormattedMessage content={msg.content} role={msg.role === "user" ? "user" : "assistant"} />
-
-                                                    {/* Message Actions */}
-                                                    {msg.role === "assistant" && (
-                                                        <div className={cn(
-                                                            "mt-2 flex items-center gap-1.5 transition-opacity",
-                                                            reaction ? "opacity-100" : "opacity-0 group-hover/msg:opacity-100"
-                                                        )}>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className={cn(
-                                                                    "h-7 w-7 rounded-md hover:bg-transparent",
-                                                                    copiedMessageKey === messageKey ? "text-emerald-500" : "text-muted-foreground hover:text-foreground"
-                                                                )}
-                                                                onClick={() => copyMessage(msg.content, messageKey)}
-                                                            >
-                                                                {copiedMessageKey === messageKey ? (
-                                                                    <Check className="h-3.5 w-3.5" />
-                                                                ) : (
-                                                                    <CopyIcon className="h-3.5 w-3.5" />
-                                                                )}
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className={cn(
-                                                                    "h-7 w-7 rounded-md hover:bg-transparent",
-                                                                    sessionStudyNotes.some((note) => note.messageKey === messageKey)
-                                                                        ? "text-primary"
-                                                                        : "text-muted-foreground hover:text-foreground"
-                                                                )}
-                                                                onClick={() => toggleStudyNote(messageKey, msg.content)}
-                                                                title="Save to Study Notes"
-                                                            >
-                                                                {sessionStudyNotes.some((note) => note.messageKey === messageKey) ? (
-                                                                    <BookmarkCheck className="h-3.5 w-3.5" />
-                                                                ) : (
-                                                                    <Bookmark className="h-3.5 w-3.5" />
-                                                                )}
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className={cn(
-                                                                    "h-7 w-7 rounded-md hover:bg-transparent",
-                                                                    reaction === "up" ? "text-emerald-500" : "text-muted-foreground hover:text-foreground"
-                                                                )}
-                                                                onClick={() => setMessageFeedback(messageKey, "up")}
-                                                            >
-                                                                <ThumbsUp className="h-3.5 w-3.5" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className={cn(
-                                                                    "h-7 w-7 rounded-md hover:bg-transparent",
-                                                                    reaction === "down" ? "text-red-500" : "text-muted-foreground hover:text-foreground"
-                                                                )}
-                                                                onClick={() => setMessageFeedback(messageKey, "down")}
-                                                            >
-                                                                <ThumbsDown className="h-3.5 w-3.5" />
-                                                            </Button>
-                                                        </div>
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 15, scale: 0.99 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    key={`${activeSessionId}-${idx}`}
+                                                    className={cn(
+                                                        "group/msg flex w-full",
+                                                        msg.role === "user" ? "justify-end" : "justify-start"
                                                     )}
-                                                </div>
-                                            </motion.div>
-                                        );
+                                                >
+                                                    <div className={cn(
+                                                        "chat-bubble group/bubble relative rounded-2xl p-4 text-[15px] leading-normal transition-all duration-300",
+                                                        msg.role === "user"
+                                                            ? "chat-bubble-user rounded-2xl rounded-tr-md bg-muted px-3 py-2 text-sm text-foreground shadow-sm"
+                                                            : "chat-bubble-assistant rounded-tl-md border-0 bg-transparent p-0 text-foreground shadow-none"
+                                                    )}>
+                                                        <FormattedMessage content={msg.content} role={msg.role === "user" ? "user" : "assistant"} />
+
+                                                        {/* Message Actions */}
+                                                        {msg.role === "assistant" && (
+                                                            <div className={cn(
+                                                                "mt-2 flex items-center gap-1.5 transition-opacity",
+                                                                reaction ? "opacity-100" : "opacity-0 group-hover/msg:opacity-100"
+                                                            )}>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className={cn(
+                                                                        "h-7 w-7 rounded-md hover:bg-transparent",
+                                                                        copiedMessageKey === messageKey ? "text-emerald-500" : "text-muted-foreground hover:text-foreground"
+                                                                    )}
+                                                                    onClick={() => copyMessage(msg.content, messageKey)}
+                                                                >
+                                                                    {copiedMessageKey === messageKey ? (
+                                                                        <Check className="h-3.5 w-3.5" />
+                                                                    ) : (
+                                                                        <CopyIcon className="h-3.5 w-3.5" />
+                                                                    )}
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className={cn(
+                                                                        "h-7 w-7 rounded-md hover:bg-transparent",
+                                                                        sessionStudyNotes.some((note) => note.messageKey === messageKey)
+                                                                            ? "text-primary"
+                                                                            : "text-muted-foreground hover:text-foreground"
+                                                                    )}
+                                                                    onClick={() => toggleStudyNote(messageKey, msg.content)}
+                                                                    title="Save to Study Notes"
+                                                                >
+                                                                    {sessionStudyNotes.some((note) => note.messageKey === messageKey) ? (
+                                                                        <BookmarkCheck className="h-3.5 w-3.5" />
+                                                                    ) : (
+                                                                        <Bookmark className="h-3.5 w-3.5" />
+                                                                    )}
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className={cn(
+                                                                        "h-7 w-7 rounded-md hover:bg-transparent",
+                                                                        reaction === "up" ? "text-emerald-500" : "text-muted-foreground hover:text-foreground"
+                                                                    )}
+                                                                    onClick={() => setMessageFeedback(messageKey, "up")}
+                                                                >
+                                                                    <ThumbsUp className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className={cn(
+                                                                        "h-7 w-7 rounded-md hover:bg-transparent",
+                                                                        reaction === "down" ? "text-red-500" : "text-muted-foreground hover:text-foreground"
+                                                                    )}
+                                                                    onClick={() => setMessageFeedback(messageKey, "down")}
+                                                                >
+                                                                    <ThumbsDown className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            );
                                         })}
                                     </AnimatePresence>
 
                                     {isLoading && (
                                         <motion.div
-                                            initial={{ opacity: 0, scale: 0.98 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            className="flex justify-start pb-4 pl-1"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="flex justify-start pb-4"
                                         >
-                                            <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/85 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
-                                                <span className="inline-flex gap-1" aria-hidden>
-                                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.18s]" />
-                                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.09s]" />
-                                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70" />
-                                                </span>
-                                                <span>Thinking...</span>
+                                            <div className="flex w-full max-w-[80%] flex-col gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-5 w-5 animate-pulse rounded-full bg-muted" />
+                                                    <div className="h-3 w-24 animate-pulse rounded-md bg-muted" />
+                                                </div>
+                                                <div className="space-y-2 rounded-2xl bg-muted/30 p-4">
+                                                    <div className="h-3 w-full animate-pulse rounded-md bg-muted/40" />
+                                                    <div className="h-3 w-5/6 animate-pulse rounded-md bg-muted/40" />
+                                                    <div className="h-3 w-4/6 animate-pulse rounded-md bg-muted/40" />
+                                                </div>
                                             </div>
                                         </motion.div>
                                     )}
@@ -763,6 +775,7 @@ export default function DashboardAIChatPage() {
                                 >
                                     <div className="relative group">
                                         <Input
+                                            ref={inputRef}
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
                                             placeholder="Ask anything"

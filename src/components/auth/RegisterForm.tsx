@@ -29,6 +29,7 @@ import { db } from "@/lib/firebase";
 import Image from "next/image";
 import { toast } from "sonner";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { TransactionIdHelper } from "@/components/payment/TransactionIdHelper";
 
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
@@ -72,7 +73,11 @@ export function RegisterForm() {
     const paymentSectionRef = useRef<HTMLDivElement>(null);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        let value = e.target.value;
+        if (e.target.name === "transactionId") {
+            value = value.replace(/\D/g, "");
+        }
+        setFormData({ ...formData, [e.target.name]: value });
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +141,14 @@ export function RegisterForm() {
             toast.error("Please fill in all required fields");
             return;
         }
+
+        // Transaction ID validation: Exactly 12 digits
+        const transactionRegex = /^\d{12}$/;
+        if (!transactionRegex.test(formData.transactionId.trim())) {
+            toast.error("Transaction ID must be exactly 12 numeric digits");
+            return;
+        }
+
         if (!screenshot) {
             toast.error("Please upload your payment screenshot");
             return;
@@ -491,15 +504,19 @@ export function RegisterForm() {
 
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="transactionId">Transaction ID *</Label>
+                                            <div className="flex items-center justify-between">
+                                                <Label htmlFor="transactionId">Transaction ID *</Label>
+                                                <TransactionIdHelper />
+                                            </div>
                                             <Input
                                                 id="transactionId"
                                                 name="transactionId"
-                                                placeholder="Enter payment transaction ID"
+                                                placeholder="12-digit UPI Ref ID"
                                                 value={formData.transactionId}
                                                 onChange={handleInputChange}
                                                 required
                                                 aria-required="true"
+                                                maxLength={12}
                                             />
                                         </div>
                                         <div className="space-y-2">

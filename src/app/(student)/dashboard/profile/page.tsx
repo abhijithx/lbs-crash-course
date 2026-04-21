@@ -14,6 +14,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import ThemeSelector from "@/components/theme/ThemeSelector";
+import { TransactionIdHelper } from "@/components/payment/TransactionIdHelper";
 
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
@@ -49,14 +50,32 @@ export default function ProfilePage() {
 
     const handleUpgradeRequest = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!upgradeScreenshot || !userData) { toast.error("Please upload payment screenshot"); return; }
+        if (!userData) return;
+        
+        if (!upgradeTransactionId) {
+            toast.error("Please enter Transaction ID");
+            return;
+        }
+
+        // Transaction ID validation: Exactly 12 digits
+        const transactionRegex = /^\d{12}$/;
+        if (!transactionRegex.test(upgradeTransactionId.trim())) {
+            toast.error("Transaction ID must be exactly 12 numeric digits");
+            return;
+        }
+
+        if (!upgradeScreenshot) {
+            toast.error("Please upload payment screenshot");
+            return;
+        }
 
         setSubmittingUpgrade(true);
         try {
             // STEP 1: Upload Image to Cloudinary directly from Client
             let cloudinaryUrl = "";
             try {
-                cloudinaryUrl = await uploadImageToCloudinary(upgradeScreenshot);
+                const token = await user?.getIdToken();
+                cloudinaryUrl = await uploadImageToCloudinary(upgradeScreenshot, token, "profile-upgrade");
             } catch (imageError) {
                 console.error("Cloudinary Error:", imageError);
                 toast.error("Failed to upload screenshot. Please try again.");
@@ -226,12 +245,18 @@ export default function ProfilePage() {
                     <CardContent>
                         <form onSubmit={handleUpgradeRequest} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="upgradeTransactionId">Transaction ID (Optional)</Label>
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="upgradeTransactionId">Transaction ID *</Label>
+                                    <TransactionIdHelper />
+                                </div>
                                 <Input
                                     id="upgradeTransactionId"
-                                    placeholder="Enter payment transaction ID"
+                                    placeholder="12-digit UPI Ref ID"
                                     value={upgradeTransactionId}
-                                    onChange={(e) => setUpgradeTransactionId(e.target.value)}
+                                    onChange={(e) => setUpgradeTransactionId(e.target.value.replace(/\D/g, ""))}
+                                    required
+                                    aria-required="true"
+                                    maxLength={12}
                                 />
                             </div>
                             <div

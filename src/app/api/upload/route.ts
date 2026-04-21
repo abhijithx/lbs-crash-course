@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import { verifySession } from "@/lib/auth-utils";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -11,7 +12,7 @@ cloudinary.config({
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const contentType = req.headers.get("content-type") || "";
         if (!contentType.includes("multipart/form-data")) {
@@ -23,8 +24,16 @@ export async function POST(req: Request) {
         const rawSource = req.headers.get("x-upload-source");
         const source = rawSource?.trim().toLowerCase();
 
-        // 1. Basic Origin/Source Validation
-        if (source !== "registration-flow") {
+        // 1. Unified Security Logic
+        if (source === "registration-flow") {
+            // Allow unauthenticated for registration, but check source header
+            // (Note: In a more advanced setup, we'd add rate limiting here)
+        } else if (source === "profile-upgrade" || source === "admin-action") {
+            // MUST be authenticated for profile upgrades or admin actions
+            const { error } = await verifySession(req);
+            if (error) return error;
+        } else {
+            // Block everything else
             const clientIp = req.headers.get("x-forwarded-for") || "unknown";
             console.error(`[SEC_CRITICAL] Unauthorized Upload Attempt: Source=${source}, IP=${clientIp}`);
             return NextResponse.json({ error: "Access Denied: Invalid Security Context" }, { status: 403 });

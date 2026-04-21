@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild } from "firebase/database";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import type { LiveClass } from "@/lib/types";
 import { createMediaToken, extractYouTubeId } from "@/lib/media";
 import { Video, Calendar, Clock, ExternalLink, Play, AlertCircle, MonitorPlay, X, SkipBack, SkipForward, FileText, Pause, Maximize2, Minimize2, ArrowLeft, Loader2, Youtube } from "lucide-react";
@@ -65,9 +65,13 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
                 return;
             }
             try {
+                const fbToken = await user?.getIdToken();
                 const tokRes = await fetch("/api/media/token", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${fbToken}`
+                    },
                     body: JSON.stringify({ id, kind: "yt" })
                 });
                 if (!tokRes.ok) throw new Error("token failed");
@@ -507,7 +511,7 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
 }
 
 export default function LiveClassesPage() {
-    const { userData } = useAuth();
+    const { user, userData } = useAuth();
     const router = useRouter();
     const [classes, setClasses] = useState<LiveClass[]>([]);
     const [tab, setTab] = useState("upcoming");
@@ -577,7 +581,8 @@ export default function LiveClassesPage() {
                                 onClick={async () => {
                                     try {
                                         setOpeningNoteId(cls.id);
-                                        const token = await createMediaToken(cls.notesUrl || "", "note");
+                                        const fbToken = await user?.getIdToken();
+                                        const token = await createMediaToken(cls.notesUrl || "", "note", fbToken);
                                         router.push(`/player/note?token=${encodeURIComponent(token)}`);
                                     } catch {
                                         toast.error("Could not open notes content");

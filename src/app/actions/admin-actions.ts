@@ -2,6 +2,7 @@
 
 import { adminAuth, adminDb, isInitialized } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
+import { verifyAdmin } from "@/lib/auth-utils";
 
 interface ApprovalResult {
     success: boolean;
@@ -46,26 +47,19 @@ export async function approveRegistrationAction(
         whatsapp: string;
         graduationYear: string;
         selectedPackage: string;
-    },
-    adminUid: string
+    }
 ): Promise<ApprovalResult> {
     if (!isInitialized || !adminDb || !adminAuth) {
         return { success: false, message: "Admin service unavailable. Please configure Firebase Admin credentials." };
     }
 
     try {
-        if (!adminUid) {
-            return { success: false, message: "Unauthorized: Missing administrative context" };
+        const adminUser = await verifyAdmin();
+        if (!adminUser) {
+            return { success: false, message: "Unauthorized: Insufficient permissions or session expired" };
         }
 
-        const adminRef = adminDb.ref(`users/${adminUid}`);
-        const adminSnapshot = await adminRef.get();
-        const adminData = adminSnapshot.val();
-
-        if (!adminSnapshot.exists() || adminData.role !== "admin") {
-            console.error(`[SECURITY_ALERT] Non-admin user (${adminUid}) attempted to call approveRegistrationAction`);
-            return { success: false, message: "Unauthorized: Insufficient permissions" };
-        }
+        const adminUid = adminUser.uid;
 
         const loginId = await generateUniqueLoginId();
         const tempPassword = generateSecurePassword();

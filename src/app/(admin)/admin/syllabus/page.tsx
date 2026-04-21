@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { ref, onValue, set, push, remove } from "firebase/database";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { Image as ImageIcon, Plus, Trash2 } from "lucide-react";
 type SyllabusItem = { id: string; title: string; url: string; createdAt: number };
 
 export default function AdminSyllabusPage() {
+  const { user } = useAuth();
   const [items, setItems] = useState<SyllabusItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,9 +36,17 @@ export default function AdminSyllabusPage() {
     if (!form.title || !form.file) return;
     setSaving(true);
     try {
+      const fbToken = await user?.getIdToken();
       const fd = new FormData();
       fd.append("file", form.file);
-      const up = await fetch("/api/upload", { method: "POST", body: fd });
+      const up = await fetch("/api/upload", { 
+        method: "POST", 
+        body: fd,
+        headers: { 
+          "Authorization": `Bearer ${fbToken}`,
+          "x-upload-source": "admin-action"
+        }
+      });
       if (!up.ok) throw new Error("upload failed");
       const { secure_url } = await up.json();
       const r = push(ref(db, "syllabus"));

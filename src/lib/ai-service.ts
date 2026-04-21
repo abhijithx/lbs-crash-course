@@ -174,10 +174,22 @@ export async function getUserContext(uid: string) {
 
         // Map quizzes/mocks for subject lookup
         const quizMetaMap: Record<string, { subject: string }> = {};
-        quizSnap?.forEach(c => { quizMetaMap[c.key!] = { subject: (c.val() as Quiz).subject }; });
-        mockSnap?.forEach(c => { quizMetaMap[c.key!] = { subject: (c.val() as MockTest).subject }; });
+        quizSnap?.forEach(c => { 
+            const val = c.val() as Quiz;
+            quizMetaMap[c.key!] = { subject: val.subject }; 
+        });
+        mockSnap?.forEach(c => { 
+            const val = c.val() as MockTest;
+            quizMetaMap[c.key!] = { subject: val.subject }; 
+        });
 
-        const performanceBySubject: Record<string, { totalScore: number, totalQuestions: number, attempts: number, history: number[] }> = {};
+        interface SubjectStats {
+            totalScore: number;
+            totalQuestions: number;
+            attempts: number;
+            history: number[];
+        }
+        const performanceBySubject: Record<string, SubjectStats> = {};
 
         const processAttempt = (val: QuizAttempt | MockAttempt, quizId: string) => {
             const subject = quizMetaMap[quizId]?.subject || "General";
@@ -333,20 +345,9 @@ export async function* chatWithAI(messages: ChatMessage[], idToken?: string) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("AI API error:", response.status, errorText);
+            console.error("[AI_SERVICE] API error:", response.status, errorText);
             yield buildFallbackResponse(messages);
             return;
-        }
-
-        // Handle non-streaming direct JSON response (e.g. from PicoApps or Fallbacks)
-        const contentType = response.headers.get("Content-Type") || "";
-        if (!contentType.includes("text/event-stream")) {
-            const data = await response.json();
-            const text = data.text || data.response || "";
-            if (text) {
-                yield stripAssistantNamePrefixes(enforceDomainTerminology(text));
-                return;
-            }
         }
 
         const reader = response.body?.getReader();
@@ -364,6 +365,19 @@ export async function* chatWithAI(messages: ChatMessage[], idToken?: string) {
             if (done) break;
 
             buffer += decoder.decode(value, { stream: true });
+            
+            // Handle plain JSON response if API decides to skip SSE (fallbacks)
+            if (buffer.trim().startsWith("{") && !buffer.includes("\n")) {
+                // Wait for more data or check if it's a complete JSON
+                try {
+                    const data = JSON.parse(buffer);
+                    if (data.text) {
+                        yield stripAssistantNamePrefixes(enforceDomainTerminology(data.text));
+                        return;
+                    }
+                } catch { /* Continue reading */ }
+            }
+
             const lines = buffer.split("\n");
             buffer = lines.pop() || "";
 
@@ -376,34 +390,30 @@ export async function* chatWithAI(messages: ChatMessage[], idToken?: string) {
                         const jsonStr = trimmed.slice(6);
                         const data = JSON.parse(jsonStr);
                         
-                        // Handle OpenAI/Groq/NVIDIA format
-                        let chunk = data.choices?.[0]?.delta?.content || "";
+                        // Handle standard OpenRouter/OpenAI/Groq/NVIDIA formats
+                        const chunk = data.choices?.[0]?.delta?.content || 
+                                     data.choices?.[0]?.text || 
+                                     data.content || 
+                                     "";
                         
-                        // Handle Gemini SSE format
-                        if (!chunk && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            chunk = data.candidates[0].content.parts[0].text;
-                        }
-
                         if (chunk) {
                             fullText += chunk;
                             yield stripAssistantNamePrefixes(enforceDomainTerminology(fullText));
                         }
                     } catch (e) {
-                        // Incomplete JSON or noise
+                        // Suppress background noise/incomplete JSON
                     }
                 }
             }
         }
 
-        // If nothing was yielded or it was empty, try parsing leftover buffer
-        if (!fullText && buffer) {
+        // Final check for missed content in buffer
+        if (!fullText.trim() && buffer.trim()) {
             try {
                 const data = JSON.parse(buffer);
-                fullText = data.text || data.response || "";
-                if (fullText) yield stripAssistantNamePrefixes(enforceDomainTerminology(fullText));
-            } catch {
-                // Not JSON
-            }
+                const finalContent = data.text || data.response || "";
+                if (finalContent) yield stripAssistantNamePrefixes(enforceDomainTerminology(finalContent));
+            } catch { /* Final buffer not JSON */ }
         }
 
         if (!fullText.trim()) {
@@ -411,7 +421,7 @@ export async function* chatWithAI(messages: ChatMessage[], idToken?: string) {
         }
 
     } catch (error) {
-        console.error("AI Chat Error:", error);
+        console.error("[AI_SERVICE] Critical connection failure:", error);
         yield buildFallbackResponse(messages);
     }
 }

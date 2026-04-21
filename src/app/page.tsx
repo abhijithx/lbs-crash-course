@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Script from "next/script";
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Smartphone } from "lucide-react";
 
 // Landing components
 import HeroSection from "../components/landing/HeroSection";
@@ -71,6 +71,10 @@ export default function LandingPage() {
                     <div className="flex items-center gap-6 text-sm">
                         <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
                             Blog
+                        </Link>
+                        <Link href="/download" className="text-primary font-bold hover:opacity-80 transition-all flex items-center gap-1.5">
+                            <Smartphone className="h-4 w-4" />
+                            Download App
                         </Link>
                         <Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
                             Privacy Policy

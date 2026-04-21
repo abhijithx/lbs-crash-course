@@ -4,6 +4,7 @@ import React from "react";
 import katex from "katex";
 import { cn } from "@/lib/utils";
 import CodeBlock from "./CodeBlock";
+import { sanitizeHtml } from "@/lib/sanitizer";
 
 interface FormattedMessageProps {
     content: string;
@@ -50,7 +51,7 @@ function renderMath(expression: string, key: string, displayMode = false) {
                 <div
                     key={key}
                     className="ai-math-block my-4 overflow-x-auto rounded-xl border border-border bg-muted/35 px-4 py-3"
-                    dangerouslySetInnerHTML={{ __html: html }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
                 />
             );
         }
@@ -59,7 +60,7 @@ function renderMath(expression: string, key: string, displayMode = false) {
             <span
                 key={key}
                 className="ai-math-inline"
-                dangerouslySetInnerHTML={{ __html: html }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
             />
         );
     } catch {
