@@ -4,11 +4,12 @@ import "./globals.css";
 import "katex/dist/katex.min.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
-import { Toaster } from "sonner";
+
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToolPixOverlay from "@/components/ai/ToolPixOverlay";
 import FirebaseHealthPanel from "@/components/dev/FirebaseHealthPanel";
+import { Toaster } from "sonner";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import JsonLd, { schemas } from "@/components/seo/JsonLd";
 import { ONESIGNAL_APP_ID, ONESIGNAL_SAFARI_ID } from "@/lib/constants";
@@ -214,26 +215,8 @@ export default function RootLayout({
           {process.env.NODE_ENV === "development" && <FirebaseHealthPanel />}
           <Analytics />
           <SpeedInsights />
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton
-            toastOptions={{
-              duration: 4200,
-              style: {
-                background: "var(--card)",
-                border: "1px solid var(--border)",
-                color: "var(--foreground)",
-                boxShadow: "0 14px 34px -16px rgba(2, 8, 23, 0.45)",
-              },
-              classNames: {
-                toast: "app-toast",
-                title: "app-toast-title",
-                description: "app-toast-description",
-                error: "app-toast-error",
-              },
-            }}
-          />
+          <Toaster richColors closeButton position="top-right" />
+
         </AuthProvider>
       </body>
     </html>

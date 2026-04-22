@@ -113,6 +113,7 @@ export interface QuizAttempt {
     score: number;
     totalQuestions: number;
     submittedAt: number;
+    markedQuestions?: number[]; // indices of questions marked for review
 }
 
 export interface MockTest extends Quiz {

@@ -118,15 +118,14 @@ export async function POST(req: NextRequest) {
     try {
         const { prompt: rawPrompt } = await req.json();
 
-        // Unified Authentication Check
-        const { user, error } = await verifySession(req);
-        if (error) return error;
+        // 1. Unified Authentication Check (Optional for guest chat)
+        const { user } = await verifySession(req);
 
         const prompt = typeof rawPrompt === 'string' 
             ? rawPrompt.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim() 
             : "";
 
-        const finalPrompt = prompt.includes("CONTEXT:") ? prompt : `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`;
+        const finalPrompt = (prompt.includes("CONTEXT:") || prompt.includes("SYSTEM:")) ? prompt : `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`;
         
         // Sequential Streaming Fallback Chain
         let stream = await callGeminiStream(finalPrompt);

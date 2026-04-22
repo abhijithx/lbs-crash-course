@@ -93,7 +93,7 @@ export default function Navbar({ user, userData, isAdmin, dashboardLink }: Navba
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setMobileMenuOpen(false)}
-                            className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm md:hidden cursor-pointer"
+                            className="fixed inset-0 z-100 bg-black/60 md:hidden cursor-pointer"
                         />
 
                         {/* Sidebar Drawer */}
@@ -101,8 +101,8 @@ export default function Navbar({ user, userData, isAdmin, dashboardLink }: Navba
                             initial={{ x: "100%" }}
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 z-110 w-full max-w-75 h-dvh bg-background border-l border-border shadow-2xl md:hidden flex flex-col"
+                            transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                            className="fixed top-0 right-0 z-110 w-full max-w-75 h-dvh bg-background border-l border-border shadow-2xl md:hidden flex flex-col will-change-transform"
                         >
                             {/* Sidebar Header */}
                             <div className="flex h-16 items-center justify-between px-5 border-b border-border bg-primary/5">

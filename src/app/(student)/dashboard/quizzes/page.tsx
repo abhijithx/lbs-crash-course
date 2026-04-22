@@ -27,7 +27,7 @@ export default function QuizzesPage() {
     const [pendingQuiz, setPendingQuiz] = useState<Quiz | null>(null);
     const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
     const [reviewMode, setReviewMode] = useState(false);
-    //const [reviewMode, setReviewMode] = useState(false);
+    const [markedQuestions, setMarkedQuestions] = useState<number[]>([]);
 
     useEffect(() => {
         const qRef = query(ref(db, "quizzes"), orderByChild("createdAt"));
@@ -67,6 +67,7 @@ export default function QuizzesPage() {
     const proceedWithQuizStart = (quiz: Quiz) => {
         setActiveQuiz(quiz);
         setAnswers(new Array(quiz.questions.length).fill(-1));
+        setMarkedQuestions([]);
         setCurrentQ(0);
         setResult(null);
         setReviewMode(false);
@@ -78,6 +79,21 @@ export default function QuizzesPage() {
         if (pendingQuiz) {
             proceedWithQuizStart(pendingQuiz);
         }
+    };
+
+    const handleReviewClick = (quiz: Quiz, attempt: QuizAttempt) => {
+        setActiveQuiz(quiz);
+        setAnswers(attempt.answers);
+        setMarkedQuestions(attempt.markedQuestions || []);
+        setCurrentQ(0);
+        setResult({ score: attempt.score, total: attempt.totalQuestions });
+        setReviewMode(false);
+    };
+
+    const toggleMarked = (idx: number) => {
+        setMarkedQuestions(prev => 
+            prev.includes(idx) ? prev.filter(q => q !== idx) : [...prev, idx]
+        );
     };
 
     const unansweredCount = useMemo(() => answers.filter(a => a === -1).length, [answers]);
@@ -103,6 +119,7 @@ export default function QuizzesPage() {
                 userName: userData.name,
                 quizId: activeQuiz.id,
                 answers,
+                markedQuestions,
                 score,
                 totalQuestions: activeQuiz.questions.length,
                 submittedAt: Date.now(),
@@ -116,7 +133,7 @@ export default function QuizzesPage() {
         } finally {
             setSubmitting(false);
         }
-    }, [activeQuiz, userData, answers]);
+    }, [activeQuiz, userData, answers, markedQuestions]);
 
     // Timer Logic
     useEffect(() => {
@@ -237,14 +254,25 @@ export default function QuizzesPage() {
                         )}
 
                         <div className="flex flex-col-reverse sm:flex-row justify-between gap-4 mt-10 pt-6 border-t">
-                            <Button
-                                variant="outline"
-                                className="rounded-xl px-8 w-full sm:w-auto"
-                                disabled={currentQ === 0}
-                                onClick={() => setCurrentQ(currentQ - 1)}
-                            >
-                                <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl px-4 w-full sm:w-auto"
+                                    disabled={currentQ === 0}
+                                    onClick={() => setCurrentQ(currentQ - 1)}
+                                >
+                                    <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                                </Button>
+                                {!reviewMode && (
+                                    <Button
+                                        variant="outline"
+                                        className={`rounded-xl px-4 flex-1 sm:flex-none border-amber-200 text-amber-600 hover:bg-amber-50 ${markedQuestions.includes(currentQ) ? 'bg-amber-100 border-amber-400' : ''}`}
+                                        onClick={() => toggleMarked(currentQ)}
+                                    >
+                                        <Info className="h-4 w-4 mr-1" /> {markedQuestions.includes(currentQ) ? 'Marked' : 'Mark for Review'}
+                                    </Button>
+                                )}
+                            </div>
 
                             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                                 {currentQ < activeQuiz.questions.length - 1 ? (
@@ -263,7 +291,7 @@ export default function QuizzesPage() {
                                     )
                                 )}
                                 {reviewMode && currentQ === activeQuiz.questions.length - 1 && (
-                                    <Button onClick={() => setReviewMode(false)} className="rounded-xl px-10 w-full sm:w-auto">
+                                    <Button onClick={() => setReviewMode(false)} className="rounded-xl px-10 w-full sm:w-auto text-white">
                                         Back to Results
                                     </Button>
                                 )}
@@ -276,10 +304,22 @@ export default function QuizzesPage() {
                 <div className="bg-card p-4 rounded-2xl shadow-sm border flex flex-wrap justify-center gap-2.5">
                     {activeQuiz.questions.map((_, idx) => {
                         let style = "bg-muted text-muted-foreground border-transparent";
-                        if (idx === currentQ) style = "gradient-primary text-white border-transparent ring-2 ring-primary ring-offset-2";
-                        else if (reviewMode) {
+                        if (idx === currentQ) {
+                            if (reviewMode) {
+                                const isQCorrect = answers[idx] === activeQuiz.questions[idx].correctAnswer;
+                                style = isQCorrect 
+                                    ? "bg-green-500 text-white border-transparent ring-2 ring-green-500 ring-offset-2" 
+                                    : answers[idx] === -1 
+                                        ? "bg-gray-500 text-white border-transparent ring-2 ring-gray-500 ring-offset-2"
+                                        : "bg-red-500 text-white border-transparent ring-2 ring-red-500 ring-offset-2";
+                            } else {
+                                style = "gradient-primary text-white border-transparent ring-2 ring-primary ring-offset-2";
+                            }
+                        } else if (reviewMode) {
                             const isQCorrect = answers[idx] === activeQuiz.questions[idx].correctAnswer;
                             style = isQCorrect ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : answers[idx] === -1 ? "bg-muted text-muted-foreground border-border" : "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800";
+                        } else if (markedQuestions.includes(idx)) {
+                            style = "bg-amber-100 text-amber-700 border-amber-300 relative";
                         } else if (answers[idx] >= 0) {
                             style = "bg-primary/20 text-primary border-primary/20";
                         }
@@ -291,6 +331,9 @@ export default function QuizzesPage() {
                                 className={`h-10 w-10 rounded-xl text-sm font-bold transition-all border flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 ${style}`}
                             >
                                 {idx + 1}
+                                {markedQuestions.includes(idx) && !reviewMode && (
+                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full border-2 border-white" />
+                                )}
                             </button>
                         );
                     })}
@@ -359,7 +402,7 @@ export default function QuizzesPage() {
                     <h2 className="text-3xl font-extrabold mb-2 text-foreground">Quiz Completed!</h2>
                     <p className="text-lg text-muted-foreground mb-8">Excellent effort on finishing the test.</p>
 
-                    <div className="grid grid-cols-2 gap-4 mb-10">
+                    <div className="grid grid-cols-2 gap-4 mb-8">
                         <div className="p-6 rounded-2xl bg-muted/30 border">
                             <p className="text-4xl font-black gradient-text mb-1">{percentage}%</p>
                             <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Total Score</p>
@@ -367,6 +410,28 @@ export default function QuizzesPage() {
                         <div className="p-6 rounded-2xl bg-muted/30 border">
                             <p className="text-4xl font-black mb-1">{result.score}<span className="text-muted-foreground text-2xl font-medium">/{result.total}</span></p>
                             <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Correct Answers</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-muted/20 rounded-2xl p-6 border mb-10 text-left">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Performance Summary</h4>
+                        <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500" /> Correct</span>
+                                <span className="font-bold text-green-600">{result.score}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><XCircle className="h-4 w-4 text-red-500" /> Incorrect</span>
+                                <span className="font-bold text-red-600">{result.total - result.score - (activeQuiz?.questions.length ? activeQuiz.questions.length - answers.filter(a => a >= 0).length : 0)}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><AlertCircle className="h-4 w-4 text-gray-400" /> Skipped</span>
+                                <span className="font-bold text-gray-600">{activeQuiz?.questions.length ? activeQuiz.questions.length - answers.filter(a => a >= 0).length : 0}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><Info className="h-4 w-4 text-amber-500" /> Marked</span>
+                                <span className="font-bold text-amber-600">{markedQuestions.length}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -420,7 +485,11 @@ export default function QuizzesPage() {
                     {quizzes.map((quiz) => {
                         const attempted = myAttempts[quiz.id];
                         return (
-                            <Card key={quiz.id} className="hover:border-primary/30 transition-all">
+                            <Card 
+                                key={quiz.id} 
+                                className={`hover:border-primary/30 transition-all ${attempted ? "cursor-pointer hover:shadow-md" : ""}`}
+                                onClick={() => attempted && handleReviewClick(quiz, attempted)}
+                            >
                                 <CardHeader>
                                     <div className="flex items-start justify-between">
                                         <div>
@@ -447,11 +516,21 @@ export default function QuizzesPage() {
                                     </div>
                                     <div className="space-y-4">
                                         {attempted && (
-                                            <div className="flex items-center gap-2 p-2 rounded-lg bg-success/5">
-                                                <CheckCircle className="h-4 w-4 text-success" />
-                                                <span className="text-sm font-medium text-success">
-                                                    Score: {attempted.score}/{attempted.totalQuestions}
-                                                </span>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-success/5 border border-success/10">
+                                                    <CheckCircle className="h-4 w-4 text-success" />
+                                                    <span className="text-sm font-medium text-success">
+                                                        Score: {attempted.score}/{attempted.totalQuestions}
+                                                    </span>
+                                                </div>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="w-full rounded-lg border-primary/20 text-primary hover:bg-primary/5"
+                                                    onClick={() => handleReviewClick(quiz, attempted)}
+                                                >
+                                                    <Info className="h-3.5 w-3.5 mr-2" /> Review Answers
+                                                </Button>
                                             </div>
                                         )}
 

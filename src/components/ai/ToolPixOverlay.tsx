@@ -77,127 +77,132 @@ export default function ToolPixOverlay() {
         }
     };
 
-    if (!mounted || !isPublicPage) return null;
+    if (!mounted) return null;
 
     return (
-        <div className="fixed bottom-6 right-6 z-9999 flex flex-col items-end gap-4">
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="flex h-125 w-87.5 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-xl sm:w-100"
-                    >
-                        {/* Header */}
-                        <div className="p-4 gradient-primary text-white flex items-center justify-between shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                    <Sparkles className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg leading-none">ToolPix Ai</h3>
-                                </div>
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setIsOpen(false)}
-                                className="text-white hover:bg-white/10 rounded-full"
-                            >
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </div>
+        <>
 
-                        {/* Messages */}
-                        <div
-                            ref={scrollRef}
-                            className="flex-1 space-y-4 overflow-y-auto bg-linear-to-b from-transparent to-muted/20 p-4"
-                        >
-                            {messages.length === 0 && (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 animate-pulse">
-                                        <Bot className="h-8 w-8 text-primary" />
+            {isPublicPage && (
+                <div className="fixed bottom-6 right-6 z-9999 flex flex-col items-end gap-4">
+                    <AnimatePresence mode="wait">
+                        {isOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                className="flex h-125 max-h-[calc(100dvh-120px)] w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-xl sm:w-100 relative"
+                            >
+                                {/* Header */}
+                                <div className="p-4 gradient-primary text-white flex items-center justify-between shadow-lg">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                            <Sparkles className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg leading-none">ToolPix Ai</h3>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-lg">Hello! I&apos;m ToolPix Ai</p>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            How can I help you with your LBS MCA entrance preparation today?
-                                        </p>
-                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setIsOpen(false)}
+                                        className="text-white hover:bg-white/10 rounded-full"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </Button>
                                 </div>
-                            )}
-                            {messages.map((msg, idx) => (
+
+                                {/* Messages */}
                                 <div
-                                    key={idx}
-                                    className={cn(
-                                        "max-w-[85%] text-[13px] leading-relaxed",
-                                        msg.role === "user"
-                                            ? "ml-auto p-3 rounded-[1.2rem] rounded-tr-none bg-primary text-white shadow-md shadow-primary/20"
-                                            : "py-2 px-0 text-foreground"
+                                    ref={scrollRef}
+                                    className="flex-1 space-y-4 overflow-y-auto bg-linear-to-b from-transparent to-muted/20 p-4"
+                                >
+                                    {messages.length === 0 && (
+                                        <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
+                                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 animate-pulse">
+                                                <Bot className="h-8 w-8 text-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-lg">Hello! I&apos;m ToolPix Ai</p>
+                                                <p className="mt-1 text-sm text-muted-foreground">
+                                                    How can I help you with your LBS MCA entrance preparation today?
+                                                </p>
+                                            </div>
+                                        </div>
                                     )}
-                                >
-                                    <FormattedMessage content={msg.content} role={msg.role === "user" ? "user" : "assistant"} />
+                                    {messages.map((msg, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={cn(
+                                                "max-w-[85%] text-[13px] leading-relaxed",
+                                                msg.role === "user"
+                                                    ? "ml-auto p-3 rounded-[1.2rem] rounded-tr-none bg-primary text-white shadow-md shadow-primary/20"
+                                                    : "py-2 px-0 text-foreground"
+                                            )}
+                                        >
+                                            <FormattedMessage content={msg.content} role={msg.role === "user" ? "user" : "assistant"} />
+                                        </div>
+                                    ))}
+                                    {isLoading && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex justify-start py-2"
+                                        >
+                                            <span className="inline-flex gap-1" aria-hidden>
+                                                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.18s]" />
+                                                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.09s]" />
+                                                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70" />
+                                            </span>
+                                        </motion.div>
+                                    )}
                                 </div>
-                            ))}
-                            {isLoading && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="flex justify-start py-2"
-                                >
-                                    <span className="inline-flex gap-1" aria-hidden>
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.18s]" />
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70 [animation-delay:-0.09s]" />
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/70" />
-                                    </span>
-                                </motion.div>
-                            )}
-                        </div>
 
-                        {/* Input */}
-                        <div className="border-t border-border bg-card p-4">
-                            <form
-                                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                                className="flex gap-2"
-                            >
-                                <Input
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Type your message..."
-                                    className="rounded-full border-border bg-muted/30 focus:border-primary/50 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
-                                    disabled={isLoading}
-                                />
-                                <Button
-                                    type="submit"
-                                    disabled={!input.trim() || isLoading}
-                                    className="gradient-primary h-10 w-10 border-0 rounded-full shadow-lg shadow-primary/20 p-0 shrink-0"
-                                >
-                                    <Send className="h-4.5 w-4.5" />
-                                </Button>
-                            </form>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                {/* Input */}
+                                <div className="border-t border-border bg-card p-4">
+                                    <form
+                                        onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                                        className="flex gap-2"
+                                    >
+                                        <Input
+                                            value={input}
+                                            onChange={(e) => setInput(e.target.value)}
+                                            placeholder="Type your message..."
+                                            className="rounded-full border-border bg-muted/30 focus:border-primary/50 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+                                            disabled={isLoading}
+                                        />
+                                        <Button
+                                            type="submit"
+                                            disabled={!input.trim() || isLoading}
+                                            className="gradient-primary h-10 w-10 border-0 rounded-full shadow-lg shadow-primary/20 p-0 shrink-0"
+                                        >
+                                            <Send className="h-4.5 w-4.5" />
+                                        </Button>
+                                    </form>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                    "h-14 w-14 rounded-full flex items-center justify-center shadow-2xl relative transition-all duration-300",
-                    isOpen ? "bg-destructive rotate-90" : "gradient-primary"
-                )}
-            >
-                {isOpen ? <X className="h-6 w-6 text-white" /> : <MessageSquare className="h-6 w-6 text-white" />}
-                {!isOpen && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-45"></span>
-                        <span className="relative inline-flex rounded-full h-4 w-4 bg-white/30 backdrop-blur-sm border border-white/50"></span>
-                    </span>
-                )}
-            </motion.button>
-        </div>
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setIsOpen(!isOpen)}
+                        className={cn(
+                            "h-14 w-14 rounded-full flex items-center justify-center shadow-2xl relative transition-all duration-300",
+                            isOpen ? "bg-destructive rotate-90" : "gradient-primary"
+                        )}
+                    >
+                        {isOpen ? <X className="h-6 w-6 text-white" /> : <MessageSquare className="h-6 w-6 text-white" />}
+                        {!isOpen && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-45"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-white/30 backdrop-blur-sm border border-white/50"></span>
+                            </span>
+                        )}
+                    </motion.button>
+                </div>
+            )}
+        </>
     );
 }
