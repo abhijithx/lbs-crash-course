@@ -747,14 +747,16 @@ export default function RecordedClassesPage() {
                                     <Badge variant="secondary" className="font-mono text-[10px]">{subjectClasses.length}</Badge>
                                 </summary>
                                 <div className="px-4 pb-4 pt-0 space-y-4">
-                                    {Object.entries(bySection).map(([section, items]) => (
+                                    {Object.entries(bySection).map(([section, items]) => {
+                                        const displayItems = subject === "Computer Science" && section === "Problem Solving" ? [...items].reverse() : items;
+                                        return (
                                         <div key={section} className="space-y-3">
                                             <div className="flex items-center justify-between px-1">
                                                 <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{section}</h3>
-                                                <span className="text-[10px] font-mono text-zinc-500">{items.length} Lectures</span>
+                                                <span className="text-[10px] font-mono text-zinc-500">{displayItems.length} Lectures</span>
                                             </div>
                                             <div className="rounded-2xl border border-border overflow-hidden bg-card/40 divide-y">
-                                                {items.map((cls) => {
+                                                {displayItems.map((cls) => {
                                                     const id = extractYouTubeId(cls.youtubeUrl);
                                                     const thumb = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
                                                     const progress = videoProgressMap[cls.id];
@@ -832,7 +834,8 @@ export default function RecordedClassesPage() {
                                                 })}
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </details>
                         );
