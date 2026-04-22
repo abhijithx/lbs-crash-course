@@ -509,7 +509,7 @@ export default function MockTestsPage() {
                                 <Button variant="outline" className="flex-1" onClick={() => setShowStartScreen(false)}>
                                     Cancel
                                 </Button>
-                                <Button className="flex-1 gradient-primary border-0" onClick={handleStartTestClick}>
+                                        <Button className="flex-1 gradient-primary border-0" onClick={handleStartTestClick}>
                                     Start Test
                                 </Button>
                             </div>
@@ -520,33 +520,33 @@ export default function MockTestsPage() {
             {/* Honest Self-Evaluation Overlay */}
             {showHonestSelfEvalOverlay && pendingTest && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-                    <Card className="w-full max-w-2xl shadow-2xl relative overflow-y-auto max-h-[90vh] transform transition-all">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />
-                        <CardContent className="p-8 sm:p-10 space-y-6">
+                    <Card className="w-full max-w-2xl shadow-2xl relative overflow-y-auto max-h-[85vh] transform transition-all">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-amber-500 z-10" />
+                        <CardContent className="p-6 sm:p-10 space-y-6">
                             <div className="text-center space-y-4">
                                 <div className="flex justify-center gap-2 text-4xl mb-2">
                                     <span>🧠</span>
                                     <span>💪</span>
                                     <span>✨</span>
                                 </div>
-                                <h2 className="text-3xl font-bold text-gray-900">Ready for Your Full Mock Test? 🎯</h2>
-                                <p className="text-lg text-gray-600 font-medium">Before the clock starts ticking, remember this...</p>
+                                <h2 className="text-3xl font-bold text-foreground">Ready for Your Full Mock Test? 🎯</h2>
+                                <p className="text-lg text-muted-foreground font-medium">Before the clock starts ticking, remember this...</p>
                             </div>
 
                             {/* Wonderful Quote */}
-                            <div className="p-6 sm:p-7 rounded-2xl bg-linear-to-br from-amber-50 to-orange-50 border-2 border-amber-200 relative">
+                            <div className="p-6 sm:p-7 rounded-2xl bg-muted/50 border relative">
                                 <div className="absolute top-3 left-4 text-4xl opacity-20">&quot;</div>
                                 <div className="relative z-10 space-y-3">
-                                    <p className="text-xl sm:text-2xl font-semibold text-gray-800 italic leading-relaxed">
+                                    <p className="text-xl sm:text-2xl font-semibold text-foreground italic leading-relaxed">
                                         The real test isn&apos;t about having all the right answers—it&apos;s about discovering what you truly know through your own honest effort. That&apos;s the path to real mastery! 🎓
                                     </p>
-                                    <p className="text-sm font-medium text-amber-700 text-right">— Your Greatest Strength is Your Authenticity</p>
+                                    <p className="text-sm font-medium text-amber-600 text-right">— Your Greatest Strength is Your Authenticity</p>
                                 </div>
                             </div>
 
                             {/* Message */}
                             <div className="space-y-4">
-                                <div className="space-y-3 text-gray-700">
+                                <div className="space-y-4 text-muted-foreground">
                                     <div className="flex items-start gap-3">
                                         <span className="text-2xl shrink-0">✅</span>
                                         <p className="pt-0.5"><strong>This is YOUR exam:</strong> No ChatGPT, no AI shortcuts, no copy-paste tricks. Just you, your knowledge, and your honest answers. That&apos;s what makes this real! 🎖️</p>
@@ -563,14 +563,14 @@ export default function MockTestsPage() {
                             </div>
 
                             {/* Confirmation Message */}
-                            <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                                <p className="text-sm text-amber-800 text-center font-medium">
+                            <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                                <p className="text-sm text-amber-600 text-center font-medium">
                                     💡 <strong>Mindset Shift:</strong> You&apos;re not just taking a test—you&apos;re investing in yourself. Make it count with your authentic effort! 💎
                                 </p>
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
                                 <Button 
                                     variant="outline" 
                                     className="flex-1 rounded-xl h-11 text-base font-semibold" 
@@ -579,7 +579,7 @@ export default function MockTestsPage() {
                                     Let Me Reconsider
                                 </Button>
                                 <Button 
-                                    className="flex-1 gradient-primary border-0 rounded-xl h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all" 
+                                    className="flex-1 gradient-primary text-white border-0 rounded-xl h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all" 
                                     onClick={() => pendingTest && proceedWithTestStart(pendingTest)}
                                 >
                                     I&apos;m All-In! Let&apos;s Go 💪
