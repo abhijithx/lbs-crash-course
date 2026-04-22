@@ -78,7 +78,7 @@ function normalizeStoredRecordingUrl(input: string) {
 }
 
 export default function AdminLiveClassesPage() {
-    const { userData } = useAuth();
+    const { user, userData } = useAuth();
     const [classes, setClasses] = useState<LiveClass[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState<LiveClass | null>(null);
@@ -151,7 +151,8 @@ export default function AdminLiveClassesPage() {
                 return;
             }
             const notesUrl = form.notesUrl.trim();
-            const notesToken = notesUrl ? await createMediaToken(notesUrl, "note") : "";
+            const fbToken = await user?.getIdToken();
+            const notesToken = notesUrl ? await createMediaToken(notesUrl, "note", fbToken) : "";
             const data = {
                 title: form.title,
                 subject: form.subject,

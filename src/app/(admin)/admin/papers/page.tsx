@@ -25,7 +25,7 @@ type Paper = {
 };
 
 export default function AdminPapersPage() {
-  const { userData } = useAuth();
+  const { user, userData } = useAuth();
   const [papers, setPapers] = useState<Paper[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,30 +81,41 @@ export default function AdminPapersPage() {
       return;
     }
 
+    if (!user) {
+      toast.error("Authentication required. Please refresh.");
+      setSaving(false);
+      return;
+    }
+
     setSaving(true);
     try {
       const normalizedPdfUrl = form.pdfUrl.trim();
-      const pdfToken = await createMediaToken(normalizedPdfUrl, "note");
+      const fbToken = await user.getIdToken();
+      
+      console.log("[ADMIN_PAPERS] Generating token for:", normalizedPdfUrl);
+      const pdfToken = await createMediaToken(normalizedPdfUrl, "note", fbToken);
+      
       const data = {
         title: form.title.trim(),
         year,
         pdfUrl: normalizedPdfUrl,
         pdfToken,
-        createdBy: userData?.uid || "",
+        createdBy: userData?.uid || user.uid,
         ...(editing ? {} : { createdAt: Date.now() }),
       };
 
       if (editing) {
         await update(ref(db, `previousPapers/${editing.id}`), data);
-        toast.success("Updated");
+        toast.success("Updated successfully");
       } else {
         await set(push(ref(db, "previousPapers")), data);
-        toast.success("Created");
+        toast.success("Created successfully");
       }
 
       setShowForm(false);
-    } catch {
-      toast.error("Failed to save");
+    } catch (err: any) {
+      console.error("[ADMIN_PAPERS] Save error details:", err);
+      toast.error(err.message || "Failed to save. Check console for details.");
     } finally {
       setSaving(false);
     }
