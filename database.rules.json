@@ -89,6 +89,10 @@
             ".read": "auth != null",
             ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
+        "previousPapers": {
+            ".read": "auth != null",
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
         "rankings": {
             ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
             "$quizId": {
