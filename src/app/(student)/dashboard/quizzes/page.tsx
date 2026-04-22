@@ -724,10 +724,13 @@ export default function QuizzesPage() {
             )}
             {/* Honest Self-Evaluation Overlay */}
             {showHonestSelfEvalOverlay && pendingQuiz && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-                    <Card className="w-full max-w-2xl shadow-2xl relative overflow-y-auto max-h-[85vh] transform transition-all">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
+                    <div 
+                        className="w-full max-w-2xl bg-card rounded-2xl shadow-2xl relative overflow-y-auto transform transition-all border"
+                        style={{ maxHeight: '85vh' }}
+                    >
                         <div className="absolute top-0 left-0 w-full h-1 gradient-primary z-10" />
-                        <CardContent className="p-6 sm:p-10 space-y-6">
+                        <CardContent className="p-6 sm:p-10 space-y-6 pt-8">
                             <div className="text-center space-y-4">
                                 <div className="flex justify-center gap-2 text-4xl mb-2">
                                     <span>🧠</span>
@@ -739,31 +742,13 @@ export default function QuizzesPage() {
                             </div>
 
                             {/* Wonderful Quote */}
-                            <div className="p-6 sm:p-7 rounded-2xl bg-muted/50 border relative">
+                            <div className="p-6 sm:p-7 rounded-2xl bg-primary/5 border relative">
                                 <div className="absolute top-3 left-4 text-4xl opacity-20">&quot;</div>
                                 <div className="relative z-10 space-y-3">
-                                    <p className="text-xl sm:text-2xl font-semibold text-foreground italic leading-relaxed">
+                                    <p className="text-xl font-semibold text-foreground italic leading-relaxed">
                                         Success is not about reaching the finish line perfectly—it&apos;s about becoming a better version of yourself through honest effort. 💭
                                     </p>
                                     <p className="text-sm font-medium text-primary text-right">— Every Expert Started As A Beginner</p>
-                                </div>
-                            </div>
-
-                            {/* Message */}
-                            <div className="space-y-4">
-                                <div className="space-y-4 text-muted-foreground">
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl shrink-0">✅</span>
-                                        <p className="pt-0.5"><strong>Answer with your own brain:</strong> This quiz measures YOUR understanding, not ChatGPT&apos;s knowledge. The more honest you are, the more you learn! 🧠</p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl shrink-0">🚀</span>
-                                        <p className="pt-0.5"><strong>Challenge yourself:</strong> It&apos;s okay to struggle! Getting questions wrong is how learning happens. No AI shortcuts allowed—just you, the questions, and your potential. 💪</p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl shrink-0">🌟</span>
-                                        <p className="pt-0.5"><strong>Be proud of the effort:</strong> Whether you score high or low, if it&apos;s your honest work, it means something real. That&apos;s what true success looks like! ✨</p>
-                                    </div>
                                 </div>
                             </div>
 
@@ -781,7 +766,7 @@ export default function QuizzesPage() {
                                     className="flex-1 rounded-xl h-11 text-base font-semibold" 
                                     onClick={() => setShowHonestSelfEvalOverlay(false)}
                                 >
-                                    Actually, Let Me Cancel
+                                    Cancel
                                 </Button>
                                 <Button 
                                     className="flex-1 gradient-primary text-white border-0 rounded-xl h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all" 
@@ -791,7 +776,7 @@ export default function QuizzesPage() {
                                 </Button>
                             </div>
                         </CardContent>
-                    </Card>
+                    </div>
                 </div>
             )}
         </div>

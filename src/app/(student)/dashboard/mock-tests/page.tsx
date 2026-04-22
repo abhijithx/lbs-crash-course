@@ -519,10 +519,13 @@ export default function MockTestsPage() {
             )}
             {/* Honest Self-Evaluation Overlay */}
             {showHonestSelfEvalOverlay && pendingTest && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-                    <Card className="w-full max-w-2xl shadow-2xl relative overflow-y-auto max-h-[85vh] transform transition-all">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
+                    <div 
+                        className="w-full max-w-2xl bg-card rounded-2xl shadow-2xl relative overflow-y-auto transform transition-all border"
+                        style={{ maxHeight: '85vh' }}
+                    >
                         <div className="absolute top-0 left-0 w-full h-1 bg-amber-500 z-10" />
-                        <CardContent className="p-6 sm:p-10 space-y-6">
+                        <CardContent className="p-6 sm:p-10 space-y-6 pt-8">
                             <div className="text-center space-y-4">
                                 <div className="flex justify-center gap-2 text-4xl mb-2">
                                     <span>🧠</span>
@@ -534,31 +537,13 @@ export default function MockTestsPage() {
                             </div>
 
                             {/* Wonderful Quote */}
-                            <div className="p-6 sm:p-7 rounded-2xl bg-muted/50 border relative">
+                            <div className="p-6 sm:p-7 rounded-2xl bg-amber-500/5 border relative">
                                 <div className="absolute top-3 left-4 text-4xl opacity-20">&quot;</div>
                                 <div className="relative z-10 space-y-3">
-                                    <p className="text-xl sm:text-2xl font-semibold text-foreground italic leading-relaxed">
+                                    <p className="text-xl font-semibold text-foreground italic leading-relaxed">
                                         The real test isn&apos;t about having all the right answers—it&apos;s about discovering what you truly know through your own honest effort. That&apos;s the path to real mastery! 🎓
                                     </p>
                                     <p className="text-sm font-medium text-amber-600 text-right">— Your Greatest Strength is Your Authenticity</p>
-                                </div>
-                            </div>
-
-                            {/* Message */}
-                            <div className="space-y-4">
-                                <div className="space-y-4 text-muted-foreground">
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl shrink-0">✅</span>
-                                        <p className="pt-0.5"><strong>This is YOUR exam:</strong> No ChatGPT, no AI shortcuts, no copy-paste tricks. Just you, your knowledge, and your honest answers. That&apos;s what makes this real! 🎖️</p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl shrink-0">🚀</span>
-                                        <p className="pt-0.5"><strong>Pressure is a privilege:</strong> 60 minutes, multiple questions, ticking clock—this is where you get to prove your prep was worth it. Channel that nervous energy into focus! ⚡</p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl shrink-0">🌟</span>
-                                        <p className="pt-0.5"><strong>Every question is a teacher:</strong> Whether you get it right or wrong, YOUR attempt teaches you something. That&apos;s infinitely more valuable than a copy-pasted answer. 📚</p>
-                                    </div>
                                 </div>
                             </div>
 
@@ -576,7 +561,7 @@ export default function MockTestsPage() {
                                     className="flex-1 rounded-xl h-11 text-base font-semibold" 
                                     onClick={() => setShowHonestSelfEvalOverlay(false)}
                                 >
-                                    Let Me Reconsider
+                                    Cancel
                                 </Button>
                                 <Button 
                                     className="flex-1 gradient-primary text-white border-0 rounded-xl h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all" 
@@ -586,7 +571,7 @@ export default function MockTestsPage() {
                                 </Button>
                             </div>
                         </CardContent>
-                    </Card>
+                    </div>
                 </div>
             )}
         </div>
