@@ -339,6 +339,63 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
         };
     }, [open, video, userData?.uid, currentTime, duration]);
 
+    // Player Keyboard Shortcuts
+    useEffect(() => {
+        if (!open) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+            switch (e.key.toLowerCase()) {
+                case ' ':
+                case 'k':
+                    e.preventDefault();
+                    if (isPaused) {
+                        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "unmute" }, "*"); } catch { }
+                        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "play" }, "*"); } catch { }
+                        setIsPaused(false);
+                        setCoverVisible(false);
+                    } else {
+                        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "pause" }, "*"); } catch { }
+                        setIsPaused(true);
+                        setCoverVisible(true);
+                    }
+                    break;
+                case 'arrowleft':
+                case 'j':
+                    e.preventDefault();
+                    {
+                        const ct = currentTimeRef.current ?? 0;
+                        const nt = Math.max(0, Math.min((durationRef.current || 0), ct - 10));
+                        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "seek", time: nt }, "*"); } catch { }
+                        setCurrentTime(nt);
+                    }
+                    break;
+                case 'arrowright':
+                case 'l':
+                    e.preventDefault();
+                    {
+                        const ct = currentTimeRef.current ?? 0;
+                        const nt = Math.max(0, Math.min((durationRef.current || 0), ct + 10));
+                        try { containerRef.current?.contentWindow?.postMessage({ type: "cmd", name: "seek", time: nt }, "*"); } catch { }
+                        setCurrentTime(nt);
+                    }
+                    break;
+                case 'f':
+                    e.preventDefault();
+                    if (isFullscreen) {
+                        exitFull().catch(() => {});
+                    } else {
+                        enterFull().catch(() => {});
+                    }
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, isPaused, isFullscreen]);
+
     return (
         <Dialog
             open={open}

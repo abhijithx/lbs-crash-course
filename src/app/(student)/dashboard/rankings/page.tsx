@@ -362,8 +362,8 @@ export default function RankingsPage() {
 
             <Tabs value={tab} onValueChange={setTab} className="w-full">
                 <TabsList className="p-1 h-auto bg-muted/50 border gap-1 rounded-xl w-full max-w-sm mb-6">
-                    <TabsTrigger value="mockTests" className="flex-1 rounded-lg py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">Mock Tests</TabsTrigger>
-                    <TabsTrigger value="quizzes" className="flex-1 rounded-lg py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">Quizzes</TabsTrigger>
+                    <TabsTrigger value="mockTests" className="flex-1 rounded-lg py-2 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">Mock Tests</TabsTrigger>
+                    <TabsTrigger value="quizzes" className="flex-1 rounded-lg py-2 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm">Quizzes</TabsTrigger>
                 </TabsList>
 
                 {isLoading ? (
