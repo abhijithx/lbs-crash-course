@@ -15,6 +15,12 @@ const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "/api/ai/chat";
 const DEVELOPER = "Ajmal U K";
 const TOOLPIX_URL = "https://toolpix.pythonanywhere.com/";
 
+// Memory cache for global metadata (quizzes and mock tests subjects)
+let globalMetadataCache: Record<string, { subject: string }> | null = null;
+// Memory cache for student intelligence reports to speed up session initialization
+const userContextCache = new Map<string, { report: string; timestamp: number }>();
+const CONTEXT_CACHE_TTL = 1000 * 60 * 5; // 5 minute TTL for student context
+
 export interface ChatMessage {
     role: "user" | "assistant" | "system";
     content: string;
@@ -137,10 +143,17 @@ function stripAssistantNamePrefixes(text: string) {
 
 export async function getUserContext(uid: string) {
     try {
+        // Check context cache first
+        const cached = userContextCache.get(uid);
+        if (cached && (Date.now() - cached.timestamp) < CONTEXT_CACHE_TTL) {
+            return cached.report;
+        }
+
         const fetchTasks = [
             get(ref(db, `users/${uid}`)),
-            get(ref(db, "quizzes")),
-            get(ref(db, "mockTests")),
+            // Only fetch global metadata if not cached
+            !globalMetadataCache ? get(ref(db, "quizzes")) : Promise.resolve(null),
+            !globalMetadataCache ? get(ref(db, "mockTests")) : Promise.resolve(null),
             get(query(ref(db, "quizAttempts"), orderByChild("userId"), equalTo(uid))),
             get(query(ref(db, "mockAttempts"), orderByChild("userId"), equalTo(uid))),
             get(ref(db, "rankings")),
@@ -172,16 +185,20 @@ export async function getUserContext(uid: string) {
 
         const userData = userSnap?.val() as UserData | null;
 
-        // Map quizzes/mocks for subject lookup
-        const quizMetaMap: Record<string, { subject: string }> = {};
-        quizSnap?.forEach(c => { 
-            const val = c.val() as Quiz;
-            quizMetaMap[c.key!] = { subject: val.subject }; 
-        });
-        mockSnap?.forEach(c => { 
-            const val = c.val() as MockTest;
-            quizMetaMap[c.key!] = { subject: val.subject }; 
-        });
+        // Update or use global metadata cache
+        if (!globalMetadataCache) {
+            globalMetadataCache = {};
+            quizSnap?.forEach(c => { 
+                const val = c.val() as Quiz;
+                globalMetadataCache![c.key!] = { subject: val.subject }; 
+            });
+            mockSnap?.forEach(c => { 
+                const val = c.val() as MockTest;
+                globalMetadataCache![c.key!] = { subject: val.subject }; 
+            });
+        }
+
+        const quizMetaMap = globalMetadataCache;
 
         interface SubjectStats {
             totalScore: number;
@@ -297,7 +314,7 @@ export async function getUserContext(uid: string) {
             .map(e => e[0])
             .join(", ");
 
-        return `
+        const report = `
 # 📝 STUDENT INTELLIGENCE REPORT: ${userData?.name || "Scholar"}
 ---
 ### 👤 Profile
@@ -324,6 +341,10 @@ ${activeAnnouncements || "*No recent announcements.*"}
 - **Immediate Focus**: ${focusDomains || (totalAttempts > 0 ? "Tracking perfection..." : "Take a mock test to identify targets")}
 ---
 `;
+        
+        // Cache the result
+        userContextCache.set(uid, { report, timestamp: Date.now() });
+        return report;
     } catch (error) {
         console.error("Error fetching AI context:", error);
         return "ERROR: Could not fetch student performance data.";

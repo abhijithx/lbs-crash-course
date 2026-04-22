@@ -23,14 +23,15 @@ export async function POST(req: NextRequest) {
         const id = (body?.id || "").trim();
         const kind = body?.kind || "yt";
         if (!id) {
+            console.error("[API_MEDIA_TOKEN] Missing id in request body");
             return NextResponse.json({ message: "Missing id" }, { status: 400 });
         }
         const now = Date.now();
         const payload: Payload = { id, kind, t: now, exp: now + 5 * 60 * 1000 };
         const token = sign(payload, secret);
         return NextResponse.json({ token });
-    } catch (err) {
-        console.error("Token creation error:", err);
-        return NextResponse.json({ message: "Failed to issue token" }, { status: 500 });
+    } catch (err: any) {
+        console.error("[API_MEDIA_TOKEN] Unexpected error:", err);
+        return NextResponse.json({ message: err.message || "Failed to issue token" }, { status: 500 });
     }
 }

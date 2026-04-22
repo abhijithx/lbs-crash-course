@@ -52,12 +52,13 @@ export async function createMediaToken(source: string, kind: MediaTokenKind, fbT
   });
 
   if (!response.ok) {
-    throw new Error("Failed to create media token");
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to create media token (${response.status})`);
   }
 
   const data = (await response.json().catch(() => ({}))) as { token?: string };
   if (!data.token) {
-    throw new Error("Missing media token");
+    throw new Error("Missing media token in server response");
   }
 
   return data.token;

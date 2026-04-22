@@ -66,7 +66,7 @@ function toYoutubeDisplayUrl(input: string) {
 }
 
 export default function AdminRecordedClassesPage() {
-    const { userData } = useAuth();
+    const { user, userData } = useAuth();
     const [classes, setClasses] = useState<RecordedClass[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState<RecordedClass | null>(null);
@@ -99,27 +99,57 @@ export default function AdminRecordedClassesPage() {
 
     const handleSave = async () => {
         if (!form.title || !form.subject || !form.youtubeUrl) { toast.error("Title, subject, and YouTube URL required"); return; }
+        if (!user) {
+            toast.error("Authentication required. Please refresh.");
+            return;
+        }
+
         setSaving(true);
         try {
-            const idOnly = extractYouTubeId(form.youtubeUrl.trim());
+            const youtubeUrl = form.youtubeUrl.trim();
+            const notesUrl = form.notesUrl.trim();
+            const idOnly = extractYouTubeId(youtubeUrl);
+            
             if (!idOnly) {
-                toast.error("Please enter a valid YouTube URL (example: https://youtu.be/Z-ub5E9yn6o?si=...) or video ID.");
+                toast.error("Invalid YouTube URL");
+                setSaving(false);
                 return;
             }
-            const notesUrl = form.notesUrl.trim();
-            const notesToken = notesUrl ? await createMediaToken(notesUrl, "note") : "";
+
+            const fbToken = await user.getIdToken();
+            
+            console.log("[ADMIN_RECORDED] Generating tokens for:", { youtube: idOnly, notes: notesUrl });
+            
+            const youtubeToken = await createMediaToken(idOnly, "yt", fbToken);
+            const notesToken = notesUrl ? await createMediaToken(notesUrl, "note", fbToken) : "";
+
             const data = {
-                ...form,
+                title: form.title.trim(),
+                subject: form.subject.trim(),
+                section: form.section.trim(),
                 youtubeUrl: idOnly,
-                notesUrl,
+                youtubeToken,
+                notesUrl: notesUrl,
                 notesToken,
-                createdBy: userData?.uid || "",
-                ...(editing ? {} : { createdAt: Date.now() })
+                createdBy: userData?.uid || user.uid,
+                ...(editing ? {} : { createdAt: Date.now() }),
             };
-            if (editing) { await update(ref(db, `recordedClasses/${editing.id}`), data); toast.success("Updated"); }
-            else { await set(push(ref(db, "recordedClasses")), data); toast.success("Created"); }
+
+            if (editing) {
+                await update(ref(db, `recordedClasses/${editing.id}`), data);
+                toast.success("Updated successfully");
+            } else {
+                await set(push(ref(db, "recordedClasses")), data);
+                toast.success("Created successfully");
+            }
+
             setShowForm(false);
-        } catch { toast.error("Failed to save"); } finally { setSaving(false); }
+        } catch (err: any) {
+            console.error("[ADMIN_RECORDED] Save error details:", err);
+            toast.error(err.message || "Failed to save. Check console for details.");
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleDelete = async (id: string) => {
