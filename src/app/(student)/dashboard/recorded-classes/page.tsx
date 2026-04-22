@@ -495,9 +495,9 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
                         </div>
                     )}
 
-                    {/* Fullscreen exit button - top left, always visible in fullscreen */}
+                    {/* Fullscreen exit button - top left, shows/hides with overlay */}
                     {isFullscreen && (
-                        <div className="absolute top-0 left-0 right-0 z-60 flex items-center justify-between p-3"
+                        <div className={`absolute top-0 left-0 right-0 z-60 flex items-center justify-between p-3 transition-all duration-300 ${fsOverlayVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}
                             style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
                         >
                             <button
@@ -540,7 +540,7 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
                     />
 
                     {/* Progress Bar & Controls Overlay (Only visible on hover or mobile touch) */}
-                    <div className={`absolute inset-x-0 bottom-0 z-50 p-3 px-4 sm:p-6 bg-linear-to-t from-black/80 via-black/40 to-transparent transition-all duration-300 ${fsOverlayVisible || isFullscreen ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100'}`}
+                    <div className={`absolute inset-x-0 bottom-0 z-50 p-3 px-4 sm:p-6 bg-linear-to-t from-black/80 via-black/40 to-transparent transition-all duration-300 ${isFullscreen ? (fsOverlayVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0') : (fsOverlayVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100')}`}
                         style={isFullscreen ? { paddingBottom: 'max(12px, env(safe-area-inset-bottom))' } : undefined}
                     >
                         <div className="max-w-4xl mx-auto space-y-2 sm:space-y-4">
