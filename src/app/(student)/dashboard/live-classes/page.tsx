@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild } from "firebase/database";
-import { auth, db } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import type { LiveClass } from "@/lib/types";
 import { createMediaToken, extractYouTubeId } from "@/lib/media";
-import { Video, Calendar, Clock, ExternalLink, Play, AlertCircle, MonitorPlay, X, SkipBack, SkipForward, FileText, Pause, Maximize2, Minimize2, ArrowLeft, Loader2, Youtube } from "lucide-react";
+import { Video, Calendar, Clock, ExternalLink, Play, AlertCircle, MonitorPlay, X, SkipBack, SkipForward, FileText, Pause, Maximize2, Minimize2, ArrowLeft, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { Dialog } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -93,7 +93,7 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
         return () => {
             active = false;
         };
-    }, [open, url]);
+    }, [open, url, user]);
 
     const onReady = () => {
         setIsReady(true);
@@ -360,7 +360,7 @@ function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEm
                     <div className="absolute inset-0 overflow-hidden">
                         <iframe
                             ref={containerRef as unknown as React.RefObject<HTMLIFrameElement>}
-                            src={resolvedId ? `/player/yt?id=${encodeURIComponent(resolvedId)}&start=0` : undefined}
+                            src={resolvedId ? `/player/yt?id=${encodeURIComponent(resolvedId)}&start=0&autoplay=1` : undefined}
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
@@ -527,7 +527,7 @@ export default function LiveClassesPage() {
             snapshot.forEach((child) => {
                 list.push({ ...child.val(), id: child.key! });
             });
-            setClasses(list.reverse());
+            setClasses(list);
         });
         return () => unsub();
     }, []);

@@ -19,7 +19,7 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
             initial={{ opacity: 0.01 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.1 }}
-            className={`relative w-full ${isMobile ? "max-w-70" : "max-w-105 lg:max-w-none"} aspect-square lg:aspect-auto mx-auto`}
+            className={`relative w-full ${isMobile ? "max-w-52" : "max-w-105 lg:max-w-none"} mx-auto`}
         >
             {/* Decorative Aura */}
             <div className={`absolute inset-0 bg-primary/5 rounded-full blur-[60px] ${isMobile ? "scale-75" : "scale-100"}`}></div>
@@ -31,11 +31,12 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
                 className="relative z-10 w-full"
             >
                 <Image
-                    src="/hero-bot.png"
+                    src="/hero-bot.webp"
                     alt="LBS MCA Entrance Learning Mascot"
                     width={700}
                     height={1000}
                     priority
+                    quality={85}
                     sizes="(max-width: 768px) 80vw, 500px"
                     className="w-full h-auto drop-shadow-[0_20px_40px_rgba(13,148,136,0.2)] select-none pointer-events-none"
                 />
@@ -45,7 +46,7 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
             <motion.div
                 animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className={`absolute ${isMobile ? "left-0 top-1/4 p-2 rounded-xl gap-0.5" : "-left-8 top-1/2 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
+                className={`absolute ${isMobile ? "-left-4 top-1/4 p-2 rounded-xl gap-0.5" : "-left-8 top-1/2 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
             >
                 <span className={`${isMobile ? "text-base" : "text-2xl"} font-black text-primary`}>50+</span>
                 <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap`}>Mock Exams</span>
@@ -54,7 +55,7 @@ function MascotWithCards({ isMobile }: { isMobile: boolean }) {
             <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className={`absolute ${isMobile ? "right-0 bottom-12 p-2 rounded-xl gap-0.5" : "-right-4 bottom-20 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
+                className={`absolute ${isMobile ? "-right-2 bottom-12 p-2 rounded-xl gap-0.5" : "-right-4 bottom-20 p-4 rounded-2xl gap-1"} bg-card border border-primary/20 shadow-xl flex flex-col z-20`}
             >
                 <span className={`${isMobile ? "text-base" : "text-2xl"} font-black text-emerald-500`}>98%</span>
                 <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap`}>Success Rate</span>
@@ -96,7 +97,7 @@ export default function HeroSection() {
                         </h1>
 
                         {/* Mobile Mascot (Placed beneath title only on mobile) */}
-                        <div className="lg:hidden w-full max-w-70 mb-6 relative">
+                        <div className="lg:hidden w-full max-w-52 mb-6 relative">
                             <MascotWithCards isMobile={true} />
                         </div>
 

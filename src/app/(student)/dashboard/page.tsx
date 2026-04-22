@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild, limitToLast } from "firebase/database";
 import { db } from "@/lib/firebase";
-import type { LiveClass, Announcement, RankData, RankEntry } from "@/lib/types";
+import type { LiveClass, Announcement, RankData } from "@/lib/types";
 import {
     Video,
     MonitorPlay,
@@ -34,30 +34,44 @@ function LeaderboardSummary() {
         mockTestIds: Set<string>;
     }>({ rankings: {}, mockRankings: {}, quizIds: new Set(), mockTestIds: new Set() });
     const [loading, setLoading] = useState(true);
+    const [loadedSources, setLoadedSources] = useState({
+        rankings: false,
+        mockRankings: false,
+        quizzes: false,
+        mockTests: false
+    });
 
     useEffect(() => {
         const unsubs = [
             onValue(ref(db, "rankings"), (s) => {
                 setData(prev => ({ ...prev, rankings: s.val() || {} }));
-                setLoading(false);
+                setLoadedSources(prev => ({ ...prev, rankings: true }));
             }),
             onValue(ref(db, "mockRankings"), (s) => {
                 setData(prev => ({ ...prev, mockRankings: s.val() || {} }));
-                setLoading(false);
+                setLoadedSources(prev => ({ ...prev, mockRankings: true }));
             }),
             onValue(ref(db, "quizzes"), (s) => {
                 const ids = new Set<string>();
                 s.forEach(c => { ids.add(c.key!); });
                 setData(prev => ({ ...prev, quizIds: ids }));
+                setLoadedSources(prev => ({ ...prev, quizzes: true }));
             }),
             onValue(ref(db, "mockTests"), (s) => {
                 const ids = new Set<string>();
                 s.forEach(c => { ids.add(c.key!); });
                 setData(prev => ({ ...prev, mockTestIds: ids }));
+                setLoadedSources(prev => ({ ...prev, mockTests: true }));
             }),
         ];
         return () => unsubs.forEach(u => u());
     }, []);
+
+    useEffect(() => {
+        if (loadedSources.rankings && loadedSources.mockRankings && loadedSources.quizzes && loadedSources.mockTests) {
+            setLoading(false);
+        }
+    }, [loadedSources]);
 
     const latestRanking = useMemo(() => {
         const allValidRankings: (RankData & { sourceType: 'quiz' | 'mock' })[] = [];
@@ -71,7 +85,7 @@ function LeaderboardSummary() {
 
         // Add valid mock test rankings
         Object.entries(data.mockRankings).forEach(([id, val]) => {
-            if (data.mockTestIds.has(id)) {
+            if (data.mockTestIds.has(id) || id.startsWith("ai-practice-")) {
                 allValidRankings.push({ ...val, mockTestId: id, sourceType: 'mock' });
             }
         });

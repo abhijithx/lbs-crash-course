@@ -7,7 +7,7 @@ function YTProxyInner() {
   const sp = useSearchParams();
   const vid = sp.get("id") || "";
   const start = Number(sp.get("start") || 0);
-  const host = "https://www.youtube.com";
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   type Player = {
     seekTo?: (t: number, allow?: boolean) => void;
@@ -58,11 +58,13 @@ function YTProxyInner() {
           rel: 0,
           iv_load_policy: 3,
           disablekb: 1,
-          autoplay: 0,
+          autoplay: 1,
+          mute: 0,
           playsinline: 1,
           modestbranding: 1,
           enablejsapi: 1,
           origin: window.location.origin,
+          widget_referrer: window.location.origin,
         },
         events: {
           onReady: (event: { target: unknown }) => {
@@ -70,6 +72,7 @@ function YTProxyInner() {
             playerRef.current = p; // Ensure ref is fully initialized
             try {
               if (start > 0) p.seekTo?.(start, true);
+              p.playVideo?.();
               // Starting unmuted and unplayed for manual trigger
             } catch {}
 
@@ -88,7 +91,7 @@ function YTProxyInner() {
           },
           onError: (e: { data: number; target: unknown }) => {
             // Unwedge parent if YouTube rejects the video (invalid ID, embed disabled, etc.)
-            let duration = 0; let rates = [1]; let qualities: string[] = [];
+            let duration = 0; const rates = [1]; const qualities: string[] = [];
             try { const p = e.target as Player; duration = p.getDuration?.() ?? 0; } catch {}
             window.parent?.postMessage({ type: "yt:ready", duration, rates, qualities }, "*");
           },

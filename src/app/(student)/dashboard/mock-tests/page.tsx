@@ -26,6 +26,7 @@ export default function MockTestsPage() {
     const [pendingTest, setPendingTest] = useState<Quiz | null>(null);
     const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
     const [reviewMode, setReviewMode] = useState(false);
+    const [markedQuestions, setMarkedQuestions] = useState<number[]>([]);
 
 
     useEffect(() => {
@@ -71,13 +72,28 @@ export default function MockTestsPage() {
         setCurrentQ(0);
         setResult(null);
         setReviewMode(false);
+        setMarkedQuestions([]);
         setTimeLeft((test.duration || 60) * 60);
         setShowStartScreen(false);
+    };
 
+    const toggleMarked = (idx: number) => {
+        setMarkedQuestions(prev => 
+            prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+        );
     };
 
     const handleStartTestClick = () => {
         if (pendingTest) proceedWithTestStart(pendingTest);
+    };
+
+    const handleReviewClick = (test: Quiz, attempt: QuizAttempt) => {
+        setActiveTest(test);
+        setAnswers(attempt.answers);
+        setCurrentQ(0);
+        setResult({ score: attempt.score, total: attempt.totalQuestions });
+        setMarkedQuestions(attempt.markedQuestions || []);
+        setReviewMode(false);
     };
 
     const unansweredCount = useMemo(() => answers.filter(a => a === -1).length, [answers]);
@@ -104,6 +120,7 @@ export default function MockTestsPage() {
                 mockTestId: activeTest.id,
                 quizId: activeTest.id,
                 answers,
+                markedQuestions,
                 score,
                 totalQuestions: activeTest.questions.length,
                 submittedAt: Date.now(),
@@ -117,7 +134,7 @@ export default function MockTestsPage() {
         } finally {
             setSubmitting(false);
         }
-    }, [activeTest, userData, answers]);
+    }, [activeTest, userData, answers, markedQuestions]);
 
     // Timer
     useEffect(() => {
@@ -166,6 +183,17 @@ export default function MockTestsPage() {
                             <Badge variant={isCorrect ? "success" : userAnswer === -1 ? "secondary" : "destructive"}>
                                 {isCorrect ? "Correct" : userAnswer === -1 ? "Not Answered" : "Incorrect"}
                             </Badge>
+                        )}
+                        {!reviewMode && (
+                            <Button 
+                                variant={markedQuestions.includes(currentQ) ? "secondary" : "outline"} 
+                                size="sm" 
+                                onClick={() => toggleMarked(currentQ)}
+                                className={`rounded-full h-8 ${markedQuestions.includes(currentQ) ? "bg-amber-100 text-amber-700 border-amber-200" : ""}`}
+                            >
+                                <Info className="h-3.5 w-3.5 mr-1" />
+                                {markedQuestions.includes(currentQ) ? "Marked" : "Mark for Review"}
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -277,21 +305,36 @@ export default function MockTestsPage() {
                 <div className="bg-card p-4 rounded-2xl shadow-sm border flex flex-wrap justify-center gap-2.5">
                     {activeTest.questions.map((_, idx) => {
                         let style = "bg-muted text-muted-foreground border-transparent";
-                        if (idx === currentQ) style = "bg-amber-500 text-white border-transparent ring-2 ring-amber-500 ring-offset-2";
-                        else if (reviewMode) {
+                        if (idx === currentQ) {
+                            if (reviewMode) {
+                                const isQCorrect = answers[idx] === activeTest.questions[idx].correctAnswer;
+                                style = isQCorrect 
+                                    ? "bg-green-500 text-white border-transparent ring-2 ring-green-500 ring-offset-2" 
+                                    : answers[idx] === -1 
+                                        ? "bg-gray-500 text-white border-transparent ring-2 ring-gray-500 ring-offset-2"
+                                        : "bg-red-500 text-white border-transparent ring-2 ring-red-500 ring-offset-2";
+                            } else {
+                                style = "bg-amber-500 text-white border-transparent ring-2 ring-amber-500 ring-offset-2";
+                            }
+                        } else if (reviewMode) {
                             const isQCorrect = answers[idx] === activeTest.questions[idx].correctAnswer;
                             style = isQCorrect ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : answers[idx] === -1 ? "bg-muted text-muted-foreground border-border" : "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800";
                         } else if (answers[idx] >= 0) {
                             style = "bg-amber-100 text-amber-700 border-amber-200";
                         }
 
+                        const isMarked = markedQuestions.includes(idx);
+
                         return (
                             <button
                                 key={idx}
                                 onClick={() => setCurrentQ(idx)}
-                                className={`h-10 w-10 rounded-xl text-sm font-bold transition-all border flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 ${style}`}
+                                className={`h-10 w-10 rounded-xl text-sm font-bold transition-all border flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 relative ${style}`}
                             >
                                 {idx + 1}
+                                {isMarked && (
+                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full border-2 border-white shadow-sm" />
+                                )}
                             </button>
                         );
                     })}
@@ -360,7 +403,7 @@ export default function MockTestsPage() {
                     <h2 className="text-3xl font-extrabold text-foreground mb-2">Mock Test Completed!</h2>
                     <p className="text-lg text-muted-foreground mb-8">Great job on finishing this full-length mock test.</p>
 
-                    <div className="grid grid-cols-2 gap-4 mb-10">
+                    <div className="grid grid-cols-2 gap-4 mb-8">
                         <div className="p-6 rounded-2xl bg-muted/30 border">
                             <p className="text-4xl font-black text-amber-600 mb-1">{percentage}%</p>
                             <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Total Score</p>
@@ -368,6 +411,28 @@ export default function MockTestsPage() {
                         <div className="p-6 rounded-2xl bg-muted/30 border">
                             <p className="text-4xl font-black mb-1">{result.score}<span className="text-muted-foreground text-2xl font-medium">/{result.total}</span></p>
                             <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Correct Answers</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-muted/20 rounded-2xl p-6 border mb-10 text-left">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Performance Summary</h4>
+                        <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500" /> Correct</span>
+                                <span className="font-bold text-green-600">{result.score}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><XCircle className="h-4 w-4 text-red-500" /> Incorrect</span>
+                                <span className="font-bold text-red-600">{result.total - result.score - (activeTest?.questions.length ? activeTest.questions.length - answers.filter(a => a >= 0).length : 0)}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><AlertCircle className="h-4 w-4 text-gray-400" /> Skipped</span>
+                                <span className="font-bold text-gray-600">{activeTest?.questions.length ? activeTest.questions.length - answers.filter(a => a >= 0).length : 0}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2"><Info className="h-4 w-4 text-amber-500" /> Marked</span>
+                                <span className="font-bold text-amber-600">{markedQuestions.length}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -419,7 +484,11 @@ export default function MockTestsPage() {
                     {mockTests.map((test) => {
                         const attempted = myAttempts[test.id];
                         return (
-                            <Card key={test.id} className="hover:border-primary/30 transition-all">
+                            <Card 
+                                key={test.id} 
+                                className={`hover:border-primary/30 transition-all ${attempted ? "cursor-pointer hover:shadow-md" : ""}`}
+                                onClick={() => attempted && handleReviewClick(test, attempted)}
+                            >
                                 <CardHeader>
                                     <div className="flex items-start justify-between">
                                         <div>
@@ -436,16 +505,36 @@ export default function MockTestsPage() {
                                     </div>
                                     <div className="space-y-4">
                                         {attempted && (
-                                            <div className="flex items-center gap-2 p-2 rounded-lg bg-(--success)/5">
-                                                <CheckCircle className="h-4 w-4 text-success" />
-                                                <span className="text-sm font-medium text-success">
-                                                    Score: {attempted.score}/{attempted.totalQuestions}
-                                                </span>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-success/5 border border-success/10">
+                                                    <CheckCircle className="h-4 w-4 text-success" />
+                                                    <span className="text-sm font-medium text-success">
+                                                        Score: {attempted.score}/{attempted.totalQuestions}
+                                                    </span>
+                                                </div>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="w-full rounded-lg border-amber-200 text-amber-700 hover:bg-amber-50"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleReviewClick(test, attempted);
+                                                    }}
+                                                >
+                                                    <Info className="h-3.5 w-3.5 mr-2" /> Review Answers
+                                                </Button>
                                             </div>
                                         )}
 
                                         {test.status === "published" && !attempted && (
-                                            <Button onClick={() => handleStartClick(test)} className="w-full gradient-primary border-0" size="sm">
+                                            <Button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleStartClick(test);
+                                                }} 
+                                                className="w-full gradient-primary border-0" 
+                                                size="sm"
+                                            >
                                                 Start Test
                                             </Button>
                                         )}
@@ -453,7 +542,7 @@ export default function MockTestsPage() {
                                         {test.status === "closed" && (
                                             <div className="space-y-2">
                                                 {!attempted && <p className="text-sm text-muted-foreground">Test closed</p>}
-                                                <Link href="/dashboard/rankings">
+                                                <Link href={`/dashboard/rankings?testId=${test.id}`} onClick={(e) => e.stopPropagation()}>
                                                     <Button variant="outline" size="sm" className="w-full">
                                                         View Leaderboard <Trophy className="h-3 w-3 ml-2 text-yellow-500" />
                                                     </Button>

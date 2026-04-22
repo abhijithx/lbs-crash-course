@@ -54,6 +54,7 @@ const nextConfig: NextConfig = {
     return [];
   },
   images: {
+    formats: ["image/avif", "image/webp"],
     dangerouslyAllowSVG: true,
     remotePatterns: [
       {
