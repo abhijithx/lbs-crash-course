@@ -235,19 +235,19 @@ export default function QuizzesPage() {
                             </div>
                         )}
 
-                        <div className="flex flex-col sm:flex-row justify-between gap-4 mt-10 pt-6 border-t">
+                        <div className="flex flex-col-reverse sm:flex-row justify-between gap-4 mt-10 pt-6 border-t">
                             <Button
                                 variant="outline"
-                                className="order-2 sm:order-1 rounded-xl px-8"
+                                className="rounded-xl px-8 w-full sm:w-auto"
                                 disabled={currentQ === 0}
                                 onClick={() => setCurrentQ(currentQ - 1)}
                             >
                                 <ChevronLeft className="h-4 w-4 mr-1" /> Previous
                             </Button>
 
-                            <div className="order-1 sm:order-2 flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                                 {currentQ < activeQuiz.questions.length - 1 ? (
-                                    <Button className="rounded-xl px-10" onClick={() => setCurrentQ(currentQ + 1)}>
+                                    <Button className="rounded-xl px-10 w-full sm:w-auto" onClick={() => setCurrentQ(currentQ + 1)}>
                                         Next <ChevronRight className="h-4 w-4 ml-1" />
                                     </Button>
                                 ) : (
@@ -255,14 +255,14 @@ export default function QuizzesPage() {
                                         <Button
                                             onClick={() => setShowConfirmSubmit(true)}
                                             disabled={submitting}
-                                            className="gradient-primary border-0 rounded-xl px-10 shadow-md hover:shadow-lg transition-all"
+                                            className="gradient-primary border-0 rounded-xl px-10 shadow-md hover:shadow-lg transition-all w-full sm:w-auto text-white"
                                         >
                                             Finish Test
                                         </Button>
                                     )
                                 )}
                                 {reviewMode && currentQ === activeQuiz.questions.length - 1 && (
-                                    <Button onClick={() => setReviewMode(false)} className="rounded-xl px-10">
+                                    <Button onClick={() => setReviewMode(false)} className="rounded-xl px-10 w-full sm:w-auto">
                                         Back to Results
                                     </Button>
                                 )}
@@ -272,15 +272,15 @@ export default function QuizzesPage() {
                 </Card>
 
                 {/* Question navigator */}
-                <div className="bg-white p-4 rounded-2xl shadow-sm border flex flex-wrap justify-center gap-2.5">
+                <div className="bg-card p-4 rounded-2xl shadow-sm border flex flex-wrap justify-center gap-2.5">
                     {activeQuiz.questions.map((_, idx) => {
-                        let style = "bg-gray-100 text-gray-400 border-transparent";
+                        let style = "bg-muted text-muted-foreground border-transparent";
                         if (idx === currentQ) style = "gradient-primary text-white border-transparent ring-2 ring-primary ring-offset-2";
                         else if (reviewMode) {
                             const isQCorrect = answers[idx] === activeQuiz.questions[idx].correctAnswer;
-                            style = isQCorrect ? "bg-green-100 text-green-700 border-green-200" : answers[idx] === -1 ? "bg-gray-100 text-gray-500 border-gray-200" : "bg-red-100 text-red-700 border-red-200";
+                            style = isQCorrect ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : answers[idx] === -1 ? "bg-muted text-muted-foreground border-border" : "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800";
                         } else if (answers[idx] >= 0) {
-                            style = "bg-primary/20 text-primary border-(--primary)/20";
+                            style = "bg-primary/20 text-primary border-primary/20";
                         }
 
                         return (
@@ -297,8 +297,8 @@ export default function QuizzesPage() {
 
                 {/* Submit Confirmation Modal */}
                 {showConfirmSubmit && (
-                    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                        <Card className="w-full max-w-md shadow-2xl">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <Card className="w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
                             <CardHeader className="text-center pb-2">
                                 <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
                                     <AlertCircle className="h-8 w-8 text-amber-600" />
@@ -309,18 +309,18 @@ export default function QuizzesPage() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
-                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-3">
+                                <div className="p-4 rounded-xl bg-muted/50 border space-y-3">
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-gray-600">Total Questions</span>
+                                        <span className="text-muted-foreground">Total Questions</span>
                                         <span className="font-bold">{activeQuiz.questions.length}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-gray-600">Answered</span>
-                                        <span className="font-bold text-green-600">{activeQuiz.questions.length - unansweredCount}</span>
+                                        <span className="text-muted-foreground">Answered</span>
+                                        <span className="font-bold text-green-500">{activeQuiz.questions.length - unansweredCount}</span>
                                     </div>
                                     {unansweredCount > 0 && (
                                         <div className="flex justify-between items-center text-sm">
-                                            <span className="text-gray-600">Unanswered</span>
+                                            <span className="text-muted-foreground">Unanswered</span>
                                             <span className="font-bold text-red-500">{unansweredCount}</span>
                                         </div>
                                     )}
@@ -349,23 +349,23 @@ export default function QuizzesPage() {
     if (result) {
         const percentage = Math.round((result.score / result.total) * 100);
         return (
-            <div className="max-w-2xl mx-auto text-center space-y-8 animate-fade-in px-4">
-                <div className="p-8 rounded-3xl bg-white border shadow-xl relative overflow-hidden">
+            <div className="max-w-2xl mx-auto text-center space-y-8 animate-fade-in px-4 pb-12">
+                <div className="p-8 rounded-3xl bg-card border shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-2 gradient-primary" />
-                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-green-100 mb-6 shadow-inner ring-8 ring-green-50">
-                        <Trophy className="h-12 w-12 text-green-600" />
+                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-green-500/10 mb-6 shadow-inner ring-8 ring-green-500/5">
+                        <Trophy className="h-12 w-12 text-green-500" />
                     </div>
-                    <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Quiz Completed!</h2>
-                    <p className="text-lg text-gray-500 mb-8">Excellent effort on finishing the test.</p>
+                    <h2 className="text-3xl font-extrabold mb-2 text-foreground">Quiz Completed!</h2>
+                    <p className="text-lg text-muted-foreground mb-8">Excellent effort on finishing the test.</p>
 
                     <div className="grid grid-cols-2 gap-4 mb-10">
-                        <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100">
+                        <div className="p-6 rounded-2xl bg-muted/30 border">
                             <p className="text-4xl font-black gradient-text mb-1">{percentage}%</p>
-                            <p className="text-xs uppercase tracking-widest font-bold text-gray-400">Total Score</p>
+                            <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Total Score</p>
                         </div>
-                        <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100">
-                            <p className="text-4xl font-black text-gray-800 mb-1">{result.score}<span className="text-gray-300 text-2xl font-medium">/{result.total}</span></p>
-                            <p className="text-xs uppercase tracking-widest font-bold text-gray-400">Correct Answers</p>
+                        <div className="p-6 rounded-2xl bg-muted/30 border">
+                            <p className="text-4xl font-black mb-1">{result.score}<span className="text-muted-foreground text-2xl font-medium">/{result.total}</span></p>
+                            <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Correct Answers</p>
                         </div>
                     </div>
 
@@ -480,7 +480,7 @@ export default function QuizzesPage() {
             {/* Start Screen Overlay */}
             {showStartScreen && pendingQuiz && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <Card className="w-full max-w-lg shadow-2xl relative overflow-hidden">
+                    <Card className="w-full max-w-lg shadow-2xl relative overflow-y-auto max-h-[90vh]">
                         <div className="absolute top-0 left-0 w-full h-1.5 gradient-primary" />
                         <CardHeader className="pt-8 text-center">
                             <div className="mx-auto w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-4">
@@ -491,15 +491,15 @@ export default function QuizzesPage() {
                         </CardHeader>
                         <CardContent className="space-y-6 pb-8">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 text-center">
-                                    <Clock className="h-5 w-5 text-gray-500 mx-auto mb-1" />
+                                <div className="p-4 rounded-xl bg-muted/50 border text-center">
+                                    <Clock className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
                                     <p className="text-lg font-bold">{pendingQuiz.duration || 30} min</p>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider">Duration</p>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Duration</p>
                                 </div>
-                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 text-center">
-                                    <BookOpen className="h-5 w-5 text-gray-500 mx-auto mb-1" />
+                                <div className="p-4 rounded-xl bg-muted/50 border text-center">
+                                    <BookOpen className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
                                     <p className="text-lg font-bold">{pendingQuiz.questions.length}</p>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider">Questions</p>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Questions</p>
                                 </div>
                             </div>
 
@@ -529,8 +529,8 @@ export default function QuizzesPage() {
             )}
             {/* Honest Self-Evaluation Overlay */}
             {showHonestSelfEvalOverlay && pendingQuiz && (
-                <div className="fixed inset-0 z-51 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-                    <Card className="w-full max-w-2xl shadow-2xl relative overflow-hidden transform transition-all">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
+                    <Card className="w-full max-w-2xl shadow-2xl relative overflow-y-auto max-h-[90vh] transform transition-all">
                         <div className="absolute top-0 left-0 w-full h-1 gradient-primary" />
                         <CardContent className="p-8 sm:p-10 space-y-6">
                             <div className="text-center space-y-4">
