@@ -26,7 +26,7 @@ export default function MockTestsPage() {
     const [pendingTest, setPendingTest] = useState<Quiz | null>(null);
     const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
     const [reviewMode, setReviewMode] = useState(false);
-    const [showHonestSelfEvalOverlay, setShowHonestSelfEvalOverlay] = useState(false);
+
 
     useEffect(() => {
         const mtRef = query(ref(db, "mockTests"), orderByChild("createdAt"));
@@ -73,11 +73,11 @@ export default function MockTestsPage() {
         setReviewMode(false);
         setTimeLeft((test.duration || 60) * 60);
         setShowStartScreen(false);
-        setShowHonestSelfEvalOverlay(false);
+
     };
 
     const handleStartTestClick = () => {
-        setShowHonestSelfEvalOverlay(true);
+        if (pendingTest) proceedWithTestStart(pendingTest);
     };
 
     const unansweredCount = useMemo(() => answers.filter(a => a === -1).length, [answers]);
@@ -515,63 +515,6 @@ export default function MockTestsPage() {
                             </div>
                         </CardContent>
                     </Card>
-                </div>
-            )}
-            {/* Honest Self-Evaluation Overlay */}
-            {showHonestSelfEvalOverlay && pendingTest && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-                    <div 
-                        className="w-full max-w-2xl bg-card rounded-2xl shadow-2xl relative overflow-y-auto transform transition-all border"
-                        style={{ maxHeight: '85vh' }}
-                    >
-                        <div className="absolute top-0 left-0 w-full h-1 bg-amber-500 z-10" />
-                        <CardContent className="p-6 sm:p-10 space-y-6 pt-8">
-                            <div className="text-center space-y-4">
-                                <div className="flex justify-center gap-2 text-4xl mb-2">
-                                    <span>🧠</span>
-                                    <span>💪</span>
-                                    <span>✨</span>
-                                </div>
-                                <h2 className="text-3xl font-bold text-foreground">Ready for Your Full Mock Test? 🎯</h2>
-                                <p className="text-lg text-muted-foreground font-medium">Before the clock starts ticking, remember this...</p>
-                            </div>
-
-                            {/* Wonderful Quote */}
-                            <div className="p-6 sm:p-7 rounded-2xl bg-amber-500/5 border relative">
-                                <div className="absolute top-3 left-4 text-4xl opacity-20">&quot;</div>
-                                <div className="relative z-10 space-y-3">
-                                    <p className="text-xl font-semibold text-foreground italic leading-relaxed">
-                                        The real test isn&apos;t about having all the right answers—it&apos;s about discovering what you truly know through your own honest effort. That&apos;s the path to real mastery! 🎓
-                                    </p>
-                                    <p className="text-sm font-medium text-amber-600 text-right">— Your Greatest Strength is Your Authenticity</p>
-                                </div>
-                            </div>
-
-                            {/* Confirmation Message */}
-                            <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                                <p className="text-sm text-amber-600 text-center font-medium">
-                                    💡 <strong>Mindset Shift:</strong> You&apos;re not just taking a test—you&apos;re investing in yourself. Make it count with your authentic effort! 💎
-                                </p>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-                                <Button 
-                                    variant="outline" 
-                                    className="flex-1 rounded-xl h-11 text-base font-semibold" 
-                                    onClick={() => setShowHonestSelfEvalOverlay(false)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button 
-                                    className="flex-1 gradient-primary text-white border-0 rounded-xl h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all" 
-                                    onClick={() => pendingTest && proceedWithTestStart(pendingTest)}
-                                >
-                                    I&apos;m All-In! Let&apos;s Go 💪
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </div>
                 </div>
             )}
         </div>

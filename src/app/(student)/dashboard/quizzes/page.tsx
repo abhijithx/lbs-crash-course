@@ -27,7 +27,7 @@ export default function QuizzesPage() {
     const [pendingQuiz, setPendingQuiz] = useState<Quiz | null>(null);
     const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
     const [reviewMode, setReviewMode] = useState(false);
-    const [showHonestSelfEvalOverlay, setShowHonestSelfEvalOverlay] = useState(false);
+    //const [reviewMode, setReviewMode] = useState(false);
 
     useEffect(() => {
         const qRef = query(ref(db, "quizzes"), orderByChild("createdAt"));
@@ -72,11 +72,12 @@ export default function QuizzesPage() {
         setReviewMode(false);
         setTimeLeft((quiz.duration || 30) * 60);
         setShowStartScreen(false);
-        setShowHonestSelfEvalOverlay(false);
     };
 
     const handleStartQuizClick = () => {
-        setShowHonestSelfEvalOverlay(true);
+        if (pendingQuiz) {
+            proceedWithQuizStart(pendingQuiz);
+        }
     };
 
     const unansweredCount = useMemo(() => answers.filter(a => a === -1).length, [answers]);
@@ -519,201 +520,6 @@ export default function QuizzesPage() {
                                 <Button variant="outline" className="flex-1" onClick={() => setShowStartScreen(false)}>
                                     Cancel
                                 </Button>
-                                </div>
-                                {unansweredCount > 0 && (
-                                    <p className="text-sm text-red-500 text-center font-medium">
-                                        You have {unansweredCount} unanswered questions!
-                                    </p>
-                                )}
-                                <div className="flex gap-3">
-                                    <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowConfirmSubmit(false)}>
-                                        Keep Reviewing
-                                    </Button>
-                                    <Button className="flex-1 gradient-primary border-0 rounded-xl shadow-md" onClick={submitQuiz} disabled={submitting}>
-                                        {submitting ? "Submitting..." : "Yes, Submit"}
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
-            </div>
-        );
-    }
-
-    if (result) {
-        const percentage = Math.round((result.score / result.total) * 100);
-        return (
-            <div className="max-w-2xl mx-auto text-center space-y-8 animate-fade-in px-4 pb-12">
-                <div className="p-8 rounded-3xl bg-card border shadow-xl relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-2 gradient-primary" />
-                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-green-500/10 mb-6 shadow-inner ring-8 ring-green-500/5">
-                        <Trophy className="h-12 w-12 text-green-500" />
-                    </div>
-                    <h2 className="text-3xl font-extrabold mb-2 text-foreground">Quiz Completed!</h2>
-                    <p className="text-lg text-muted-foreground mb-8">Excellent effort on finishing the test.</p>
-
-                    <div className="grid grid-cols-2 gap-4 mb-10">
-                        <div className="p-6 rounded-2xl bg-muted/30 border">
-                            <p className="text-4xl font-black gradient-text mb-1">{percentage}%</p>
-                            <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Total Score</p>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-muted/30 border">
-                            <p className="text-4xl font-black mb-1">{result.score}<span className="text-muted-foreground text-2xl font-medium">/{result.total}</span></p>
-                            <p className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Correct Answers</p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                            variant="outline"
-                            className="flex-1 rounded-xl h-12 text-base font-semibold"
-                            onClick={() => setReviewMode(true)}
-                        >
-                            <Info className="h-4 w-4 mr-2" /> Review My Answers
-                        </Button>
-                        <Button
-                            className="flex-1 rounded-xl h-12 text-base font-semibold gradient-primary border-0 shadow-md"
-                            onClick={() => { setActiveQuiz(null); setResult(null); }}
-                        >
-                            Back to Quizzes
-                        </Button>
-                    </div>
-
-                    <div className="mt-6">
-                        <Link href="/dashboard/rankings" className="inline-block w-full">
-                            <Button variant="ghost" className="w-full text-primary hover:bg-primary/5 rounded-xl h-12 font-medium">
-                                <Trophy className="h-4 w-4 mr-2" /> View Global Leaderboard
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Quiz list
-    return (
-        <div className="space-y-6 animate-fade-in">
-            <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <BookOpen className="h-6 w-6 text-pink-500" />
-                    Quizzes
-                </h1>
-                <p className="text-muted-foreground mt-1">Test your knowledge with weekly quizzes</p>
-            </div>
-
-            {quizzes.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                    <BookOpen className="h-10 w-10 mx-auto mb-2" />
-                    <p className="font-medium">No quizzes available</p>
-                    <p className="text-sm">Quizzes will appear here when published.</p>
-                </div>
-            ) : (
-                <div className="grid sm:grid-cols-2 gap-4">
-                    {quizzes.map((quiz) => {
-                        const attempted = myAttempts[quiz.id];
-                        return (
-                            <Card key={quiz.id} className="hover:border-primary/30 transition-all">
-                                <CardHeader>
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <CardTitle className="text-base">{quiz.title}</CardTitle>
-                                            <CardDescription>{quiz.subject}</CardDescription>
-                                        </div>
-                                        <Badge variant={quiz.status === "published" ? "default" : "secondary"}>
-                                            {quiz.status}
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                                        <span className="flex items-center gap-1">
-                                            <BookOpen className="h-3.5 w-3.5" />
-                                            {quiz.questions?.length || 0} questions
-                                        </span>
-                                        {quiz.duration && (
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="h-3.5 w-3.5" />
-                                                {quiz.duration} min
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="space-y-4">
-                                        {attempted && (
-                                            <div className="flex items-center gap-2 p-2 rounded-lg bg-success/5">
-                                                <CheckCircle className="h-4 w-4 text-success" />
-                                                <span className="text-sm font-medium text-success">
-                                                    Score: {attempted.score}/{attempted.totalQuestions}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {quiz.status === "published" && !attempted && (
-                                            <Button onClick={() => handleStartClick(quiz)} className="w-full gradient-primary border-0" size="sm">
-                                                Start Quiz
-                                            </Button>
-                                        )}
-
-                                        {quiz.status === "closed" && (
-                                            <div className="space-y-2">
-                                                {!attempted && <p className="text-sm text-muted-foreground">Quiz closed</p>}
-                                                <Link href="/dashboard/rankings">
-                                                    <Button variant="outline" size="sm" className="w-full">
-                                                        View Leaderboard <Trophy className="h-3 w-3 ml-2 text-yellow-500" />
-                                                    </Button>
-                                                </Link>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
-            )}
-            {/* Start Screen Overlay */}
-            {showStartScreen && pendingQuiz && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <Card className="w-full max-w-lg shadow-2xl relative overflow-y-auto max-h-[90vh]">
-                        <div className="absolute top-0 left-0 w-full h-1.5 gradient-primary" />
-                        <CardHeader className="pt-8 text-center">
-                            <div className="mx-auto w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-4">
-                                <PlayCircle className="h-8 w-8 text-pink-600" />
-                            </div>
-                            <CardTitle className="text-2xl">{pendingQuiz.title}</CardTitle>
-                            <CardDescription className="text-base">{pendingQuiz.subject}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6 pb-8">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 rounded-xl bg-muted/50 border text-center">
-                                    <Clock className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-                                    <p className="text-lg font-bold">{pendingQuiz.duration || 30} min</p>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Duration</p>
-                                </div>
-                                <div className="p-4 rounded-xl bg-muted/50 border text-center">
-                                    <BookOpen className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-                                    <p className="text-lg font-bold">{pendingQuiz.questions.length}</p>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Questions</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <h4 className="font-semibold text-sm flex items-center gap-2">
-                                    <AlertCircle className="h-4 w-4 text-amber-500" /> Important Instructions:
-                                </h4>
-                                <ul className="text-sm text-gray-600 space-y-2 list-disc pl-5">
-                                    <li>Ensure you have a stable internet connection.</li>
-                                    <li>The timer starts as soon as you click &quot;Start Test&quot;.</li>
-                                    <li>The test will auto-submit when the timer reaches zero.</li>
-                                    <li>Once submitted, you cannot retake the quiz.</li>
-                                </ul>
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <Button variant="outline" className="flex-1" onClick={() => setShowStartScreen(false)}>
-                                    Cancel
-                                </Button>
                                 <Button className="flex-1 gradient-primary border-0" onClick={handleStartQuizClick}>
                                     Start Test
                                 </Button>
@@ -721,63 +527,7 @@ export default function QuizzesPage() {
                         </CardContent>
                     </Card>
                 </div>
-            )}
-            {/* Honest Self-Evaluation Overlay */}
-            {showHonestSelfEvalOverlay && pendingQuiz && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-                    <div 
-                        className="w-full max-w-2xl bg-card rounded-2xl shadow-2xl relative overflow-y-auto transform transition-all border"
-                        style={{ maxHeight: '85vh' }}
-                    >
-                        <div className="absolute top-0 left-0 w-full h-1 gradient-primary z-10" />
-                        <CardContent className="p-6 sm:p-10 space-y-6 pt-8">
-                            <div className="text-center space-y-4">
-                                <div className="flex justify-center gap-2 text-4xl mb-2">
-                                    <span>🧠</span>
-                                    <span>💪</span>
-                                    <span>✨</span>
-                                </div>
-                                <h2 className="text-3xl font-bold text-foreground">You&apos;ve Got This! 🏅</h2>
-                                <p className="text-lg text-muted-foreground font-medium">Before you dive in, here&apos;s a gentle reminder...</p>
-                            </div>
-
-                            {/* Wonderful Quote */}
-                            <div className="p-6 sm:p-7 rounded-2xl bg-primary/5 border relative">
-                                <div className="absolute top-3 left-4 text-4xl opacity-20">&quot;</div>
-                                <div className="relative z-10 space-y-3">
-                                    <p className="text-xl font-semibold text-foreground italic leading-relaxed">
-                                        Success is not about reaching the finish line perfectly—it&apos;s about becoming a better version of yourself through honest effort. 💭
-                                    </p>
-                                    <p className="text-sm font-medium text-primary text-right">— Every Expert Started As A Beginner</p>
-                                </div>
-                            </div>
-
-                            {/* Confirmation Message */}
-                            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                                <p className="text-sm text-primary text-center font-medium">
-                                    💡 <strong>Pro Tip:</strong> You have your brain, your knowledge, and your determination—that&apos;s everything you need. Let&apos;s do this! 🎉
-                                </p>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-                                <Button 
-                                    variant="outline" 
-                                    className="flex-1 rounded-xl h-11 text-base font-semibold" 
-                                    onClick={() => setShowHonestSelfEvalOverlay(false)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button 
-                                    className="flex-1 gradient-primary text-white border-0 rounded-xl h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all" 
-                                    onClick={() => pendingQuiz && proceedWithQuizStart(pendingQuiz)}
-                                >
-                                    I&apos;m Ready! Let&apos;s Start 🚀
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </div>
-                </div>
+                
             )}
         </div>
     );
