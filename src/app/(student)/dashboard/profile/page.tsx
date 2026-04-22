@@ -19,7 +19,7 @@ import { TransactionIdHelper } from "@/components/payment/TransactionIdHelper";
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
 export default function ProfilePage() {
-    const { userData, changePassword } = useAuth();
+    const { user, userData, changePassword } = useAuth();
     const [currentPw, setCurrentPw] = useState("");
     const [newPw, setNewPw] = useState("");
     const [confirmPw, setConfirmPw] = useState("");

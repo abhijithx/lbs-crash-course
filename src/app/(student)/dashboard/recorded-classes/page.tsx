@@ -28,7 +28,7 @@ const SUBJECTS = [
 
 
 function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass | null, open: boolean, onOpenChange: (open: boolean) => void }) {
-    const { userData } = useAuth();
+    const { user, userData } = useAuth();
     const [isReady, setIsReady] = useState(false);
     const containerRef = useRef<HTMLIFrameElement | null>(null);
     const playerRootRef = useRef<HTMLDivElement | null>(null);
@@ -558,7 +558,7 @@ function VideoPlayerDialog({ video, open, onOpenChange }: { video: RecordedClass
 }
 
 export default function RecordedClassesPage() {
-    const { userData } = useAuth();
+    const { user, userData } = useAuth();
     const router = useRouter();
     const [classes, setClasses] = useState<RecordedClass[]>([]);
     const [searchTerm, setSearchTerm] = useState("");

@@ -24,7 +24,8 @@ function toYoutubeDisplayUrl(input: string) {
 }
 
 function RecordingPlayerDialog({ open, onOpenChange, title, subject, url, userEmail }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; subject: string; url: string; userEmail?: string | null }) {
-    const [isReady, setIsReady] = useState(false);
+  const { user } = useAuth();
+  const [isReady, setIsReady] = useState(false);
     const containerRef = useRef<HTMLIFrameElement | null>(null);
     const playerRootRef = useRef<HTMLDivElement | null>(null);
     const [rates, setRates] = useState<number[]>([0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]);
