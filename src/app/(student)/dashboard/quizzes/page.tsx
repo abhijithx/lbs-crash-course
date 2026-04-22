@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { ref, onValue, query, orderByChild, push, set, equalTo } from "firebase/database";
 import { db } from "@/lib/firebase";
 import type { Quiz, QuizAttempt } from "@/lib/types";
-import { BookOpen, Clock, CheckCircle, Trophy, AlertCircle, Timer, PlayCircle, XCircle, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, Clock, CheckCircle, Trophy, AlertCircle, Timer, PlayCircle, XCircle, Info, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 
 import { toast } from "sonner";
 import Link from "next/link";
@@ -26,6 +26,7 @@ export default function QuizzesPage() {
     const [showStartScreen, setShowStartScreen] = useState(false);
     const [pendingQuiz, setPendingQuiz] = useState<Quiz | null>(null);
     const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
+    const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [reviewMode, setReviewMode] = useState(false);
     const [markedQuestions, setMarkedQuestions] = useState<number[]>([]);
 
@@ -96,6 +97,18 @@ export default function QuizzesPage() {
         );
     };
 
+    const exitQuiz = useCallback(() => {
+        setActiveQuiz(null);
+        setAnswers([]);
+        setMarkedQuestions([]);
+        setCurrentQ(0);
+        setResult(null);
+        setTimeLeft(0);
+        setShowExitConfirm(false);
+        setShowConfirmSubmit(false);
+        toast.info("Quiz exited. Your progress was not saved.");
+    }, []);
+
     const unansweredCount = useMemo(() => answers.filter(a => a === -1).length, [answers]);
 
     const selectAnswer = (optIndex: number) => {
@@ -162,9 +175,18 @@ export default function QuizzesPage() {
             <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        {reviewMode && (
+                        {reviewMode ? (
                             <Button variant="ghost" size="sm" onClick={() => setReviewMode(false)} className="mr-2">
                                 <ChevronLeft className="h-4 w-4 mr-1" /> Back
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowExitConfirm(true)}
+                                className="mr-1 text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
+                            >
+                                <LogOut className="h-4 w-4 mr-1" /> Exit
                             </Button>
                         )}
                         <h2 className="text-xl font-bold truncate max-w-50 sm:max-w-xs">{activeQuiz.title}</h2>
@@ -380,6 +402,54 @@ export default function QuizzesPage() {
                                     </Button>
                                     <Button className="flex-1 gradient-primary border-0 rounded-xl shadow-md" onClick={submitQuiz} disabled={submitting}>
                                         {submitting ? "Submitting..." : "Yes, Submit"}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* Exit Confirmation Modal */}
+                {showExitConfirm && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <Card className="w-full max-w-md shadow-2xl">
+                            <CardHeader className="text-center pb-2">
+                                <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                                    <LogOut className="h-8 w-8 text-red-600" />
+                                </div>
+                                <CardTitle className="text-2xl">Exit Quiz?</CardTitle>
+                                <CardDescription className="text-base pt-2">
+                                    Are you sure you want to leave? Your progress will <strong>not</strong> be saved.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="p-4 rounded-xl bg-muted/50 border space-y-3">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-muted-foreground">Answered</span>
+                                        <span className="font-bold text-green-500">{activeQuiz.questions.length - unansweredCount}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-muted-foreground">Unanswered</span>
+                                        <span className="font-bold text-red-500">{unansweredCount}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-muted-foreground">Time Remaining</span>
+                                        <span className="font-bold font-mono">{formatTime(timeLeft)}</span>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-red-500 text-center font-medium">
+                                    ⚠️ This action cannot be undone. You will need to restart the quiz.
+                                </p>
+                                <div className="flex gap-3">
+                                    <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowExitConfirm(false)}>
+                                        Continue Quiz
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        className="flex-1 rounded-xl shadow-md"
+                                        onClick={exitQuiz}
+                                    >
+                                        <LogOut className="h-4 w-4 mr-2" /> Yes, Exit
                                     </Button>
                                 </div>
                             </CardContent>
