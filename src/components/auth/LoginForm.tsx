@@ -118,9 +118,9 @@ export function LoginForm() {
                                     <DialogTitle className="text-2xl font-bold text-center">Session Terminated</DialogTitle>
                                     <DialogDescription className="text-center text-zinc-500 mt-2 leading-relaxed">
                                         Your account was logged in from another device.
-                                        <div className="mt-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100 text-sm italic">
+                                        <span className="block mt-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100 text-sm italic">
                                             Only one active session is allowed per account for security.
-                                        </div>
+                                        </span>
                                     </DialogDescription>
                                 </DialogHeader>
                                 <DialogFooter className="sm:justify-center mt-8">
