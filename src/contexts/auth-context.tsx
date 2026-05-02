@@ -348,7 +348,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
             throw new Error("Reset unavailable (Missing Configuration).");
         }
-        await sendPasswordResetEmail(auth, email);
+
+        try {
+            const actionCodeSettings = (typeof window !== "undefined")
+                ? { url: `${window.location.origin}/reset-password`, handleCodeInApp: false }
+                : undefined;
+
+            if (actionCodeSettings) {
+                await sendPasswordResetEmail(auth, email, actionCodeSettings as any);
+            } else {
+                await sendPasswordResetEmail(auth, email);
+            }
+        } catch (err: any) {
+            const code = err?.code as string | undefined;
+            if (code === "auth/user-not-found") throw new Error("No account found for that email or login ID.");
+            if (code === "auth/invalid-email") throw new Error("Invalid email address.");
+            if (code === "auth/too-many-requests") throw new Error("Too many requests. Please try again later.");
+            throw err;
+        }
     }, []);
 
     const isAdmin = userData?.role === "admin";
