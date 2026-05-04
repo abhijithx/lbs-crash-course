@@ -46,67 +46,54 @@ export default function RankingsPage() {
         users: false
     });
     const [expandedId, setExpandedId] = useState<string>("");
+    const [fetchError, setFetchError] = useState<string | null>(null);
 
     // Show spinner until we get attempt data or timeout hits
-    const isFetching = !loaded.quizAtts || !loaded.mockAtts;
+    const isFetching = (!loaded.quizAtts || !loaded.mockAtts) && !fetchError;
     
     const requestedTestId = searchParams.get("testId") || searchParams.get("aiPracticeId") || "";
 
-    useEffect(() => {
-        const unsubQuizzes = onValue(ref(db, "quizzes"), (s) => {
-            const data: Record<string, any> = {};
-            s.forEach(c => { data[c.key!] = { ...c.val(), id: c.key! }; });
-            setQuizzes(data);
-            setLoaded(prev => ({ ...prev, quizzes: true }));
-        }, () => setLoaded(prev => ({ ...prev, quizzes: true })));
-
-        const unsubMocks = onValue(ref(db, "mockTests"), (s) => {
-            const data: Record<string, any> = {};
-            s.forEach(c => { data[c.key!] = { ...c.val(), id: c.key! }; });
-            setMockTests(data);
-            setLoaded(prev => ({ ...prev, mocks: true }));
-        }, () => setLoaded(prev => ({ ...prev, mocks: true })));
-
-        const unsubQuizAtts = onValue(ref(db, "quizAttempts"), (s) => {
-            const list: any[] = [];
-            if (s.exists()) {
-                s.forEach(c => { list.push({ ...c.val(), id: c.key! }); });
-            }
-            setAllQuizAttempts(list);
-            setLoaded(prev => ({ ...prev, quizAtts: true }));
-        }, () => setLoaded(prev => ({ ...prev, quizAtts: true })));
-
-        const unsubMockAtts = onValue(ref(db, "mockAttempts"), (s) => {
-            const list: any[] = [];
-            if (s.exists()) {
-                s.forEach(c => { list.push({ ...c.val(), id: c.key! }); });
-            }
-            setAllMockAttempts(list);
-            setLoaded(prev => ({ ...prev, mockAtts: true }));
-        }, () => setLoaded(prev => ({ ...prev, mockAtts: true })));
-
-        const unsubUsers = onValue(ref(db, "users"), (s) => {
-            const data: Record<string, any> = {};
-            s.forEach(c => { data[c.key!] = { ...c.val(), id: c.key! }; });
-            setAllUsers(data);
-            setLoaded(prev => ({ ...prev, users: true }));
-        }, () => setLoaded(prev => ({ ...prev, users: true })));
-
-        // Safety Timeout: Force loading to end after 3s if Firebase is unresponsive
-        const timer = setTimeout(() => {
+    const fetchGlobalData = async () => {
+        try {
+            setFetchError(null);
+            const res = await fetch("/api/rankings");
+            if (!res.ok) throw new Error("Failed to fetch rankings");
+            const data = await res.json();
+            
+            setQuizzes(data.quizzes || {});
+            setMockTests(data.mockTests || {});
+            setAllUsers(data.users || {});
+            setAllQuizAttempts(data.quizAttempts || []);
+            setAllMockAttempts(data.mockAttempts || []);
+            
+            setLoaded({
+                quizzes: true,
+                mocks: true,
+                quizAtts: true,
+                mockAtts: true,
+                users: true
+            });
+        } catch (err: any) {
+            console.error("API Fetch Error:", err);
+            setFetchError(err.message || "Permission Denied");
             setLoaded({
                 quizzes: true, mocks: true, quizAtts: true, mockAtts: true, users: true
             });
-        }, 3000);
+        }
+    };
 
-        return () => {
-            unsubQuizzes();
-            unsubMocks();
-            unsubQuizAtts();
-            unsubMockAtts();
-            unsubUsers();
-            clearTimeout(timer);
-        };
+    useEffect(() => {
+        fetchGlobalData();
+
+        // Optional: Keep a real-time listener ONLY for the things that work (like quizzes/mocks)
+        // or just rely on the API for everything for consistency.
+        
+        // Safety Timeout as a secondary backup
+        const timer = setTimeout(() => {
+            setLoaded(prev => ({ ...prev, quizzes: true, mocks: true, quizAtts: true, mockAtts: true, users: true }));
+        }, 5000);
+
+        return () => clearTimeout(timer);
     }, []);
 
     // Compute Individual Rankings for each test
@@ -119,10 +106,19 @@ export default function RankingsPage() {
             const testAttempts = attempts
                 .filter(a => a[testIdKey] === test.id || (tab === "mockTests" && a.quizId === test.id))
                 .sort((a, b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    return (a.submittedAt || 0) - (b.submittedAt || 0); // Tie-break: earlier is better
+                    const scoreA = Number(a.score) || 0;
+                    const scoreB = Number(b.score) || 0;
+                    if (scoreB !== scoreA) return scoreB - scoreA;
+                    
+                    const timeA = Number(a.submittedAt) || 0;
+                    const timeB = Number(b.submittedAt) || 0;
+                    return timeA - timeB; // Tie-break: earlier is better
                 })
-                .map((a, i) => ({ ...a, rank: i + 1 }));
+                .map((a, i) => {
+                    const user = allUsers[a.userId];
+                    const userName = user?.name || a.userName || "Student";
+                    return { ...a, userName, rank: i + 1 };
+                });
 
             return {
                 id: test.id,
@@ -165,7 +161,7 @@ export default function RankingsPage() {
                 return a.lastSubmission - b.lastSubmission; // Tie-break: earlier total achieved is better
             })
             .map((e, i) => ({ ...e, rank: i + 1 }));
-    }, [tab, allQuizAttempts, allMockAttempts]);
+    }, [tab, allQuizAttempts, allMockAttempts, allUsers]);
 
     useEffect(() => {
         if (requestedTestId) {
@@ -293,9 +289,11 @@ export default function RankingsPage() {
                                             </p>
                                             {isMe && <Badge className="bg-primary text-white border-0 text-[8px] sm:text-[9px] py-0 h-3.5 sm:h-4 px-1">YOU</Badge>}
                                         </div>
-                                        <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 flex items-center gap-1 sm:gap-1.5">
-                                            {entry.testsTaken !== undefined ? `${entry.testsTaken} tests` : `At ${new Date(entry.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                                        </p>
+                                        {entry.testsTaken !== undefined && (
+                                            <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 flex items-center gap-1 sm:gap-1.5">
+                                                {entry.testsTaken} tests
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="text-right shrink-0">
                                         <div className={cn("text-sm sm:text-lg font-black leading-none", isMe ? "text-primary" : styles.text)}>
@@ -322,6 +320,16 @@ export default function RankingsPage() {
                     </h1>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Performance rankings for all members</p>
                 </div>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={fetchGlobalData} 
+                    disabled={isFetching}
+                    className="rounded-xl h-9 gap-2"
+                >
+                    <Sparkles className={cn("h-4 w-4 text-yellow-500", isFetching && "animate-spin")} />
+                    Refresh Rankings
+                </Button>
             </div>
 
             <Tabs value={tab} onValueChange={(v: any) => { setTab(v); setExpandedId(""); }} className="w-full">
@@ -368,10 +376,11 @@ export default function RankingsPage() {
                                 ) : (
                                     <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border animate-in fade-in duration-700">
                                         <Trophy className="h-12 w-12 mx-auto mb-4 opacity-20 text-primary" />
-                                        <h3 className="text-lg font-semibold">Leaderboard Empty</h3>
+                                        <h3 className="text-lg font-semibold">{fetchError ? "Access Restricted" : "Leaderboard Empty"}</h3>
                                         <p className="text-sm text-muted-foreground mt-1 max-w-[250px] mx-auto">
-                                            No {tab === "quizzes" ? "quizzes" : "mock tests"} have been completed yet.
-                                            Scores will appear here as soon as students finish their tests!
+                                            {fetchError 
+                                                ? "We couldn't fetch the global scores. Please check if your account has permission to view the rankings."
+                                                : `No ${tab === "quizzes" ? "quizzes" : "mock tests"} have been completed yet. Scores will appear here as soon as students finish their tests!`}
                                         </p>
                                     </div>
                                 )}
@@ -423,6 +432,9 @@ export default function RankingsPage() {
                     <span>Q-ATT: {allQuizAttempts.length}</span>
                     <span>M-ATT: {allMockAttempts.length}</span>
                     <span>USERS: {Object.keys(allUsers).length}</span>
+                    <span>QUIZ: {Object.keys(quizzes).length}</span>
+                    <span className="text-blue-500 font-bold">MODE: SERVER_API</span>
+                    {fetchError && <span className="text-red-500 font-bold">ERROR: {fetchError}</span>}
                 </p>
             </div>
         </div>
