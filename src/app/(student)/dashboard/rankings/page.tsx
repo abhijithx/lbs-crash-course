@@ -47,14 +47,32 @@ export default function RankingsPage() {
     });
     const [expandedId, setExpandedId] = useState<string>("");
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
     // Show spinner until we get attempt data or timeout hits
     const isFetching = (!loaded.quizAtts || !loaded.mockAtts) && !fetchError;
     
     const requestedTestId = searchParams.get("testId") || searchParams.get("aiPracticeId") || "";
 
-    const fetchGlobalData = async () => {
+    const fetchGlobalData = async (force = false) => {
         try {
+            // 1. Check cache if not forcing refresh
+            if (!force) {
+                const cached = sessionStorage.getItem("rankings_cache");
+                const cachedTime = sessionStorage.getItem("rankings_cache_time");
+                if (cached && cachedTime && (Date.now() - Number(cachedTime)) < 5 * 60 * 1000) {
+                    const data = JSON.parse(cached);
+                    setQuizzes(data.quizzes || {});
+                    setMockTests(data.mockTests || {});
+                    setAllUsers(data.users || {});
+                    setAllQuizAttempts(data.quizAttempts || []);
+                    setAllMockAttempts(data.mockAttempts || []);
+                    setLastUpdated(Number(cachedTime));
+                    setLoaded({ quizzes: true, mocks: true, quizAtts: true, mockAtts: true, users: true });
+                    return;
+                }
+            }
+
             setFetchError(null);
             const res = await fetch("/api/rankings");
             if (!res.ok) throw new Error("Failed to fetch rankings");
@@ -66,6 +84,11 @@ export default function RankingsPage() {
             setAllQuizAttempts(data.quizAttempts || []);
             setAllMockAttempts(data.mockAttempts || []);
             
+            const now = Date.now();
+            setLastUpdated(now);
+            sessionStorage.setItem("rankings_cache", JSON.stringify(data));
+            sessionStorage.setItem("rankings_cache_time", now.toString());
+
             setLoaded({
                 quizzes: true,
                 mocks: true,
@@ -310,22 +333,32 @@ export default function RankingsPage() {
         );
     };
 
+    const handleRefresh = async (forced = false) => {
+        const now = Date.now();
+        if (!forced && lastUpdated && now - lastUpdated < 60000) return;
+        await fetchGlobalData();
+        setLastUpdated(now);
+        sessionStorage.setItem("leaderboard_last_updated", now.toString());
+    };
+
     return (
         <div className="space-y-4 sm:space-y-6 animate-fade-in pb-10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-                        <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
+                        <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                         Leaderboard
                     </h1>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Performance rankings for all members</p>
+                    <p className="text-[10px] sm:text-sm text-muted-foreground mt-0.5">
+                        {lastUpdated ? `Last updated ${new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "Performance rankings for all members"}
+                    </p>
                 </div>
                 <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={fetchGlobalData} 
+                    onClick={() => handleRefresh(true)} 
                     disabled={isFetching}
-                    className="rounded-xl h-9 gap-2"
+                    className="rounded-xl h-9 gap-2 w-full sm:w-auto"
                 >
                     <Sparkles className={cn("h-4 w-4 text-yellow-500", isFetching && "animate-spin")} />
                     Refresh Rankings
@@ -427,7 +460,7 @@ export default function RankingsPage() {
             </Tabs>
 
             {/* Diagnostic Data Counter (Subtle) */}
-            <div className="mt-8 flex justify-center opacity-30 hover:opacity-100 transition-opacity">
+            {/* <div className="mt-8 flex justify-center opacity-30 hover:opacity-100 transition-opacity">
                 <p className="text-[10px] font-mono text-muted-foreground flex gap-4">
                     <span>Q-ATT: {allQuizAttempts.length}</span>
                     <span>M-ATT: {allMockAttempts.length}</span>
@@ -436,7 +469,7 @@ export default function RankingsPage() {
                     <span className="text-blue-500 font-bold">MODE: SERVER_API</span>
                     {fetchError && <span className="text-red-500 font-bold">ERROR: {fetchError}</span>}
                 </p>
-            </div>
+            </div> */}
         </div>
     );
 }
