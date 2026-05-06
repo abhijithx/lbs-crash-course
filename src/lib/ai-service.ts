@@ -12,7 +12,8 @@ import {
 } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "/api/ai/chat";
-const DEVELOPER = "Ajmal U K";
+const AI_DEVELOPER = "Ajmal UK";
+const WEBSITE_DEVELOPERS = "Ajmal UK and Abhijith";
 const TOOLPIX_URL = "https://toolpix.pythonanywhere.com/";
 
 import { cacheDB } from "./db-service";
@@ -163,8 +164,8 @@ export function getPredefinedResponse(messages: ChatMessage[]): string | null {
         return "Hello! I'm your ToolPix AI Study Mentor. I've analyzed your recent performance data and I'm ready to help you optimize your preparation. What's on your mind today?";
     }
     
-    if (q.includes("who are you") || q.includes("who made you") || q.includes("developer")) {
-        return "I am the **ToolPix AI Study Mentor**, specialized in the Kerala LBS MCA entrance. I was developed by **Abhijith** and the ToolPix team to provide you with data-driven insights and personalized study plans. How can I assist you today?";
+    if (q.includes("who are you") || q.includes("who made you") || q.includes("developer") || q.includes("creator")) {
+        return `I am the **ToolPix AI Study Mentor**, specialized in the Kerala LBS MCA entrance. I was developed by **${AI_DEVELOPER}** to provide you with data-driven insights and personalized study plans. This website was developed by **${WEBSITE_DEVELOPERS}**. How can I assist you today?`;
     }
 
     if (q === "help") {
@@ -538,6 +539,7 @@ export async function* chatWithAI(messages: ChatMessage[], idToken?: string, sig
                 try {
                     const data = JSON.parse(buffer);
                     if (data.text) {
+                        fullText = data.text;
                         yield stripAssistantNamePrefixes(enforceDomainTerminology(data.text));
                         return;
                     }
@@ -560,6 +562,7 @@ export async function* chatWithAI(messages: ChatMessage[], idToken?: string, sig
                         const chunk = data.choices?.[0]?.delta?.content || 
                                      data.choices?.[0]?.text || 
                                      data.content || 
+                                     data.text ||
                                      data.candidates?.[0]?.content?.parts?.[0]?.text || 
                                      "";
                         
@@ -575,19 +578,39 @@ export async function* chatWithAI(messages: ChatMessage[], idToken?: string, sig
         }
 
         // Final check for missed content in buffer
-        if (!fullText.trim() && buffer.trim()) {
-            try {
-                const data = JSON.parse(buffer);
-                const finalContent = data.text || data.response || "";
-                if (finalContent) yield stripAssistantNamePrefixes(enforceDomainTerminology(finalContent));
-            } catch { /* Final buffer not JSON */ }
+        if (buffer.trim()) {
+            if (buffer.trim().startsWith("data: ")) {
+                try {
+                    const jsonStr = buffer.trim().slice(6);
+                    const data = JSON.parse(jsonStr);
+                    const chunk = data.choices?.[0]?.delta?.content || 
+                                 data.choices?.[0]?.text || 
+                                 data.content || 
+                                 data.text ||
+                                 data.candidates?.[0]?.content?.parts?.[0]?.text || 
+                                 "";
+                    if (chunk) {
+                        fullText += chunk;
+                        yield stripAssistantNamePrefixes(enforceDomainTerminology(fullText));
+                    }
+                } catch { /* Suppress */ }
+            } else if (!fullText.trim()) {
+                try {
+                    const data = JSON.parse(buffer);
+                    const finalContent = data.text || data.response || "";
+                    if (finalContent) yield stripAssistantNamePrefixes(enforceDomainTerminology(finalContent));
+                } catch { /* Final buffer not JSON */ }
+            }
         }
 
         if (!fullText.trim()) {
             yield buildFallbackResponse(messages);
         }
 
-    } catch (error) {
+    } catch (error: any) {
+        if (error.name === "AbortError") {
+            throw error;
+        }
         console.error("[AI_SERVICE] Critical connection failure:", error);
         yield buildFallbackResponse(messages);
     }
@@ -604,10 +627,10 @@ CORE RESPONSIBILITIES:
 5. Keep responses concise but deep. Avoid generic filler.
 
 TONE: Premium, empathetic, data-driven, and authoritative.
-DEVELOPER: Developed by Abhijith for the ToolPix platform.
+DEVELOPER: The AI was developed by ${AI_DEVELOPER}. The website/platform was developed by ${WEBSITE_DEVELOPERS}.
 `;
 
-export const GUEST_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform, developed by ${DEVELOPER} (Founder of ToolPix: ${TOOLPIX_URL}).
+export const GUEST_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform. The AI was developed by ${AI_DEVELOPER} and the website was developed by ${WEBSITE_DEVELOPERS} (Founder of ToolPix: ${TOOLPIX_URL}).
 
 ### 🎯 CONVERSATIONAL DIRECTIVES:
 - **Adaptive Conciseness (CRITICAL)**: If the user says "hello", "hi", or similar, respond with a single, friendly sentence welcoming them. 
@@ -624,7 +647,7 @@ export const GUEST_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the
 - Authoritative yet encouraging tone.
 - **NO LABELS**: Start your message directly. Do NOT include "ASSISTANT:" or any other labels.`;
 
-export const OVERLAY_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform, developed by ${DEVELOPER}.
+export const OVERLAY_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform. The AI was developed by ${AI_DEVELOPER} and the website was developed by ${WEBSITE_DEVELOPERS}.
 
 ### 🎯 CONVERSATIONAL DIRECTIVES:
 - **Adaptive Conciseness (CRITICAL)**: If the user says "hello", "hi", or similar, respond with a single, friendly sentence welcoming them. 
