@@ -12,8 +12,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import { PageLoader } from "@/components/ui/loading";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { db, hasValidConfig } from "@/lib/firebase";
-import { ref, get } from "firebase/database";
+import { firestore, hasValidConfig } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export function LoginForm() {
     const [email, setEmail] = useState("");
@@ -57,10 +57,10 @@ export function LoginForm() {
             // Skip Firebase DB lookups if config is missing (Dev Bypass)
             if (hasValidConfig) {
                 if (!loginIdentifier.includes("@")) {
-                    const lookupRef = ref(db, `loginIdEmails/${loginIdentifier}`);
-                    const snapshot = await get(lookupRef);
-                    if (snapshot.exists()) {
-                        actualEmail = snapshot.val();
+                    const lookupRef = doc(firestore, "loginIdEmails", loginIdentifier);
+                    const docSnap = await getDoc(lookupRef);
+                    if (docSnap.exists()) {
+                        actualEmail = docSnap.data().email;
                     } else {
                         toast.error("Invalid Login ID or User not found.");
                         setLoading(false);
@@ -103,10 +103,10 @@ export function LoginForm() {
             // Resolve Login ID to Email if needed
             if (!actualEmail.includes("@")) {
                 if (hasValidConfig) {
-                    const lookupRef = ref(db, `loginIdEmails/${actualEmail}`);
-                    const snapshot = await get(lookupRef);
-                    if (snapshot.exists()) {
-                        actualEmail = snapshot.val();
+                    const lookupRef = doc(firestore, "loginIdEmails", actualEmail);
+                    const docSnap = await getDoc(lookupRef);
+                    if (docSnap.exists()) {
+                        actualEmail = docSnap.data().email;
                     } else {
                         toast.error("Invalid Login ID.");
                         setForgotLoading(false);

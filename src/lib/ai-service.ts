@@ -1,5 +1,5 @@
-import { ref, get, query, orderByChild, equalTo, DataSnapshot } from "firebase/database";
-import { db } from "./firebase";
+import { doc, getDoc, getDocs, collection, query as fsQuery, where, QuerySnapshot } from "firebase/firestore";
+import { firestore } from "./firebase";
 import { 
     UserData, 
     Quiz, 
@@ -219,22 +219,22 @@ export async function getUserContext(uid: string, forceRefresh = false, isDeepSc
 
         if (needsRemoteFetch) {
             console.log(`[AI_SYNC] Fetching fresh data for ${uid}`);
-            const fetchPromises: Promise<any>[] = [get(ref(db, `users/${uid}`))];
+            const fetchPromises: Promise<any>[] = [getDoc(doc(firestore, "users", uid))];
             
             // Only fetch if force or if cache is missing/stale
-            fetchPromises.push(get(query(ref(db, "quizAttempts"), orderByChild("userId"), equalTo(uid))));
-            fetchPromises.push(get(query(ref(db, "mockAttempts"), orderByChild("userId"), equalTo(uid))));
-            fetchPromises.push(get(ref(db, "announcements")));
-            fetchPromises.push(get(ref(db, "syllabus")));
+            fetchPromises.push(getDocs(fsQuery(collection(firestore, "quizAttempts"), where("userId", "==", uid))));
+            fetchPromises.push(getDocs(fsQuery(collection(firestore, "mockAttempts"), where("userId", "==", uid))));
+            fetchPromises.push(getDocs(collection(firestore, "announcements")));
+            fetchPromises.push(getDocs(collection(firestore, "syllabus")));
 
             const snaps = await Promise.all(fetchPromises);
-            userData = snaps[0].val() as UserData | null;
+            userData = snaps[0].exists() ? snaps[0].data() as UserData : null;
             if (!userData) return "ERROR: Access Denied. Intelligence graph unavailable.";
 
-            freshQuizAttempts = (snaps[1].exists() ? (snaps[1].val() instanceof Array ? snaps[1].val() : Object.values(snaps[1].val() || {})) : []) as QuizAttempt[];
-            freshMockAttempts = (snaps[2].exists() ? (snaps[2].val() instanceof Array ? snaps[2].val() : Object.values(snaps[2].val() || {})) : []) as MockAttempt[];
-            freshAnnouncements = snaps[3].exists() ? Object.values(snaps[3].val() || {}).sort((a: any, b: any) => b.createdAt - a.createdAt) as Announcement[] : [];
-            freshSyllabus = snaps[4].exists() ? Object.values(snaps[4].val() || {}) as SyllabusItem[] : [];
+            freshQuizAttempts = (!snaps[1].empty ? snaps[1].docs.map((d: any) => ({ ...d.data(), id: d.id })) : []) as QuizAttempt[];
+            freshMockAttempts = (!snaps[2].empty ? snaps[2].docs.map((d: any) => ({ ...d.data(), id: d.id })) : []) as MockAttempt[];
+            freshAnnouncements = !snaps[3].empty ? snaps[3].docs.map((d: any) => ({ ...d.data(), id: d.id })).sort((a: any, b: any) => b.createdAt - a.createdAt) as Announcement[] : [];
+            freshSyllabus = !snaps[4].empty ? snaps[4].docs.map((d: any) => ({ ...d.data(), id: d.id })) as SyllabusItem[] : [];
 
             // Update IDB caches
             await Promise.all([
@@ -245,8 +245,8 @@ export async function getUserContext(uid: string, forceRefresh = false, isDeepSc
                 cacheDB.set(`${STORAGE_KEYS.LAST_SYNC_TS}_${uid}`, Date.now())
             ]);
         } else {
-            const userSnap = await get(ref(db, `users/${uid}`));
-            userData = userSnap.val() as UserData | null;
+            const userSnap = await getDoc(doc(firestore, "users", uid));
+            userData = userSnap.exists() ? userSnap.data() as UserData : null;
             if (!userData) return "ERROR: User session expired.";
         }
 
@@ -278,19 +278,19 @@ export async function getUserContext(uid: string, forceRefresh = false, isDeepSc
             globalMetadataCache = await cacheDB.getWithTTL(STORAGE_KEYS.GLOBAL_METADATA, TTL.GLOBAL_METADATA);
             if (!globalMetadataCache || forceRefresh) {
                 globalMetadataCache = {};
-                const [qSnap, mSnap] = await Promise.all([get(ref(db, "quizzes")), get(ref(db, "mockTests"))]);
-                const processMeta = (snap: DataSnapshot) => {
+                const [qSnap, mSnap] = await Promise.all([getDocs(collection(firestore, "quizzes")), getDocs(collection(firestore, "mockTests"))]);
+                const processMeta = (snap: QuerySnapshot) => {
                     snap.forEach(child => {
-                        const d = child.val();
-                        globalMetadataCache![child.key!] = {
+                        const d = child.data();
+                        globalMetadataCache![child.id] = {
                             subject: d.subject || "General",
                             title: d.title || "Untitled",
                             questionCount: d.questions?.length || d.totalQuestions || 0
                         };
                     });
                 };
-                if (qSnap.exists()) processMeta(qSnap);
-                if (mSnap.exists()) processMeta(mSnap);
+                if (!qSnap.empty) processMeta(qSnap);
+                if (!mSnap.empty) processMeta(mSnap);
                 await cacheDB.set(STORAGE_KEYS.GLOBAL_METADATA, globalMetadataCache);
             }
         }
@@ -307,10 +307,10 @@ export async function getUserContext(uid: string, forceRefresh = false, isDeepSc
                 rankings[id] = cached;
             } else {
                 const [rankSnap, mockRankSnap] = await Promise.all([
-                    get(ref(db, `rankings/${id}`)),
-                    get(ref(db, `mockRankings/${id}`))
+                    getDoc(doc(firestore, "rankings", id)),
+                    getDoc(doc(firestore, "mockRankings", id))
                 ]);
-                const data = (rankSnap.exists() ? rankSnap.val() : mockRankSnap.val()) as RankData;
+                const data = (rankSnap.exists() ? rankSnap.data() : mockRankSnap.exists() ? mockRankSnap.data() : null) as RankData;
                 if (data) {
                     rankings[id] = data;
                     await cacheDB.set(`${STORAGE_KEYS.RANKINGS_PREFIX}${id}`, data);
