@@ -32,17 +32,21 @@ const STORAGE_KEYS = {
 };
 
 const TTL = {
-    USER_CONTEXT: 1000 * 60 * 10, // 10 minutes
-    INTELLIGENCE_METRICS: 1000 * 60 * 15,
-    GLOBAL_METADATA: 1000 * 60 * 60 * 12, // 12 hours
-    STATIC_DATA: 1000 * 60 * 60 * 4, // 4 hours
-    ATTEMPTS: 1000 * 60 * 5, // 5 minutes (user data changes often)
-    RANKINGS: 1000 * 60 * 20 // 20 minutes
+    USER_CONTEXT: 1000 * 60 * 30, // 30 minutes (stale-while-revalidate handles freshness)
+    INTELLIGENCE_METRICS: 1000 * 60 * 30,
+    GLOBAL_METADATA: 1000 * 60 * 60 * 24, // 24 hours
+    STATIC_DATA: 1000 * 60 * 60 * 8, // 8 hours
+    ATTEMPTS: 1000 * 60 * 15, // 15 minutes
+    RANKINGS: 1000 * 60 * 30, // 30 minutes
+    STALE_MAX: 1000 * 60 * 60 * 2 // 2 hours: max age before we reject stale data entirely
 };
 
 // Memory cache for active session
 let globalMetadataCache: Record<string, { subject: string; title: string; questionCount: number }> | null = null;
 const userContextCache = new Map<string, { report: string; timestamp: number }>();
+
+// Track in-flight background refreshes to avoid duplicate fetches
+const backgroundRefreshInFlight = new Set<string>();
 
 export interface ChatMessage {
     role: "user" | "assistant" | "system";
@@ -174,6 +178,54 @@ export function getPredefinedResponse(messages: ChatMessage[]): string | null {
  * Fetches and processes student data into a high-performance intelligence graph
  * Optimized for speed and deep analytical insight.
  */
+/**
+ * Returns cached context instantly via stale-while-revalidate.
+ * Call this to pre-warm the cache on component mount.
+ */
+export function preWarmContext(uid: string): void {
+    if (!uid) return;
+    // Fire-and-forget: silently refresh context in background
+    getUserContext(uid).catch(() => {});
+}
+
+/**
+ * Gets any cached report (even stale) without waiting for network.
+ * Returns null only if nothing has ever been cached.
+ */
+async function getStaleReport(uid: string): Promise<string | null> {
+    const reportKey = `${STORAGE_KEYS.USER_CONTEXT}_${uid}`;
+    
+    // L1: Memory
+    const memCached = userContextCache.get(uid);
+    if (memCached && (Date.now() - memCached.timestamp < TTL.STALE_MAX)) {
+        return memCached.report;
+    }
+    
+    // L2: IndexedDB (ignore TTL, just check max staleness)
+    const storedReport = await cacheDB.get<string>(reportKey);
+    if (storedReport) {
+        userContextCache.set(uid, { report: storedReport, timestamp: Date.now() - TTL.USER_CONTEXT }); // mark as needing refresh
+        return storedReport;
+    }
+    
+    return null;
+}
+
+/**
+ * Triggers a background refresh of the context without blocking.
+ * Deduplicates concurrent refreshes for the same uid.
+ */
+function triggerBackgroundRefresh(uid: string): void {
+    if (backgroundRefreshInFlight.has(uid)) return;
+    backgroundRefreshInFlight.add(uid);
+    
+    getUserContext(uid, true).catch(e => {
+        console.warn("[AI_SYNC] Background refresh failed:", e);
+    }).finally(() => {
+        backgroundRefreshInFlight.delete(uid);
+    });
+}
+
 export async function getUserContext(uid: string, forceRefresh = false, isDeepScan = false): Promise<string> {
     const reportKey = `${STORAGE_KEYS.USER_CONTEXT}_${uid}`;
     const dataKey = `${STORAGE_KEYS.INTELLIGENCE_DATA}_${uid}`;

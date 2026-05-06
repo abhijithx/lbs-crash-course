@@ -26,7 +26,7 @@ import {
     DialogFooter 
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/auth-context";
-import { chatWithAI, getUserContext, ChatMessage, SYSTEM_PROMPT } from "@/lib/ai-service";
+import { chatWithAI, getUserContext, preWarmContext, ChatMessage, SYSTEM_PROMPT } from "@/lib/ai-service";
 import { cn } from "@/lib/utils";
 import { FormattedMessage } from "@/components/ai/FormattedMessage";
 import HistoryOverlay from "@/components/ai/HistoryOverlay";
@@ -162,6 +162,12 @@ export default function DashboardAIChatPage() {
 
         return () => clearTimeout(safetyTimer);
     }, []);
+
+    // Pre-warm AI context on mount so first message is instant
+    useEffect(() => {
+        const uid = userData?.uid || user?.uid;
+        if (uid) preWarmContext(uid);
+    }, [userData?.uid, user?.uid]);
 
     // Auto-scroll logic
     const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
@@ -406,6 +412,7 @@ export default function DashboardAIChatPage() {
         }
 
         try {
+            // Get context fast — uses cache-first, refreshes in background
             const context = await getUserContext(userData?.uid || user?.uid || "");
             const token = await user?.getIdToken();
             
