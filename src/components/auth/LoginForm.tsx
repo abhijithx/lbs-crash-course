@@ -160,16 +160,16 @@ export function LoginForm() {
                 </CardHeader>
                 <CardContent>
                     <Dialog open={showExpiredPopup} onOpenChange={setShowExpiredPopup}>
-                        <DialogContent className="max-w-100">
+                        <DialogContent className="sm:max-w-md">
                             <div className="text-center py-4">
                                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 mb-6">
                                     <AlertTriangle className="h-7 w-7 text-amber-500" />
                                 </div>
-                                <DialogHeader>
+                                <DialogHeader className="items-center">
                                     <DialogTitle className="text-2xl font-bold text-center">Session Terminated</DialogTitle>
                                     <DialogDescription className="text-center text-zinc-500 mt-2 leading-relaxed">
                                         Your account was logged in from another device.
-                                        <div className="mt-4 p-3 bg-zinc-50 rounded-xl border border-zinc-100 text-sm italic">
+                                        <div className="mt-4 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-100 dark:border-zinc-700 text-sm italic">
                                             Only one active session is allowed per account for security.
                                         </div>
                                     </DialogDescription>
