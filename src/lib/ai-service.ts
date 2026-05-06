@@ -12,8 +12,8 @@ import {
 } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_AI_API_URL || "/api/ai/chat";
-const AI_DEVELOPER = "Ajmal UK";
-const WEBSITE_DEVELOPERS = "Ajmal UK and Abhijith";
+const AI_DEVELOPER = "Ajmal U K";
+const WEBSITE_DEVELOPERS = "Ajmal U K and Abhijith";
 const TOOLPIX_URL = "https://toolpix.pythonanywhere.com/";
 
 import { cacheDB } from "./db-service";
@@ -165,7 +165,7 @@ export function getPredefinedResponse(messages: ChatMessage[]): string | null {
     }
     
     if (q.includes("who are you") || q.includes("who made you") || q.includes("developer") || q.includes("creator")) {
-        return `I am the **ToolPix AI Study Mentor**, specialized in the Kerala LBS MCA entrance. I was developed by **${AI_DEVELOPER}** to provide you with data-driven insights and personalized study plans. This website was developed by **${WEBSITE_DEVELOPERS}**. How can I assist you today?`;
+        return `I am the **ToolPix AI Study Mentor**, specialized in the Kerala LBS MCA entrance. I was created and developed by **${AI_DEVELOPER}** to provide you with data-driven insights and personalized study plans. This platform was co-developed by **${WEBSITE_DEVELOPERS}**. How can I assist you today?`;
     }
 
     if (q === "help") {
@@ -627,10 +627,10 @@ CORE RESPONSIBILITIES:
 5. Keep responses concise but deep. Avoid generic filler.
 
 TONE: Premium, empathetic, data-driven, and authoritative.
-DEVELOPER: The AI was developed by ${AI_DEVELOPER}. The website/platform was developed by ${WEBSITE_DEVELOPERS}.
+DEVELOPER INFO: You (this AI assistant) were created and developed solely by ${AI_DEVELOPER}. The surrounding website/platform was co-developed by ${WEBSITE_DEVELOPERS}. Do not claim Abhijith as your creator; he co-developed the website.
 `;
 
-export const GUEST_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform. The AI was developed by ${AI_DEVELOPER} and the website was developed by ${WEBSITE_DEVELOPERS} (Founder of ToolPix: ${TOOLPIX_URL}).
+export const GUEST_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform. You (the AI) were created by ${AI_DEVELOPER}, and the platform was developed by ${WEBSITE_DEVELOPERS} (Founder of ToolPix: ${TOOLPIX_URL}).
 
 ### 🎯 CONVERSATIONAL DIRECTIVES:
 - **Adaptive Conciseness (CRITICAL)**: If the user says "hello", "hi", or similar, respond with a single, friendly sentence welcoming them. 
@@ -647,7 +647,7 @@ export const GUEST_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the
 - Authoritative yet encouraging tone.
 - **NO LABELS**: Start your message directly. Do NOT include "ASSISTANT:" or any other labels.`;
 
-export const OVERLAY_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform. The AI was developed by ${AI_DEVELOPER} and the website was developed by ${WEBSITE_DEVELOPERS}.
+export const OVERLAY_SYSTEM_PROMPT = `You are ToolPix AI, the expert guide for the LBS MCA Entrance Platform. You (the AI) were created by ${AI_DEVELOPER}, and the platform was developed by ${WEBSITE_DEVELOPERS}.
 
 ### 🎯 CONVERSATIONAL DIRECTIVES:
 - **Adaptive Conciseness (CRITICAL)**: If the user says "hello", "hi", or similar, respond with a single, friendly sentence welcoming them. 
