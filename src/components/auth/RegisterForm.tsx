@@ -193,17 +193,24 @@ export function RegisterForm() {
                 console.warn("Sheet Sync Error (continuing):", sheetErr);
             }
 
-            // 3. Save to Firestore via Server Action (More reliable than client-side write)
+// 3. Save to Firestore via Server Action (More reliable than client-side write)
             console.log("[REGISTRATION] Step 3: Saving to Database...");
-            const saveResult = await Promise.race([
-                savePendingRegistrationAction({
-                    ...formData,
-                    screenshotUrl: cloudinaryUrl,
-                }),
-                new Promise<{ success: boolean; message?: string }>((_, reject) => 
-                    setTimeout(() => reject(new Error("Database save timed out (15s)")), 15000)
-                )
-            ]);
+            let saveResult: { success: boolean; message?: string } = { success: false, message: "Unknown error" };
+            
+            try {
+                saveResult = await Promise.race([
+                    savePendingRegistrationAction({
+                        ...formData,
+                        screenshotUrl: cloudinaryUrl,
+                    }),
+                    new Promise<{ success: boolean; message?: string }>((_, reject) => 
+                        setTimeout(() => reject(new Error("Database save timed out (30s)")), 30000)
+                    )
+                ]);
+            } catch (timeoutError) {
+                console.error("[REGISTRATION] Database timeout:", timeoutError);
+                throw new Error("Server is taking too long to respond. Please try again in a few moments.");
+            }
 
             if (!saveResult.success) {
                 throw new Error(saveResult.message || "Failed to save registration to database");

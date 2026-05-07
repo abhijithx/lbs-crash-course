@@ -56,18 +56,31 @@ export async function savePendingRegistrationAction(data: {
     screenshotUrl: string;
 }) {
     if (!isInitialized || !adminFirestore) {
-        return { success: false, message: "Server-side database service unavailable" };
+        console.error("[REGISTRATION] Firebase Admin not initialized");
+        return { success: false, message: "Server-side database service unavailable. Please try again later." };
     }
 
     try {
-        await adminFirestore.collection("pendingRegistrations").add({
+        const registrationData = {
             ...data,
             submittedAt: Date.now(),
             status: "pending",
-        });
+        };
+        
+        console.log("[REGISTRATION] Saving to Firestore:", data.email);
+        
+        const docRef = await adminFirestore.collection("pendingRegistrations").add(registrationData);
+        console.log("[REGISTRATION] Successfully saved with ID:", docRef.id);
+        
         return { success: true };
     } catch (error) {
         console.error("Firestore save error (Server Action):", error);
-        return { success: false, message: (error as Error).message };
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        
+        if (errorMessage.includes("ENOTFOUND") || errorMessage.includes("network") || errorMessage.includes("timeout")) {
+            return { success: false, message: "Network error. Please check your connection and try again." };
+        }
+        
+        return { success: false, message: `Database error: ${errorMessage}` };
     }
 }
