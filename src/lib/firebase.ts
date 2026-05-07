@@ -1,6 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
 import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 
 type ModuleState = {
@@ -227,7 +227,11 @@ if (hasRequiredCoreConfig) {
     suppressInstallationsErrors(app);
 
     auth = getAuth(app);
-    firestore = getFirestore(app);
+    
+    // Only enable persistent caching in the browser to prevent SSR issues with IndexedDB
+    firestore = typeof window !== "undefined"
+        ? initializeFirestore(app, { localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}) })
+        : getFirestore(app);
     firebaseStartupHealth = {
         ...firebaseStartupHealth,
         modules: {
