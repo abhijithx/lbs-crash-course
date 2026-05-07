@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { collection, onSnapshot, addDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, getDoc, query, where } from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import type { Quiz, QuizQuestion, QuizStatus, RankData, RankEntry } from "@/lib/types";
