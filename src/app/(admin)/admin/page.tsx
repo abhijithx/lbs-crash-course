@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, getCountFromServer, query, orderBy, limit, where } from "firebase/firestore";
 import { firestore, hasValidConfig } from "@/lib/firebase";
 import { UserPlus, Users, Video, BookOpen, ArrowUpCircle, Megaphone, FileText, Activity, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -29,57 +29,58 @@ export default function AdminOverview() {
         if (!hasValidConfig) return;
         setLoading(true);
         try {
-            const [pendingSnap, usersSnap, upgradesSnap, liveSnap, quizzesSnap, mocksSnap, annSnap] = await Promise.all([
-                getDocs(collection(firestore, "pendingRegistrations")),
-                getDocs(collection(firestore, "users")),
-                getDocs(collection(firestore, "upgradeRequests")),
-                getDocs(collection(firestore, "liveClasses")),
-                getDocs(collection(firestore, "quizzes")),
-                getDocs(collection(firestore, "mockTests")),
-                getDocs(collection(firestore, "announcements")),
+            // 1. Fetch counts using getCountFromServer (1 read per count query)
+            const [
+                pendingCountSnap,
+                verifiedCountSnap,
+                rejectedCountSnap,
+                upgradesCountSnap,
+                liveSnap,
+                quizzesSnap,
+                mocksSnap,
+                annCountSnap
+            ] = await Promise.all([
+                getCountFromServer(query(collection(firestore, "pendingRegistrations"), where("status", "==", "pending"))),
+                getCountFromServer(query(collection(firestore, "users"), where("status", "==", "verified"))),
+                getCountFromServer(query(collection(firestore, "users"), where("status", "==", "rejected"))),
+                getCountFromServer(query(collection(firestore, "upgradeRequests"), where("status", "==", "pending"))),
+                getCountFromServer(collection(firestore, "liveClasses")),
+                getCountFromServer(collection(firestore, "quizzes")),
+                getCountFromServer(collection(firestore, "mockTests")),
+                getCountFromServer(collection(firestore, "announcements")),
             ]);
 
-            let pendingCount = 0;
+            // 2. Fetch only the recent items needed for the UI lists (using limit)
+            const [recentPendingSnap, recentAnnSnap] = await Promise.all([
+                // Fetch top 15 recent to ensure we get 5 pending ones without needing a composite index
+                getDocs(query(collection(firestore, "pendingRegistrations"), orderBy("submittedAt", "desc"), limit(15))),
+                getDocs(query(collection(firestore, "announcements"), orderBy("createdAt", "desc"), limit(3))),
+            ]);
+
             const pendingList: PendingRegistration[] = [];
-            pendingSnap.forEach((childDoc) => {
+            recentPendingSnap.forEach((childDoc) => {
                 const data = childDoc.data() as PendingRegistration;
-                if (data.status === "pending") {
-                    pendingCount++;
+                if (data.status === "pending" && pendingList.length < 5) {
                     pendingList.push({ ...data, id: childDoc.id });
                 }
             });
-            pendingList.sort((a, b) => b.submittedAt - a.submittedAt);
-            setRecentRegistrations(pendingList.slice(0, 5));
-
-            let verified = 0;
-            let rejected = 0;
-            usersSnap.forEach((childDoc) => {
-                const data = childDoc.data();
-                if (data.status === "verified" && data.role !== "admin") verified++;
-                else if (data.status === "rejected") rejected++;
-            });
-
-            let upgradeCount = 0;
-            upgradesSnap.forEach((childDoc) => {
-                if (childDoc.data().status === "pending") upgradeCount++;
-            });
+            setRecentRegistrations(pendingList);
 
             const annList: Announcement[] = [];
-            annSnap.forEach((childDoc) => {
+            recentAnnSnap.forEach((childDoc) => {
                 annList.push({ ...(childDoc.data() as Announcement), id: childDoc.id });
             });
-            annList.sort((a, b) => b.createdAt - a.createdAt);
-            setRecentAnnouncements(annList.slice(0, 3));
+            setRecentAnnouncements(annList);
 
             setStats({
-                pending: pendingCount,
-                verified,
-                rejected,
-                upgrades: upgradeCount,
-                liveClasses: liveSnap.size,
-                quizzes: quizzesSnap.size,
-                mockTests: mocksSnap.size,
-                announcements: annSnap.size,
+                pending: pendingCountSnap.data().count,
+                verified: verifiedCountSnap.data().count,
+                rejected: rejectedCountSnap.data().count,
+                upgrades: upgradesCountSnap.data().count,
+                liveClasses: liveSnap.data().count,
+                quizzes: quizzesSnap.data().count,
+                mockTests: mocksSnap.data().count,
+                announcements: annCountSnap.data().count,
             });
         } catch (err) {
             console.error("Failed to fetch admin stats:", err);
