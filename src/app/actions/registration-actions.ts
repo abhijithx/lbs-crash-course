@@ -1,5 +1,7 @@
 "use server";
 
+import { adminFirestore, isInitialized } from "@/lib/firebase-admin";
+
 export async function submitRegistrationToSheetAction(formData: {
     name: string;
     email: string;
@@ -39,6 +41,33 @@ export async function submitRegistrationToSheetAction(formData: {
         return { success: true };
     } catch (error) {
         console.error("Server-side registration sheet sync error:", error);
+        return { success: false, message: (error as Error).message };
+    }
+}
+
+export async function savePendingRegistrationAction(data: {
+    name: string;
+    email: string;
+    phone: string;
+    whatsapp: string;
+    graduationYear: string;
+    selectedPackage: string;
+    transactionId: string;
+    screenshotUrl: string;
+}) {
+    if (!isInitialized || !adminFirestore) {
+        return { success: false, message: "Server-side database service unavailable" };
+    }
+
+    try {
+        await adminFirestore.collection("pendingRegistrations").add({
+            ...data,
+            submittedAt: Date.now(),
+            status: "pending",
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Firestore save error (Server Action):", error);
         return { success: false, message: (error as Error).message };
     }
 }

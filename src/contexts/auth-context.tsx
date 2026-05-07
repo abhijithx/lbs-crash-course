@@ -320,17 +320,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = useCallback(async () => {
         if (!hasValidConfig) {
             setUserData(null);
+            if (typeof window !== "undefined") window.location.href = "/login";
             return;
         }
+
         clearStoredSessionId();
-        if (user) {
-            const userDocRef = doc(firestore, "users", user.uid);
-            await updateDoc(userDocRef, {
-                activeSessionId: ""
-            });
+        
+        try {
+            if (user) {
+                const userDocRef = doc(firestore, "users", user.uid);
+                // Set a timeout for the firestore update so it doesn't block logout indefinitely
+                await Promise.race([
+                    updateDoc(userDocRef, { activeSessionId: "" }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), 2000))
+                ]).catch(err => console.warn("[AUTH] Failed to clear session ID on logout:", err));
+            }
+        } catch (err) {
+            console.warn("[AUTH] Logout Firestore update error:", err);
         }
-        await signOut(auth);
+
+        try {
+            await signOut(auth);
+        } catch (err) {
+            console.error("[AUTH] Sign out error:", err);
+        }
+
         setUserData(null);
+        if (typeof window !== "undefined") {
+            window.location.href = "/login";
+        }
     }, [clearStoredSessionId, user]);
 
     const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
