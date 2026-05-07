@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { firestore, hasValidConfig } from "@/lib/firebase";
-import { UserPlus, Users, Video, BookOpen, ArrowUpCircle, Megaphone, FileText, Activity } from "lucide-react";
+import { UserPlus, Users, Video, BookOpen, ArrowUpCircle, Megaphone, FileText, Activity, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { PendingRegistration, Announcement } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
 export default function AdminOverview() {
+    const [loading, setLoading] = useState(false);
     const [stats, setStats] = useState({
         pending: 0,
         verified: 0,
@@ -23,80 +25,72 @@ export default function AdminOverview() {
     const [recentRegistrations, setRecentRegistrations] = useState<PendingRegistration[]>([]);
     const [recentAnnouncements, setRecentAnnouncements] = useState<Announcement[]>([]);
 
-    useEffect(() => {
+    const fetchStats = useCallback(async () => {
         if (!hasValidConfig) return;
+        setLoading(true);
+        try {
+            const [pendingSnap, usersSnap, upgradesSnap, liveSnap, quizzesSnap, mocksSnap, annSnap] = await Promise.all([
+                getDocs(collection(firestore, "pendingRegistrations")),
+                getDocs(collection(firestore, "users")),
+                getDocs(collection(firestore, "upgradeRequests")),
+                getDocs(collection(firestore, "liveClasses")),
+                getDocs(collection(firestore, "quizzes")),
+                getDocs(collection(firestore, "mockTests")),
+                getDocs(collection(firestore, "announcements")),
+            ]);
 
-        const unsubPending = onSnapshot(collection(firestore, "pendingRegistrations"), (snapshot) => {
             let pendingCount = 0;
-            const list: PendingRegistration[] = [];
-            snapshot.forEach((childDoc) => {
+            const pendingList: PendingRegistration[] = [];
+            pendingSnap.forEach((childDoc) => {
                 const data = childDoc.data() as PendingRegistration;
                 if (data.status === "pending") {
                     pendingCount++;
-                    list.push({ ...data, id: childDoc.id });
+                    pendingList.push({ ...data, id: childDoc.id });
                 }
             });
-            setStats((prev) => ({ ...prev, pending: pendingCount }));
-            list.sort((a, b) => b.submittedAt - a.submittedAt);
-            setRecentRegistrations(list.slice(0, 5));
-        });
+            pendingList.sort((a, b) => b.submittedAt - a.submittedAt);
+            setRecentRegistrations(pendingList.slice(0, 5));
 
-        const unsubUsers = onSnapshot(collection(firestore, "users"), (snapshot) => {
             let verified = 0;
             let rejected = 0;
-            snapshot.forEach((childDoc) => {
+            usersSnap.forEach((childDoc) => {
                 const data = childDoc.data();
-                if (data.status === "verified" && data.role !== "admin") {
-                    verified++;
-                } else if (data.status === "rejected") {
-                    rejected++;
-                }
+                if (data.status === "verified" && data.role !== "admin") verified++;
+                else if (data.status === "rejected") rejected++;
             });
-            setStats((prev) => ({ ...prev, verified, rejected }));
-        });
 
-        const unsubUpgrades = onSnapshot(collection(firestore, "upgradeRequests"), (snapshot) => {
-            let count = 0;
-            snapshot.forEach((childDoc) => {
-                if (childDoc.data().status === "pending") {
-                    count++;
-                }
+            let upgradeCount = 0;
+            upgradesSnap.forEach((childDoc) => {
+                if (childDoc.data().status === "pending") upgradeCount++;
             });
-            setStats((prev) => ({ ...prev, upgrades: count }));
-        });
 
-        const unsubLive = onSnapshot(collection(firestore, "liveClasses"), (snapshot) => {
-            setStats((prev) => ({ ...prev, liveClasses: snapshot.size }));
-        });
-
-        const unsubQuizzes = onSnapshot(collection(firestore, "quizzes"), (snapshot) => {
-            setStats((prev) => ({ ...prev, quizzes: snapshot.size }));
-        });
-
-        const unsubMocks = onSnapshot(collection(firestore, "mockTests"), (snapshot) => {
-            setStats((prev) => ({ ...prev, mockTests: snapshot.size }));
-        });
-
-        const unsubAnnouncements = onSnapshot(collection(firestore, "announcements"), (snapshot) => {
-            setStats((prev) => ({ ...prev, announcements: snapshot.size }));
-            const list: Announcement[] = [];
-            snapshot.forEach((childDoc) => {
-                list.push({ ...(childDoc.data() as Announcement), id: childDoc.id });
+            const annList: Announcement[] = [];
+            annSnap.forEach((childDoc) => {
+                annList.push({ ...(childDoc.data() as Announcement), id: childDoc.id });
             });
-            list.sort((a, b) => b.createdAt - a.createdAt);
-            setRecentAnnouncements(list.slice(0, 3));
-        });
+            annList.sort((a, b) => b.createdAt - a.createdAt);
+            setRecentAnnouncements(annList.slice(0, 3));
 
-        return () => {
-            unsubPending();
-            unsubUsers();
-            unsubUpgrades();
-            unsubLive();
-            unsubQuizzes();
-            unsubMocks();
-            unsubAnnouncements();
-        };
+            setStats({
+                pending: pendingCount,
+                verified,
+                rejected,
+                upgrades: upgradeCount,
+                liveClasses: liveSnap.size,
+                quizzes: quizzesSnap.size,
+                mockTests: mocksSnap.size,
+                announcements: annSnap.size,
+            });
+        } catch (err) {
+            console.error("Failed to fetch admin stats:", err);
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
 
     const cards = [
         { label: "Pending Registrations", value: stats.pending, icon: UserPlus, color: "from-amber-500 to-orange-500", href: "/admin/registrations" },
@@ -110,9 +104,15 @@ export default function AdminOverview() {
 
     return (
         <div className="space-y-8 animate-fade-in">
-            <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">Admin <span className="gradient-text">Dashboard</span></h1>
-                <p className="mt-1 text-muted-foreground">Platform management overview</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold">Admin <span className="gradient-text">Dashboard</span></h1>
+                    <p className="mt-1 text-muted-foreground">Platform management overview</p>
+                </div>
+                <Button onClick={fetchStats} disabled={loading} variant="outline" size="sm" className="gap-2">
+                    <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                    {loading ? "Refreshing..." : "Refresh"}
+                </Button>
             </div>
 
             {/* Stat Cards */}

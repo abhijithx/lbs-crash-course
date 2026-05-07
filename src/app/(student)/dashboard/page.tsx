@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
-import { collection, getDocs, onSnapshot, query, orderBy, limit, doc } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
 import type { LiveClass, Announcement, RankData } from "@/lib/types";
 import recordingsData from "@/data/recordings.json";
@@ -182,27 +182,31 @@ export default function StudentDashboard() {
     const [progressMap, setProgressMap] = useState<Record<string, { completed?: boolean; timestamp?: number; duration?: number; updatedAt?: number }>>({});
 
     useEffect(() => {
-        const liveQ = query(collection(firestore, "liveClasses"), orderBy("scheduledAt", "desc"), limit(3));
-        const unsubLive = onSnapshot(liveQ, (snapshot) => {
-            const classes: LiveClass[] = [];
-            snapshot.docs.forEach((d) => {
-                const data = d.data();
-                if (data.status !== "completed") {
-                    classes.push({ ...data, id: d.id } as LiveClass);
-                }
-            });
-            setUpcomingClasses(classes);
-        });
+        const fetchDashboardData = async () => {
+            try {
+                const [liveSnap, annSnap] = await Promise.all([
+                    getDocs(query(collection(firestore, "liveClasses"), orderBy("scheduledAt", "desc"), limit(3))),
+                    getDocs(query(collection(firestore, "announcements"), orderBy("createdAt", "desc"), limit(3))),
+                ]);
 
-        const annQ = query(collection(firestore, "announcements"), orderBy("createdAt", "desc"), limit(3));
-        const unsubAnn = onSnapshot(annQ, (snapshot) => {
-            const anns: Announcement[] = snapshot.docs.map((d) => ({
-                ...d.data(), id: d.id,
-            } as Announcement));
-            setAnnouncements(anns);
-        });
+                const classes: LiveClass[] = [];
+                liveSnap.docs.forEach((d) => {
+                    const data = d.data();
+                    if (data.status !== "completed") {
+                        classes.push({ ...data, id: d.id } as LiveClass);
+                    }
+                });
+                setUpcomingClasses(classes);
 
-        return () => { unsubLive(); unsubAnn(); };
+                const anns: Announcement[] = annSnap.docs.map((d) => ({
+                    ...d.data(), id: d.id,
+                } as Announcement));
+                setAnnouncements(anns);
+            } catch (err) {
+                console.error("Failed to fetch dashboard data:", err);
+            }
+        };
+        fetchDashboardData();
     }, []);
 
     useEffect(() => {
