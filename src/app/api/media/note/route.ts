@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-export const runtime = "edge";
+
+export const maxDuration = 60; // Allow up to 60s for large PDF proxying
+
 
 type Payload = { id: string; kind: "note"; exp: number; t: number };
 
